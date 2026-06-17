@@ -259,6 +259,13 @@ async function loadBookings() {
       </tr>
     `).join('');
 
+    tbody.querySelectorAll('[data-status-action]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const [id, status] = btn.dataset.statusAction.split(':');
+        updateStatus(id, status);
+      });
+    });
+
     renderPagination(res.total);
   } catch {
     showToast('Gagal memuat booking', 'error');
@@ -268,12 +275,12 @@ async function loadBookings() {
 function getBookingActions(b) {
   const btns = [];
   if (b.status === 'pending') {
-    btns.push(`<button class="btn btn--info btn--sm" onclick="updateStatus('${b.id}','confirmed')" title="Konfirmasi"><i class="fa-solid fa-check"></i></button>`);
-    btns.push(`<button class="btn btn--danger btn--sm" onclick="updateStatus('${b.id}','cancelled')" title="Batalkan"><i class="fa-solid fa-times"></i></button>`);
+    btns.push(`<button class="btn btn--info btn--sm" data-status-action="${b.id}:confirmed" title="Konfirmasi"><i class="fa-solid fa-check"></i></button>`);
+    btns.push(`<button class="btn btn--danger btn--sm" data-status-action="${b.id}:cancelled" title="Batalkan"><i class="fa-solid fa-times"></i></button>`);
   }
   if (b.status === 'confirmed') {
-    btns.push(`<button class="btn btn--success btn--sm" onclick="updateStatus('${b.id}','completed')" title="Selesai"><i class="fa-solid fa-check-double"></i></button>`);
-    btns.push(`<button class="btn btn--outline btn--sm" onclick="updateStatus('${b.id}','no_show')" title="Tidak Hadir"><i class="fa-solid fa-user-slash"></i></button>`);
+    btns.push(`<button class="btn btn--success btn--sm" data-status-action="${b.id}:completed" title="Selesai"><i class="fa-solid fa-check-double"></i></button>`);
+    btns.push(`<button class="btn btn--outline btn--sm" data-status-action="${b.id}:no_show" title="Tidak Hadir"><i class="fa-solid fa-user-slash"></i></button>`);
   }
   return btns.join('');
 }
@@ -283,12 +290,18 @@ function renderPagination(total) {
   if (!container) return;
   const totalPages = Math.ceil(total / 50) || 1;
 
-  let html = `<button class="pagination__btn" onclick="changePage(-1)" ${bookingsPage <= 1 ? 'disabled' : ''}><i class="fa-solid fa-chevron-left"></i></button>`;
+  let html = `<button class="pagination__btn" data-page-delta="-1" ${bookingsPage <= 1 ? 'disabled' : ''}><i class="fa-solid fa-chevron-left"></i></button>`;
   for (let i = 1; i <= Math.min(totalPages, 5); i++) {
-    html += `<button class="pagination__btn ${i === bookingsPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+    html += `<button class="pagination__btn ${i === bookingsPage ? 'active' : ''}" data-page-go="${i}">${i}</button>`;
   }
-  html += `<button class="pagination__btn" onclick="changePage(1)" ${bookingsPage >= totalPages ? 'disabled' : ''}><i class="fa-solid fa-chevron-right"></i></button>`;
+  html += `<button class="pagination__btn" data-page-delta="1" ${bookingsPage >= totalPages ? 'disabled' : ''}><i class="fa-solid fa-chevron-right"></i></button>`;
   container.innerHTML = html;
+  container.querySelectorAll('[data-page-delta]').forEach(btn => {
+    btn.addEventListener('click', () => changePage(parseInt(btn.dataset.pageDelta)));
+  });
+  container.querySelectorAll('[data-page-go]').forEach(btn => {
+    btn.addEventListener('click', () => goToPage(parseInt(btn.dataset.pageGo)));
+  });
 }
 
 async function updateStatus(id, status) {
@@ -328,10 +341,13 @@ async function loadAdminServices() {
           </div>
         </div>
         <div class="item-card__actions">
-          <button class="btn btn--outline btn--sm" onclick="editService('${s.id}')"><i class="fa-solid fa-pen"></i></button>
+          <button class="btn btn--outline btn--sm" data-edit-service="${s.id}"><i class="fa-solid fa-pen"></i></button>
         </div>
       </div>
     `).join('');
+    container.querySelectorAll('[data-edit-service]').forEach(btn => {
+      btn.addEventListener('click', () => editService(btn.dataset.editService));
+    });
   } catch { showToast('Gagal memuat layanan', 'error'); }
 }
 
@@ -412,11 +428,14 @@ async function loadAdminBarbers() {
             </div>
           </div>
           <div class="item-card__actions">
-            <button class="btn btn--outline btn--sm" onclick="editBarber('${b.id}')"><i class="fa-solid fa-pen"></i></button>
+            <button class="btn btn--outline btn--sm" data-edit-barber="${b.id}"><i class="fa-solid fa-pen"></i></button>
           </div>
         </div>
       `;
     }).join('');
+    container.querySelectorAll('[data-edit-barber]').forEach(btn => {
+      btn.addEventListener('click', () => editBarber(btn.dataset.editBarber));
+    });
   } catch { showToast('Gagal memuat barber', 'error'); }
 }
 

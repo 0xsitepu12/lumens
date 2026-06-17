@@ -12,8 +12,8 @@
 :root {
   /* Background */
   --bg-darkest: #000000;
-  --bg-card: #0a0a0a;
-  --bg-elevated: #141414;
+  --bg-card: #111111;
+  --bg-elevated: #1a1a1a;
   --bg-input: #0e0e0e;
 
   /* Silver Accent */
@@ -221,13 +221,14 @@ p {
 .logo {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
-  font-size: 1.15rem;
+  gap: 6px;
+  font-size: 0.95rem;
   font-weight: 800;
   color: var(--text-primary);
   text-transform: uppercase;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
   text-decoration: none;
+  flex-shrink: 0;
 }
 
 .logo img {
@@ -345,59 +346,54 @@ p {
    Hero Section (Landing)
    ============================================================ */
 .hero {
-  padding: var(--space-2xl) 0;
+  padding: var(--space-xl) 0 var(--space-2xl);
   text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .hero-content {
   max-width: 680px;
   margin: 0 auto;
-  padding: 0 var(--space-md);
+  padding: 0 20px;
 }
 
 .hero-badge {
   display: inline-block;
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 3px;
-  color: var(--text-secondary);
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  padding: var(--space-xs) var(--space-lg);
-  border-radius: var(--radius-full);
-  margin-bottom: var(--space-lg);
+  letter-spacing: 2px;
+  color: var(--text-muted);
+  margin-bottom: var(--space-md);
 }
 
 .hero h1 {
-  font-size: 2.25rem;
+  font-size: 2rem;
   font-weight: 800;
-  line-height: 1.15;
+  line-height: 1.2;
   margin-bottom: var(--space-md);
 }
 
 .hero h1 .highlight {
   color: var(--gold);
-  display: block;
 }
 
 .hero p {
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   color: var(--text-secondary);
   margin-bottom: var(--space-xl);
-  max-width: 480px;
+  max-width: 420px;
   margin-left: auto;
   margin-right: auto;
+  line-height: 1.6;
 }
 
 .hero-buttons {
   display: flex;
   flex-direction: column;
-  gap: var(--space-md);
-  align-items: center;
+  gap: 10px;
+  align-items: stretch;
+  max-width: 280px;
+  margin: 0 auto;
 }
 
 /* ============================================================
@@ -422,15 +418,15 @@ p {
 
 /* Primary */
 .btn-primary {
-  background: var(--gold);
-  color: var(--text-inverse);
-  border-color: var(--gold);
+  background: var(--text-primary);
+  color: var(--bg-darkest);
+  border-color: var(--text-primary);
   font-weight: 700;
 }
 
 .btn-primary:hover {
-  background: var(--gold-hover);
-  color: var(--text-inverse);
+  background: #ffffff;
+  color: var(--bg-darkest);
 }
 
 /* Secondary */
@@ -461,13 +457,13 @@ p {
 /* Outline / Ghost */
 .btn-outline {
   background: transparent;
-  color: var(--gold);
-  border-color: var(--gold);
+  color: var(--text-secondary);
+  border-color: var(--border-light);
 }
 
 .btn-outline:hover {
-  background: var(--gold);
-  color: var(--text-inverse);
+  color: var(--text-primary);
+  border-color: var(--text-primary);
 }
 
 .btn-ghost {
@@ -527,12 +523,15 @@ p {
    Service Cards (Grid Layout)
    ============================================================ */
 .services-section {
-  padding: var(--space-3xl) 0;
+  padding: var(--space-2xl) 0;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
 }
 
 .section-header {
   text-align: center;
-  margin-bottom: var(--space-2xl);
+  margin-bottom: var(--space-xl);
 }
 
 .section-header h2 {
@@ -618,6 +617,48 @@ p {
   display: flex;
   align-items: center;
   gap: var(--space-xs);
+}
+
+/* ============================================================
+   Steps (How It Works)
+   ============================================================ */
+.steps-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-lg);
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.step-item {
+  text-align: center;
+  padding: var(--space-lg);
+}
+
+.step-num {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid var(--border-light);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--space-md);
+}
+
+.step-item h3 {
+  font-size: 1rem;
+  margin-bottom: var(--space-xs);
+}
+
+.step-item p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  max-width: 260px;
+  margin: 0 auto;
 }
 
 /* ============================================================
@@ -1887,46 +1928,43 @@ p {
    Footer
    ============================================================ */
 .footer {
-  background: var(--bg-card);
   border-top: 1px solid var(--border);
   padding: var(--space-2xl) 0 var(--space-lg);
   margin-top: auto;
 }
 
-.footer-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-xl);
+.footer-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-lg);
   margin-bottom: var(--space-xl);
 }
 
-.footer-brand .logo {
-  margin-bottom: var(--space-md);
-}
-
-.footer-brand p {
+.footer-logo {
   font-size: 0.85rem;
-  max-width: 280px;
 }
 
-.footer-section h4 {
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--text-primary);
-  margin-bottom: var(--space-md);
+.footer-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
 }
 
-.footer-section a {
-  display: block;
+.footer-info-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: 0.82rem;
   color: var(--text-muted);
-  font-size: 0.88rem;
-  padding: var(--space-xs) 0;
-  transition: color var(--transition-fast);
 }
 
-.footer-section a:hover {
-  color: var(--gold);
+.footer-info-item i {
+  width: 16px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
 }
 
 .footer-social {
@@ -1956,8 +1994,7 @@ p {
 .footer-bottom {
   border-top: 1px solid var(--border);
   padding-top: var(--space-lg);
-  display: flex;
-  flex-direction: column;
+  text-align: center;
   gap: var(--space-sm);
   align-items: center;
   text-align: center;
@@ -2313,11 +2350,6 @@ p {
     font-size: 2.5rem;
   }
 
-  .hero-buttons {
-    flex-direction: row;
-    justify-content: center;
-  }
-
   .time-slots-grid {
     grid-template-columns: repeat(4, 1fr);
   }
@@ -2339,8 +2371,9 @@ p {
     justify-content: center;
   }
 
-  .footer-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .footer-info {
+    flex-direction: row;
+    gap: var(--space-xl);
   }
 }
 
@@ -2354,6 +2387,11 @@ p {
   h2 { font-size: 2rem; }
   h3 { font-size: 1.35rem; }
 
+  .logo {
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+  }
+
   .container {
     padding: 0 var(--space-xl);
   }
@@ -2364,6 +2402,17 @@ p {
 
   .nav-toggle {
     display: none;
+  }
+
+  .hero-buttons {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    max-width: none;
+  }
+
+  .steps-grid {
+    grid-template-columns: repeat(3, 1fr);
   }
 
   .hero {
@@ -2420,14 +2469,6 @@ p {
     margin-top: 0;
   }
 
-  .footer-grid {
-    grid-template-columns: 2fr 1fr 1fr 1fr;
-  }
-
-  .footer-bottom {
-    flex-direction: row;
-    justify-content: space-between;
-  }
 
   .toast-container {
     width: auto;
