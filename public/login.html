@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#000000">
+  <title>Login - LUMENS HAIR STUDIO</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="login-page">
+
+  <div class="login-card">
+    <div class="login-card-header">
+      <a href="/" class="logo">
+        <i class="fa-solid fa-scissors" style="color:var(--gold)"></i>
+        <span>LUMENS</span>
+      </a>
+      <h1>Masuk ke Admin Panel</h1>
+      <p>Kelola booking, layanan, dan analitik bisnis Anda</p>
+    </div>
+
+    <form id="login-form" autocomplete="on">
+      <div class="form-group">
+        <label class="form-label" for="username">Username</label>
+        <input type="text" class="form-input" id="username" name="username" placeholder="Masukkan username" required autocomplete="username">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <input type="password" class="form-input" id="password" name="password" placeholder="Masukkan password" required autocomplete="current-password">
+      </div>
+
+      <div id="login-error" class="form-error" style="display:none;margin-bottom:var(--space-md)"></div>
+
+      <button type="submit" class="btn btn-primary btn-block" id="btn-login">
+        <span>Masuk</span>
+        <i class="fa-solid fa-arrow-right"></i>
+      </button>
+    </form>
+
+    <div class="login-footer">
+      <a href="/"><i class="fa-solid fa-arrow-left"></i> Kembali ke Beranda</a>
+    </div>
+  </div>
+
+  <script src="/js/core.js"></script>
+  <script>
+    const form = document.getElementById('login-form');
+    const errorEl = document.getElementById('login-error');
+    const btnLogin = document.getElementById('btn-login');
+
+    (async () => {
+      try {
+        const res = await apiGet('/api/auth/me');
+        if (res.success) window.location.href = '/admin';
+      } catch {}
+    })();
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorEl.style.display = 'none';
+      btnLogin.disabled = true;
+      btnLogin.querySelector('span').textContent = 'Memproses...';
+
+      try {
+        const res = await apiPost('/api/auth/login', {
+          username: document.getElementById('username').value.trim(),
+          password: document.getElementById('password').value
+        });
+
+        if (res.success) {
+          window.location.href = '/admin';
+        } else {
+          errorEl.textContent = res.message || 'Login gagal';
+          errorEl.style.display = 'block';
+        }
+      } catch {
+        errorEl.textContent = 'Terjadi kesalahan. Coba lagi.';
+        errorEl.style.display = 'block';
+      } finally {
+        btnLogin.disabled = false;
+        btnLogin.querySelector('span').textContent = 'Masuk';
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#000000">
+  <meta name="description" content="LUMENS HAIR STUDIO - Barbershop premium dengan booking online mudah dan cepat.">
+  <meta property="og:title" content="LUMENS HAIR STUDIO">
+  <meta property="og:description" content="Tampil Maksimal, Percaya Diri Penuh. Booking online mudah & cepat.">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="id_ID">
+  <title>LUMENS HAIR STUDIO - Barbershop Premium</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header" id="header">
+    <div class="container">
+      <a href="/" class="logo">
+        <i class="fa-solid fa-scissors logo-accent"></i>
+        <span>LUMENS <span class="logo-accent">HAIR STUDIO</span></span>
+      </a>
+
+      <nav class="nav" id="desktop-nav">
+        <a href="/" class="active">Beranda</a>
+        <a href="#services">Layanan</a>
+        <a href="/booking">Booking</a>
+        <a href="/login">Admin</a>
+      </nav>
+
+      <div class="header-actions">
+        <a href="/booking" class="btn btn-primary btn-sm" style="display:none" id="cta-header">Booking</a>
+        <button class="nav-toggle" id="nav-toggle" aria-label="Menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobile-menu">
+      <a href="/" class="active">Beranda</a>
+      <a href="#services">Layanan</a>
+      <a href="/booking">Booking</a>
+      <a href="/login">Admin Login</a>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-content">
+        <div class="hero-badge">Premium Barbershop</div>
+        <h1>Tampil Maksimal,<br><span class="highlight">Percaya Diri Penuh</span></h1>
+        <p>Booking online mudah & cepat. Pilih layanan, pilih barber, tentukan waktu — selesai.</p>
+        <div class="hero-buttons">
+          <a href="/booking" class="btn btn-primary btn-lg">
+            <i class="fa-solid fa-calendar-check"></i> Booking Sekarang
+          </a>
+          <a href="#services" class="btn btn-outline">
+            <i class="fa-solid fa-list"></i> Lihat Layanan
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- SERVICES -->
+    <section class="services-section section" id="services">
+      <div class="container">
+        <div class="section-header">
+          <h2>Layanan Kami</h2>
+          <p>Pilih layanan grooming premium sesuai kebutuhanmu</p>
+        </div>
+        <div class="services-grid" id="services-grid">
+          <div class="text-center" style="padding:2rem;grid-column:1/-1">
+            <i class="fa-solid fa-spinner fa-spin" style="font-size:1.5rem;color:var(--gold)"></i>
+            <p class="text-muted" style="margin-top:0.5rem">Memuat layanan...</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section class="section" style="padding-bottom:var(--space-3xl)">
+      <div class="container">
+        <div class="section-header">
+          <h2>Cara Booking</h2>
+          <p>Mudah & cepat, hanya 3 langkah</p>
+        </div>
+        <div class="services-grid" style="max-width:900px;margin:0 auto">
+          <div class="service-card" style="cursor:default;text-align:center">
+            <div class="service-card-icon" style="margin:0 auto var(--space-md)"><i class="fa-solid fa-scissors"></i></div>
+            <h3>1. Pilih Layanan</h3>
+            <p>Jelajahi berbagai layanan grooming premium yang kami sediakan</p>
+          </div>
+          <div class="service-card" style="cursor:default;text-align:center">
+            <div class="service-card-icon" style="margin:0 auto var(--space-md)"><i class="fa-solid fa-calendar"></i></div>
+            <h3>2. Pilih Waktu</h3>
+            <p>Tentukan tanggal dan jam yang nyaman, pilih barber favorit</p>
+          </div>
+          <div class="service-card" style="cursor:default;text-align:center">
+            <div class="service-card-icon" style="margin:0 auto var(--space-md)"><i class="fa-solid fa-circle-check"></i></div>
+            <h3>3. Konfirmasi</h3>
+            <p>Konfirmasi booking dan datang sesuai jadwal. Tanpa antri!</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="/" class="logo" style="margin-bottom:var(--space-md)">
+            <i class="fa-solid fa-scissors logo-accent"></i>
+            <span>LUMENS <span class="logo-accent">HAIR STUDIO</span></span>
+          </a>
+          <p>Barbershop premium dengan pengalaman grooming terbaik untuk pria modern.</p>
+        </div>
+        <div class="footer-section">
+          <h4>Kontak</h4>
+          <p><i class="fa-solid fa-location-dot" style="color:var(--gold);margin-right:8px"></i>Jl. Contoh Alamat No. 123</p>
+          <p><i class="fa-solid fa-phone" style="color:var(--gold);margin-right:8px"></i>+62 812-3456-7890</p>
+          <p><i class="fa-solid fa-envelope" style="color:var(--gold);margin-right:8px"></i>info@lumenshairstudio.com</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p style="color:var(--text-muted);font-size:0.8rem;text-align:center;padding:var(--space-lg) 0;border-top:1px solid var(--border)">&copy; 2026 LUMENS HAIR STUDIO. Seluruh hak cipta dilindungi.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+  (function() {
+    // Mobile menu toggle
+    var toggle = document.getElementById('nav-toggle');
+    var menu = document.getElementById('mobile-menu');
+    toggle.addEventListener('click', function() {
+      toggle.classList.toggle('active');
+      menu.classList.toggle('open');
+      document.body.style.overflow = menu.classList.contains('open') ? 'hidden' : '';
+    });
+    menu.querySelectorAll('a').forEach(function(a) {
+      a.addEventListener('click', function() {
+        toggle.classList.remove('active');
+        menu.classList.remove('open');
+        document.body.style.overflow = '';
+      });
+    });
+
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(function(a) {
+      a.addEventListener('click', function(e) {
+        var target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          e.preventDefault();
+          var offset = document.getElementById('header').offsetHeight;
+          window.scrollTo({ top: target.getBoundingClientRect().top + window.pageYOffset - offset, behavior: 'smooth' });
+        }
+      });
+    });
+
+    // Header scroll
+    var header = document.getElementById('header');
+    var ctaHeader = document.getElementById('cta-header');
+    window.addEventListener('scroll', function() {
+      header.style.borderBottomColor = window.scrollY > 50 ? '' : 'transparent';
+      if (ctaHeader) ctaHeader.style.display = window.scrollY > 300 ? '' : 'none';
+    }, { passive: true });
+
+    // Rupiah formatter
+    var fmt = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 });
+
+    // Fetch services
+    fetch('/api/booking/services')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        var services = data.data || data.services || data || [];
+        if (!Array.isArray(services)) services = [];
+        var grid = document.getElementById('services-grid');
+        if (!services.length) {
+          grid.innerHTML = '<p class="text-muted" style="text-align:center;grid-column:1/-1;padding:2rem">Belum ada layanan tersedia.</p>';
+          return;
+        }
+        grid.innerHTML = services.map(function(s) {
+          return '<div class="service-card" style="cursor:default">' +
+            '<div class="service-card-header">' +
+              '<div class="service-card-icon"><i class="fa-solid fa-scissors"></i></div>' +
+              '<div class="service-card-price">' + fmt.format(s.price) + '</div>' +
+            '</div>' +
+            '<h3></h3>' +
+            '<div class="service-card-meta">' +
+              '<span><i class="fa-regular fa-clock"></i> ' + (s.duration_minutes || s.duration || 30) + ' menit</span>' +
+            '</div>' +
+            '<a href="/booking" class="btn btn-sm btn-outline" style="margin-top:var(--space-sm);width:100%">Booking</a>' +
+          '</div>';
+        }).join('');
+        // XSS safe: set name via textContent
+        var cards = grid.querySelectorAll('.service-card h3');
+        services.forEach(function(s, i) { if (cards[i]) cards[i].textContent = s.name; });
+      })
+      .catch(function() {
+        document.getElementById('services-grid').innerHTML = '<p class="text-muted" style="text-align:center;grid-column:1/-1">Gagal memuat layanan.</p>';
+      });
+  })();
+  </script>
+</body>
+</html>

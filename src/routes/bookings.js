@@ -1,0 +1,138 @@
+const express = require('express');
+const db = require('../db');
+const { SLOT_INTERVAL_MINUTES } = require('../config');
+
+const router = express.Router();
+
+router.get('/services', async (req, res) => {
+  try {
+    const services = await db.getServices(true);
+    res.json({ success: true, data: services });
+  } catch (err) {
+    console.error('[bookings/services]', err.message);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+router.get('/barbers', async (req, res) => {
+  try {
+    const barbers = await db.getBarbers(true);
+    res.json({ success: true, data: barbers });
+  } catch (err) {
+    console.error('[bookings/barbers]', err.message);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+router.get('/hours', async (req, res) => {
+  try {
+    const hours = await db.getOperatingHours();
+    res.json({ success: true, data: hours });
+  } catch (err) {
+    console.error('[bookings/hours]', err.message);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+router.get('/slots', async (req, res) => {
+  try {
+    const { date, barber_id, duration } = req.query;
+    if (!date || !barber_id || !duration)
+      return res.json({ success: false, message: 'date, barber_id, dan duration wajib' });
+
+    const dayOfWeek = new Date(date + 'T00:00:00').getDay();
+    const hours = await db.getOperatingHours();
+    const dayHours = hours.find(h => h.day_of_week === dayOfWeek);
+
+    if (!dayHours || dayHours.is_closed)
+      return res.json({ success: true, data: [], message: 'Tutup di hari ini' });
+
+    const existingBookings = await db.getBookingsByBarberAndDate(barber_id, date);
+    const durationMin = parseInt(duration);
+    const slots = [];
+
+    const [openH, openM] = dayHours.open_time.split(':').map(Number);
+    const [closeH, closeM] = dayHours.close_time.split(':').map(Number);
+    const openMinutes = openH * 60 + openM;
+    const closeMinutes = closeH * 60 + closeM;
+
+    for (let m = openMinutes; m + durationMin <= closeMinutes; m += SLOT_INTERVAL_MINUTES) {
+      const slotStart = m;
+      const slotEnd = m + durationMin;
+      const timeStr = `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+
+      const conflict = existingBookings.some(b => {
+        const [bh, bm] = b.booking_time.split(':').map(Number);
+        const [eh, em] = b.end_time.split(':').map(Number);
+        const bStart = bh * 60 + bm;
+        const bEnd = eh * 60 + em;
+        return slotStart < bEnd && slotEnd > bStart;
+      });
+
+      slots.push({ time: timeStr, available: !conflict });
+    }
+
+    res.json({ success: true, data: slots });
+  } catch (err) {
+    console.error('[bookings/slots]', err.message);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+router.post('/create', async (req, res) => {
+  try {
+    const { customer_name, customer_phone, customer_email, service_id, barber_id, booking_date, booking_time, notes } = req.body;
+
+    if (!customer_name || !customer_phone || !service_id || !barber_id || !booking_date || !booking_time)
+      return res.json({ success: false, message: 'Semua field wajib diisi' });
+
+    const service = await db.getServiceById(service_id);
+    if (!service) return res.json({ success: false, message: 'Layanan tidak ditemukan' });
+
+    const [h, m] = booking_time.split(':').map(Number);
+    const endMinutes = h * 60 + m + service.duration_minutes;
+    const end_time = `${String(Math.floor(endMinutes / 60)).padStart(2, '0')}:${String(endMinutes % 60).padStart(2, '0')}`;
+
+    const existingBookings = await db.getBookingsByBarberAndDate(barber_id, booking_date);
+    const slotStart = h * 60 + m;
+    const slotEnd = endMinutes;
+    const conflict = existingBookings.some(b => {
+      const [bh, bm] = b.booking_time.split(':').map(Number);
+      const [eh, em] = b.end_time.split(':').map(Number);
+      return slotStart < eh * 60 + em && slotEnd > bh * 60 + bm;
+    });
+    if (conflict) return res.json({ success: false, message: 'Slot waktu sudah terisi' });
+
+    const booking = await db.createBooking({
+      customer_name: customer_name.trim(),
+      customer_phone: customer_phone.trim(),
+      customer_email: customer_email?.trim() || null,
+      service_id,
+      barber_id,
+      booking_date,
+      booking_time,
+      end_time,
+      duration_minutes: service.duration_minutes,
+      total_price: service.price,
+      notes: notes?.trim() || null
+    });
+
+    res.json({ success: true, data: booking });
+  } catch (err) {
+    console.error('[bookings/create]', err.message);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+router.get('/check/:id', async (req, res) => {
+  try {
+    const booking = await db.getBookingById(req.params.id);
+    if (!booking) return res.json({ success: false, message: 'Booking tidak ditemukan' });
+    res.json({ success: true, data: booking });
+  } catch (err) {
+    console.error('[bookings/check]', err.message);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+module.exports = router;

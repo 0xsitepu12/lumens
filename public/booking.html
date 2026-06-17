@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#000000">
+  <meta name="description" content="Booking Online - LUMENS HAIR STUDIO">
+  <title>Booking - LUMENS HAIR STUDIO</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="container" style="display:flex;align-items:center;height:100%">
+      <a href="/" style="display:flex;align-items:center;gap:8px;color:var(--text-secondary);font-size:0.9rem;text-decoration:none">
+        <i class="fa-solid fa-arrow-left"></i>
+      </a>
+      <a href="/" class="logo" style="margin:0 auto">
+        <i class="fa-solid fa-scissors" style="color:var(--gold)"></i>
+        <span>LUMENS <span class="logo-accent">HAIR STUDIO</span></span>
+      </a>
+      <div style="width:24px"></div>
+    </div>
+  </header>
+
+  <main class="booking-page">
+    <!-- Step Indicator -->
+    <div class="wizard-steps" id="wizard-steps">
+      <div class="wizard-step active" data-step-indicator="1">
+        <div class="wizard-step-number">1</div>
+        <span class="wizard-step-label">Layanan</span>
+      </div>
+      <div class="wizard-step" data-step-indicator="2">
+        <div class="wizard-step-number">2</div>
+        <span class="wizard-step-label">Barber</span>
+      </div>
+      <div class="wizard-step" data-step-indicator="3">
+        <div class="wizard-step-number">3</div>
+        <span class="wizard-step-label">Jadwal</span>
+      </div>
+      <div class="wizard-step" data-step-indicator="4">
+        <div class="wizard-step-number">4</div>
+        <span class="wizard-step-label">Konfirmasi</span>
+      </div>
+    </div>
+
+    <!-- STEP 1: Pilih Layanan -->
+    <section class="wizard-panel active" id="step-1" data-step="1">
+      <div class="wizard-panel-header">
+        <h2>Pilih Layanan</h2>
+        <p>Pilih layanan yang kamu inginkan</p>
+      </div>
+      <div class="services-grid" id="service-list">
+        <div class="text-center" style="padding:2rem"><i class="fa-solid fa-spinner fa-spin" style="font-size:1.5rem;color:var(--gold)"></i><p class="text-muted" style="margin-top:0.5rem">Memuat layanan...</p></div>
+      </div>
+    </section>
+
+    <!-- STEP 2: Pilih Barber -->
+    <section class="wizard-panel" id="step-2" data-step="2">
+      <div class="wizard-panel-header">
+        <h2>Pilih Barber</h2>
+        <p>Pilih barber favoritmu</p>
+      </div>
+      <div class="barber-grid" id="barber-list"></div>
+    </section>
+
+    <!-- STEP 3: Pilih Jadwal -->
+    <section class="wizard-panel" id="step-3" data-step="3">
+      <div class="wizard-panel-header">
+        <h2>Pilih Jadwal</h2>
+        <p>Tentukan tanggal dan waktu kunjungan</p>
+      </div>
+      <div class="date-picker-section">
+        <label class="time-slots-label"><i class="fa-solid fa-calendar-alt"></i> Pilih Tanggal</label>
+        <div class="date-scroll" id="date-picker"></div>
+      </div>
+      <div>
+        <label class="time-slots-label"><i class="fa-solid fa-clock"></i> Pilih Waktu</label>
+        <div class="time-slots-grid" id="time-slots">
+          <p class="text-muted text-center" style="grid-column:1/-1">Pilih tanggal terlebih dahulu</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 4: Konfirmasi -->
+    <section class="wizard-panel" id="step-4" data-step="4">
+      <div class="wizard-panel-header">
+        <h2>Data Diri & Konfirmasi</h2>
+        <p>Periksa detail dan lengkapi data diri</p>
+      </div>
+
+      <div class="booking-summary" id="booking-summary">
+        <h3><i class="fa-solid fa-receipt"></i> Ringkasan Booking</h3>
+        <div class="booking-summary-item">
+          <span class="label">Layanan</span>
+          <span class="value" id="summary-service">-</span>
+        </div>
+        <div class="booking-summary-item">
+          <span class="label">Barber</span>
+          <span class="value" id="summary-barber">-</span>
+        </div>
+        <div class="booking-summary-item">
+          <span class="label">Tanggal</span>
+          <span class="value" id="summary-date">-</span>
+        </div>
+        <div class="booking-summary-item">
+          <span class="label">Waktu</span>
+          <span class="value" id="summary-time">-</span>
+        </div>
+        <div class="booking-summary-item">
+          <span class="label">Durasi</span>
+          <span class="value" id="summary-duration">-</span>
+        </div>
+        <div class="confirmation-total">
+          <span class="label">Total</span>
+          <span class="value" id="summary-price">-</span>
+        </div>
+      </div>
+
+      <div style="margin-top:var(--space-xl)">
+        <h3 style="font-size:1rem;margin-bottom:var(--space-lg)"><i class="fa-solid fa-id-card"></i> Data Diri</h3>
+        <div class="form-group">
+          <label class="form-label">Nama Lengkap <span class="required">*</span></label>
+          <input type="text" class="form-input" id="customer-name" placeholder="Masukkan nama lengkap" required autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">No. HP <span class="required">*</span></label>
+          <input type="tel" class="form-input" id="customer-phone" placeholder="08xxxxxxxxxx" required autocomplete="tel" inputmode="tel">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email <span class="form-hint" style="display:inline">(opsional)</span></label>
+          <input type="email" class="form-input" id="customer-email" placeholder="email@contoh.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Catatan <span class="form-hint" style="display:inline">(opsional)</span></label>
+          <textarea class="form-input form-textarea" id="customer-notes" placeholder="Catatan tambahan untuk barber..." rows="3"></textarea>
+        </div>
+      </div>
+
+      <button type="button" class="btn btn-primary btn-block" id="btn-confirm" disabled style="margin-top:var(--space-lg)">
+        <i class="fa-solid fa-check-circle"></i> Konfirmasi Booking
+      </button>
+    </section>
+
+    <!-- STEP 5: Sukses -->
+    <section class="wizard-panel" id="step-success" data-step="success" style="display:none">
+      <div class="confirmation-card">
+        <div class="confirmation-icon"><i class="fa-solid fa-circle-check"></i></div>
+        <h2>Booking Berhasil!</h2>
+        <p>Terima kasih, booking kamu sudah tercatat dan menunggu konfirmasi.</p>
+        <div class="confirmation-details">
+          <div class="confirmation-row">
+            <span class="label">Booking ID</span>
+            <span class="value" id="success-booking-id">-</span>
+          </div>
+          <div class="confirmation-row">
+            <span class="label">Layanan</span>
+            <span class="value" id="success-service">-</span>
+          </div>
+          <div class="confirmation-row">
+            <span class="label">Barber</span>
+            <span class="value" id="success-barber">-</span>
+          </div>
+          <div class="confirmation-row">
+            <span class="label">Tanggal</span>
+            <span class="value" id="success-date">-</span>
+          </div>
+          <div class="confirmation-row">
+            <span class="label">Waktu</span>
+            <span class="value" id="success-time">-</span>
+          </div>
+        </div>
+        <div style="text-align:center;margin-bottom:var(--space-lg)">
+          <span class="badge badge-pending"><i class="fa-solid fa-hourglass-half"></i> Menunggu Konfirmasi</span>
+        </div>
+        <div class="confirmation-actions">
+          <a href="/booking" class="btn btn-primary btn-block"><i class="fa-solid fa-plus"></i> Booking Lagi</a>
+          <a href="/" class="btn btn-secondary btn-block"><i class="fa-solid fa-home"></i> Kembali ke Beranda</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Wizard Nav -->
+    <div class="wizard-nav" id="wizard-nav">
+      <button type="button" class="btn btn-secondary" id="btn-back" style="display:none">
+        <i class="fa-solid fa-chevron-left"></i> Kembali
+      </button>
+      <div style="flex:1"></div>
+      <button type="button" class="btn btn-primary" id="btn-next" disabled>
+        Lanjut <i class="fa-solid fa-chevron-right"></i>
+      </button>
+    </div>
+  </main>
+
+  <script src="/js/core.js"></script>
+  <script src="/js/booking.js"></script>
+</body>
+</html>
