@@ -2,9 +2,18 @@ let currentDate = new Date().toISOString().split('T')[0];
 let bookings = [];
 let refreshTimer = null;
 let lastBookingCount = -1;
+let audioCtx = null;
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+document.addEventListener('click', () => getAudioCtx(), { once: true });
 
 function playNotifSound() {
-  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const ctx = getAudioCtx();
   // Ding 1
   const o1 = ctx.createOscillator();
   const g1 = ctx.createGain();
@@ -200,6 +209,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   document.getElementById('btn-refresh')?.addEventListener('click', loadBookings);
+  document.getElementById('btn-test-sound')?.addEventListener('click', playNotifSound);
   document.getElementById('btn-logout-kasir')?.addEventListener('click', async () => {
     await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
     window.location.href = '/login';
