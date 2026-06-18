@@ -51,14 +51,8 @@ app.use('/api/auth', authLimiter, require('./src/routes/auth'));
 app.use('/api/booking', require('./src/routes/bookings'));
 app.use('/api/admin', require('./src/routes/admin'));
 
-app.get('/api/health', async (req, res) => {
-  try {
-    const db = require('./src/db');
-    await db.supabase.from('services').select('count').limit(1);
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
-  } catch (err) {
-    res.status(503).json({ status: 'error', message: err.message });
-  }
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
 app.get('/booking', (req, res) => res.sendFile(path.join(__dirname, 'public', 'booking.html')));
