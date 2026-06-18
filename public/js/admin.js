@@ -496,11 +496,11 @@ async function loadSettings() {
       const row = document.querySelector(`tr[data-day="${dayName}"]`);
       if (!row) return;
 
-      const openInput = row.querySelector('input[type="time"]:first-of-type');
-      const closeInput = row.querySelector('input[type="time"]:last-of-type');
-      const closedToggle = row.querySelector('input[type="checkbox"]');
+      const openInput = row.querySelector(`input[name="open-${dayName}"]`);
+      const closeInput = row.querySelector(`input[name="close-${dayName}"]`);
+      const closedToggle = row.querySelector(`input[name="closed-${dayName}"]`);
 
-      if (openInput) openInput.value = h.open_time?.slice(0, 5) || '09:00';
+      if (openInput) openInput.value = h.open_time?.slice(0, 5) || '10:00';
       if (closeInput) closeInput.value = h.close_time?.slice(0, 5) || '21:00';
       if (closedToggle) {
         closedToggle.checked = h.is_closed;
@@ -520,9 +520,9 @@ async function saveHours() {
       if (!row) continue;
 
       const dayIndex = DAY_MAP[dayName];
-      const openInput = row.querySelector('input[type="time"]:first-of-type');
-      const closeInput = row.querySelector('input[type="time"]:last-of-type');
-      const closedToggle = row.querySelector('input[type="checkbox"]');
+      const openInput = row.querySelector(`input[name="open-${dayName}"]`);
+      const closeInput = row.querySelector(`input[name="close-${dayName}"]`);
+      const closedToggle = row.querySelector(`input[name="closed-${dayName}"]`);
 
       await apiPut(`/api/admin/hours/${dayIndex}`, {
         open_time: (openInput?.value || '09:00') + ':00',

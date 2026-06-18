@@ -68,7 +68,7 @@ function renderDatePicker() {
   if (!container) return;
 
   const now = new Date();
-  const startDay = now.getHours() >= 20 ? 1 : 0;
+  const startDay = (now.getHours() >= 20 && now.getMinutes() >= 30) || now.getHours() >= 21 ? 1 : 0;
   let html = '';
   let currentMonth = -1;
 
