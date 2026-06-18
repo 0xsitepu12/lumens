@@ -1,4 +1,5 @@
 let currentPeriod = 'today';
+let perfChart = null;
 
 const STATUS_MAP = {
   pending:   { label: 'Pending',   cls: 'pending' },
@@ -58,6 +59,122 @@ function renderStats(data) {
   document.getElementById('stat-confirmed').textContent = data.confirmed;
   document.getElementById('stat-pending').textContent   = data.pending;
   updateRateCircle(data.rate);
+}
+
+function renderChart(bookings) {
+  const card  = document.getElementById('chart-card');
+  const title = document.getElementById('chart-title');
+  const canvas = document.getElementById('perf-chart');
+  if (!canvas) return;
+
+  // Hari Ini: sembunyikan chart (sedikit data)
+  if (currentPeriod === 'today') { card.style.display = 'none'; return; }
+  card.style.display = '';
+
+  // Group data
+  const groups = {};
+  bookings.forEach(b => {
+    let key;
+    if (currentPeriod === 'all') {
+      key = b.booking_date?.slice(0, 7); // YYYY-MM
+    } else {
+      key = b.booking_date; // YYYY-MM-DD
+    }
+    if (!key) return;
+    if (!groups[key]) groups[key] = { revenue: 0, count: 0 };
+    groups[key].count++;
+    if (b.status === 'completed') groups[key].revenue += b.total_price || b.services?.price || 0;
+  });
+
+  const labels  = Object.keys(groups).sort();
+  const revenue = labels.map(k => groups[k].revenue);
+  const counts  = labels.map(k => groups[k].count);
+
+  // Format label
+  const fmtLabel = lbl => {
+    if (currentPeriod === 'all') {
+      const [y, m] = lbl.split('-');
+      return new Date(y, m - 1).toLocaleDateString('id-ID', { month: 'short', year: '2-digit' });
+    }
+    const d = new Date(lbl + 'T00:00:00');
+    return currentPeriod === 'month'
+      ? d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
+      : d.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric' });
+  };
+
+  const displayLabels = labels.map(fmtLabel);
+
+  const CHART_TITLES = { week: 'Pendapatan 7 Hari', month: 'Pendapatan Bulan Ini', all: 'Pendapatan per Bulan' };
+  if (title) title.textContent = CHART_TITLES[currentPeriod] || 'Grafik Pendapatan';
+
+  if (perfChart) { perfChart.destroy(); perfChart = null; }
+
+  perfChart = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: displayLabels,
+      datasets: [
+        {
+          label: 'Pendapatan (Rp)',
+          data: revenue,
+          backgroundColor: 'rgba(22,163,74,0.15)',
+          borderColor: '#16a34a',
+          borderWidth: 2,
+          borderRadius: 6,
+          yAxisID: 'y',
+        },
+        {
+          label: 'Booking',
+          data: counts,
+          type: 'line',
+          borderColor: '#2563eb',
+          backgroundColor: 'rgba(37,99,235,0.1)',
+          borderWidth: 2,
+          pointRadius: 3,
+          pointBackgroundColor: '#2563eb',
+          tension: 0.3,
+          fill: false,
+          yAxisID: 'y2',
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => ctx.datasetIndex === 0
+              ? 'Rp ' + ctx.parsed.y.toLocaleString('id-ID')
+              : ctx.parsed.y + ' booking'
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { font: { size: 10 }, color: '#999', maxRotation: 0 }
+        },
+        y: {
+          position: 'left',
+          grid: { color: '#f0f0f0' },
+          ticks: {
+            font: { size: 10 },
+            color: '#16a34a',
+            callback: v => v >= 1000 ? (v/1000).toFixed(0) + 'k' : v
+          }
+        },
+        y2: {
+          position: 'right',
+          grid: { display: false },
+          ticks: { font: { size: 10 }, color: '#2563eb', stepSize: 1 },
+          min: 0
+        }
+      }
+    }
+  });
 }
 
 function renderList(bookings) {
@@ -127,6 +244,7 @@ async function loadDashboard() {
     if (avatarEl) avatarEl.textContent = barber.name.charAt(0).toUpperCase();
 
     renderStats(data.data);
+    renderChart(data.data.bookings);
     renderList(data.data.bookings);
 
   } catch {
