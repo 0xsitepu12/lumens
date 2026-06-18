@@ -404,35 +404,55 @@ async function saveService() {
 // ============================================
 // BARBERS MANAGEMENT
 // ============================================
+const DAY_NAMES = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+
 async function loadAdminBarbers() {
   try {
-    const res = await apiGet('/api/admin/barbers');
+    const [bRes, schedRes] = await Promise.all([
+      apiGet('/api/admin/barbers'),
+      apiGet('/api/admin/barbers/schedules').catch(() => ({ data: [] }))
+    ]);
     const container = document.getElementById('barbers-list');
     if (!container) return;
 
-    if (!res.data || res.data.length === 0) {
+    const barbers = bRes.data || [];
+    if (!barbers.length) {
       container.innerHTML = '<div class="empty-state"><i class="fa-solid fa-user-tie"></i><p>Belum ada barber terdaftar</p></div>';
       return;
     }
 
-    container.innerHTML = res.data.map(b => {
+    const todayDay = new Date().getDay();
+
+    container.innerHTML = barbers.map(b => {
       const initials = b.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+
+      // Cari jadwal hari ini dari schedules
+      let shiftBadge = '';
+      const allSchedules = schedRes.data || [];
+      const todaySched = allSchedules.find(s => s.barber_id === b.id && s.day_of_week === todayDay);
+      if (todaySched) {
+        shiftBadge = todaySched.is_off
+          ? `<span style="font-size:0.72rem;color:#dc2626;margin-top:4px;display:block"><i class="fa-solid fa-moon"></i> Libur hari ini</span>`
+          : `<span style="font-size:0.72rem;color:#2563eb;margin-top:4px;display:block"><i class="fa-solid fa-clock"></i> ${todaySched.shift_start?.slice(0,5)} – ${todaySched.shift_end?.slice(0,5)}</span>`;
+      }
+
       return `
         <div class="item-card ${!b.is_active ? 'inactive' : ''}">
-          <div style="display:flex;align-items:center;gap:12px;flex:1">
-            <div class="avatar" style="width:40px;height:40px;border-radius:50%;background:var(--primary);color:var(--bg-dark);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem">${initials}</div>
-            <div class="item-card__info">
+          <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">
+            <div style="width:44px;height:44px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.9rem;flex-shrink:0">${initials}</div>
+            <div class="item-card__info" style="min-width:0">
               <h4>${esc(b.name)}</h4>
-              <p>${esc(b.speciality || 'Barber')}</p>
-              <span class="badge ${b.is_active ? 'badge-active' : 'badge-inactive'}">${b.is_active ? 'Aktif' : 'Nonaktif'}</span>
+              <p style="color:var(--text-muted);font-size:0.8rem">${esc(b.speciality || 'Barber')}</p>
+              ${shiftBadge}
+              <span class="badge ${b.is_active ? 'badge-active' : 'badge-inactive'}" style="margin-top:6px">${b.is_active ? 'Aktif' : 'Nonaktif'}</span>
             </div>
           </div>
           <div class="item-card__actions">
-            <button class="btn btn--outline btn--sm" data-edit-barber="${b.id}"><i class="fa-solid fa-pen"></i></button>
+            <button class="btn btn--outline btn--sm" data-edit-barber="${b.id}" title="Edit"><i class="fa-solid fa-pen"></i></button>
           </div>
-        </div>
-      `;
+        </div>`;
     }).join('');
+
     container.querySelectorAll('[data-edit-barber]').forEach(btn => {
       btn.addEventListener('click', () => editBarber(btn.dataset.editBarber));
     });
@@ -441,42 +461,95 @@ async function loadAdminBarbers() {
 
 let editingBarberId = null;
 
-function showBarberModal(id) {
-  editingBarberId = id || null;
-  document.getElementById('modal-barber-title').textContent = id ? 'Edit Barber' : 'Tambah Barber';
+function resetBarberScheduleForm() {
+  for (let d = 0; d <= 6; d++) {
+    const row = document.querySelector(`#barber-schedule-table tr[data-day="${d}"]`);
+    if (!row) continue;
+    row.querySelector(`input[name="start-${d}"]`).value = '09:00';
+    row.querySelector(`input[name="end-${d}"]`).value   = '21:00';
+    row.querySelector(`input[name="off-${d}"]`).checked = false;
+    row.querySelectorAll('input[type="time"]').forEach(i => i.disabled = false);
+  }
+}
+
+function fillBarberScheduleForm(schedules) {
+  resetBarberScheduleForm();
+  (schedules || []).forEach(s => {
+    const d   = s.day_of_week;
+    const row = document.querySelector(`#barber-schedule-table tr[data-day="${d}"]`);
+    if (!row) return;
+    row.querySelector(`input[name="start-${d}"]`).value   = s.shift_start?.slice(0,5) || '09:00';
+    row.querySelector(`input[name="end-${d}"]`).value     = s.shift_end?.slice(0,5)   || '21:00';
+    const off = row.querySelector(`input[name="off-${d}"]`);
+    off.checked = !!s.is_off;
+    row.querySelectorAll('input[type="time"]').forEach(i => i.disabled = !!s.is_off);
+  });
+}
+
+function showBarberModal() {
+  editingBarberId = null;
+  document.getElementById('modal-barber-title').textContent = 'Tambah Barber';
+  document.getElementById('barber-id').value = '';
   document.getElementById('barber-name').value = '';
   document.getElementById('barber-speciality').value = '';
+  document.getElementById('barber-active').value = 'true';
+  resetBarberScheduleForm();
   openModal('modal-barber');
 }
 
 async function editBarber(id) {
   try {
-    const res = await apiGet('/api/admin/barbers');
-    const b = (res.data || []).find(x => x.id === id);
-    if (!b) return;
+    const res = await apiGet(`/api/admin/barbers/${id}`);
+    if (!res.success) return;
+    const b = res.data;
 
     editingBarberId = id;
     document.getElementById('modal-barber-title').textContent = 'Edit Barber';
+    document.getElementById('barber-id').value = id;
     document.getElementById('barber-name').value = b.name;
     document.getElementById('barber-speciality').value = b.speciality || '';
+    document.getElementById('barber-active').value = b.is_active ? 'true' : 'false';
+    fillBarberScheduleForm(b.schedules || []);
     openModal('modal-barber');
-  } catch {}
+  } catch { showToast('Gagal memuat data barber', 'error'); }
 }
 
 async function saveBarber() {
-  const data = {
-    name: document.getElementById('barber-name').value.trim(),
-    speciality: document.getElementById('barber-speciality').value.trim()
-  };
+  const name       = document.getElementById('barber-name').value.trim();
+  const speciality = document.getElementById('barber-speciality').value.trim();
+  const is_active  = document.getElementById('barber-active').value === 'true';
 
-  if (!data.name) { showToast('Nama barber wajib diisi', 'error'); return; }
+  if (!name) { showToast('Nama barber wajib diisi', 'error'); return; }
 
   try {
+    // Simpan data barber
     const res = editingBarberId
-      ? await apiPut(`/api/admin/barbers/${editingBarberId}`, data)
-      : await apiPost('/api/admin/barbers', data);
-    if (res.success) { showToast('Barber disimpan'); closeModal('modal-barber'); loadAdminBarbers(); }
-    else showToast(res.message || 'Gagal', 'error');
+      ? await apiPut(`/api/admin/barbers/${editingBarberId}`, { name, speciality, is_active })
+      : await apiPost('/api/admin/barbers', { name, speciality, is_active });
+
+    if (!res.success) { showToast(res.message || 'Gagal', 'error'); return; }
+
+    const barberId = editingBarberId || res.data?.id;
+
+    // Simpan jadwal jika ada barber id
+    if (barberId) {
+      const schedules = [];
+      for (let d = 0; d <= 6; d++) {
+        const row = document.querySelector(`#barber-schedule-table tr[data-day="${d}"]`);
+        if (!row) continue;
+        schedules.push({
+          day_of_week: d,
+          shift_start: (row.querySelector(`input[name="start-${d}"]`).value || '09:00') + ':00',
+          shift_end:   (row.querySelector(`input[name="end-${d}"]`).value   || '21:00') + ':00',
+          is_off:      row.querySelector(`input[name="off-${d}"]`).checked
+        });
+      }
+      await apiPut(`/api/admin/barbers/${barberId}/schedule`, { schedules });
+    }
+
+    showToast('Barber disimpan');
+    closeModal('modal-barber');
+    loadAdminBarbers();
   } catch { showToast('Gagal menyimpan', 'error'); }
 }
 
@@ -724,6 +797,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (row) row.querySelectorAll('input[type="time"]').forEach(i => i.disabled = toggle.checked);
     });
   });
+
+  // Tambah endpoint untuk get semua schedules
+  // (route /api/admin/barbers/schedules belum ada, fallback dari getAllBarberSchedules)
+
 
   switchTab('dashboard');
 });

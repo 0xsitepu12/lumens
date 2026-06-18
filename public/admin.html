@@ -1603,7 +1603,7 @@
 
     <!-- ==================== MODAL: BARBER FORM ==================== -->
     <div class="modal-overlay" id="modal-barber">
-        <div class="modal">
+        <div class="modal" style="max-width:560px">
             <div class="modal__header">
                 <h3 class="modal__title" id="modal-barber-title">Tambah Barber</h3>
                 <button class="modal__close" data-close-modal="modal-barber" aria-label="Tutup">
@@ -1611,24 +1611,46 @@
                 </button>
             </div>
             <div class="modal__body">
-                <form id="form-barber">
-                    <input type="hidden" id="barber-id" name="id">
+                <input type="hidden" id="barber-id">
+                <div class="form-row">
                     <div class="form-group">
                         <label for="barber-name">Nama Barber</label>
-                        <input type="text" id="barber-name" name="name" placeholder="Nama lengkap barber" required>
+                        <input type="text" id="barber-name" placeholder="Nama lengkap barber" required>
                     </div>
                     <div class="form-group">
                         <label for="barber-speciality">Spesialisasi</label>
-                        <input type="text" id="barber-speciality" name="speciality" placeholder="Contoh: Fade, Classic Cut, Coloring">
+                        <input type="text" id="barber-speciality" placeholder="Fade, Classic Cut...">
                     </div>
-                    <div class="form-group">
-                        <label for="barber-active">Status</label>
-                        <select id="barber-active" name="active">
-                            <option value="true">Aktif</option>
-                            <option value="false">Tidak Aktif</option>
-                        </select>
+                </div>
+                <div class="form-group">
+                    <label for="barber-active">Status</label>
+                    <select id="barber-active">
+                        <option value="true">Aktif</option>
+                        <option value="false">Tidak Aktif</option>
+                    </select>
+                </div>
+
+                <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border)">
+                    <p style="font-weight:700;font-size:0.875rem;margin-bottom:12px;color:var(--text-primary);">
+                        <i class="fa-solid fa-calendar-week"></i> Jadwal Shift
+                    </p>
+                    <div class="table-responsive">
+                        <table class="hours-table" id="barber-schedule-table">
+                            <thead>
+                                <tr><th>Hari</th><th>Mulai</th><th>Selesai</th><th>Libur</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr data-day="0"><td>Minggu</td><td><input type="time" name="start-0" value="09:00"></td><td><input type="time" name="end-0" value="21:00"></td><td><label class="toggle-switch"><input type="checkbox" name="off-0"><span class="toggle-switch__slider"></span></label></td></tr>
+                                <tr data-day="1"><td>Senin</td><td><input type="time" name="start-1" value="09:00"></td><td><input type="time" name="end-1" value="21:00"></td><td><label class="toggle-switch"><input type="checkbox" name="off-1"><span class="toggle-switch__slider"></span></label></td></tr>
+                                <tr data-day="2"><td>Selasa</td><td><input type="time" name="start-2" value="09:00"></td><td><input type="time" name="end-2" value="21:00"></td><td><label class="toggle-switch"><input type="checkbox" name="off-2"><span class="toggle-switch__slider"></span></label></td></tr>
+                                <tr data-day="3"><td>Rabu</td><td><input type="time" name="start-3" value="09:00"></td><td><input type="time" name="end-3" value="21:00"></td><td><label class="toggle-switch"><input type="checkbox" name="off-3"><span class="toggle-switch__slider"></span></label></td></tr>
+                                <tr data-day="4"><td>Kamis</td><td><input type="time" name="start-4" value="09:00"></td><td><input type="time" name="end-4" value="21:00"></td><td><label class="toggle-switch"><input type="checkbox" name="off-4"><span class="toggle-switch__slider"></span></label></td></tr>
+                                <tr data-day="5"><td>Jumat</td><td><input type="time" name="start-5" value="09:00"></td><td><input type="time" name="end-5" value="21:00"></td><td><label class="toggle-switch"><input type="checkbox" name="off-5"><span class="toggle-switch__slider"></span></label></td></tr>
+                                <tr data-day="6"><td>Sabtu</td><td><input type="time" name="start-6" value="09:00"></td><td><input type="time" name="end-6" value="21:00"></td><td><label class="toggle-switch"><input type="checkbox" name="off-6"><span class="toggle-switch__slider"></span></label></td></tr>
+                            </tbody>
+                        </table>
                     </div>
-                </form>
+                </div>
             </div>
             <div class="modal__footer">
                 <button class="btn btn--outline" data-close-modal="modal-barber">Batal</button>

@@ -265,12 +265,52 @@ router.post('/barbers', async (req, res) => {
   }
 });
 
+router.get('/barbers/schedules', async (req, res) => {
+  try {
+    const data = await db.getAllBarberSchedules();
+    res.json({ success: true, data });
+  } catch (err) {
+    console.error('[admin/barbers/schedules]', err.message);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+router.get('/barbers/:id', async (req, res) => {
+  try {
+    const barber    = await db.getBarberById(req.params.id);
+    if (!barber) return res.json({ success: false, message: 'Barber tidak ditemukan' });
+    const schedules = await db.getBarberSchedules(req.params.id);
+    res.json({ success: true, data: { ...barber, schedules } });
+  } catch (err) {
+    console.error('[admin/barbers/get]', err.message);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 router.put('/barbers/:id', async (req, res) => {
   try {
     const barber = await db.updateBarber(req.params.id, req.body);
     res.json({ success: true, data: barber });
   } catch (err) {
     console.error('[admin/barbers/update]', err.message);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+router.put('/barbers/:id/schedule', async (req, res) => {
+  try {
+    const { schedules } = req.body; // array of { day_of_week, shift_start, shift_end, is_off }
+    if (!Array.isArray(schedules)) return res.json({ success: false, message: 'Format tidak valid' });
+    for (const s of schedules) {
+      await db.upsertBarberSchedule(req.params.id, s.day_of_week, {
+        shift_start: s.shift_start,
+        shift_end:   s.shift_end,
+        is_off:      s.is_off
+      });
+    }
+    res.json({ success: true, message: 'Jadwal disimpan' });
+  } catch (err) {
+    console.error('[admin/barbers/schedule]', err.message);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
