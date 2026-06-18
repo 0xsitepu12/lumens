@@ -56,6 +56,7 @@ app.get('/api/health', (req, res) => {
 });
 
 app.get('/booking', (req, res) => res.sendFile(path.join(__dirname, 'public', 'booking.html')));
+app.get('/kasir', (req, res) => res.sendFile(path.join(__dirname, 'public', 'kasir.html')));
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
 app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));
 

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#ffffff">
+  <title>Kasir - LUMEN'S STUDIO</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #f8f8f8; color: #1a1a1a; min-height: 100vh; }
+
+    .kasir-header {
+      background: #fff;
+      border-bottom: 1px solid #e5e5e5;
+      padding: 14px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .kasir-header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .kasir-logo { height: 36px; }
+    .kasir-date { font-size: 0.78rem; color: #888; }
+    .kasir-tabs {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .kasir-tab {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      background: #fff;
+      text-align: center;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: #888;
+      font-family: inherit;
+    }
+    .kasir-tab.active {
+      background: #1a1a1a;
+      color: #fff;
+      border-color: #1a1a1a;
+    }
+
+    .kasir-summary {
+      display: flex;
+      gap: 8px;
+      padding: 16px 20px;
+    }
+    .summary-card {
+      flex: 1;
+      background: #fff;
+      border: 1px solid #e5e5e5;
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+    }
+    .summary-num {
+      font-size: 1.5rem;
+      font-weight: 800;
+    }
+    .summary-label {
+      font-size: 0.65rem;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 2px;
+    }
+    .summary-num.pending { color: #d97706; }
+    .summary-num.confirmed { color: #2563eb; }
+    .summary-num.completed { color: #16a34a; }
+
+    .kasir-list {
+      padding: 0 16px 100px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .booking-card {
+      background: #fff;
+      border: 1px solid #e5e5e5;
+      border-radius: 10px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 10px;
+      position: relative;
+    }
+    .booking-info { min-width: 0; }
+    .booking-name {
+      font-size: 0.88rem;
+      font-weight: 700;
+      margin-bottom: 3px;
+    }
+    .booking-detail {
+      font-size: 0.75rem;
+      color: #666;
+    }
+    .booking-phone {
+      font-size: 0.7rem;
+      color: #999;
+      margin-top: 4px;
+    }
+    .booking-time-badge {
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: #555;
+      background: #f0f0f0;
+      padding: 2px 8px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-bottom: 6px;
+    }
+
+    .status-btn {
+      flex-shrink: 0;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      width: 100%;
+    }
+    .status-btn.pending { background: #fef3c7; color: #92400e; }
+    .status-btn.confirmed { background: #dbeafe; color: #1e40af; }
+    .status-btn.completed { background: #dcfce7; color: #166534; }
+    .status-btn.cancelled { background: #fee2e2; color: #991b1b; }
+
+    .status-wrap { position: relative; flex-shrink: 0; }
+    .status-menu {
+      display: none;
+      position: absolute;
+      bottom: 100%;
+      right: 0;
+      left: 0;
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 4px;
+      margin-bottom: 6px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      z-index: 5;
+    }
+    .status-menu.show { display: block; }
+    .status-menu-item {
+      display: block;
+      width: 100%;
+      padding: 8px 12px;
+      border: none;
+      background: none;
+      text-align: left;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 6px;
+      font-family: inherit;
+    }
+    .status-menu-item:hover { background: #f5f5f5; }
+    .status-menu-item.confirm { color: #2563eb; }
+    .status-menu-item.complete { color: #16a34a; }
+    .status-menu-item.cancel { color: #dc2626; }
+    .status-menu-item.noshow { color: #666; }
+
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 60px 20px;
+      color: #ccc;
+    }
+    .empty-state i { font-size: 2.5rem; margin-bottom: 12px; display: block; }
+    .empty-state p { font-size: 0.9rem; }
+
+    .auto-refresh {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #1a1a1a;
+      color: #fff;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="kasir-header">
+    <div class="kasir-header-top">
+      <img src="/Assets/logo1.png" alt="LUMEN'S STUDIO" class="kasir-logo">
+      <span class="kasir-date" id="kasir-date"></span>
+    </div>
+    <div class="kasir-tabs">
+      <button class="kasir-tab active">Hari Ini</button>
+      <button class="kasir-tab">Besok</button>
+    </div>
+  </header>
+
+  <div class="kasir-summary">
+    <div class="summary-card">
+      <div class="summary-num" id="sum-total">0</div>
+      <div class="summary-label">Total</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-num pending" id="sum-pending">0</div>
+      <div class="summary-label">Pending</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-num confirmed" id="sum-confirmed">0</div>
+      <div class="summary-label">Confirmed</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-num completed" id="sum-completed">0</div>
+      <div class="summary-label">Selesai</div>
+    </div>
+  </div>
+
+  <div class="kasir-list" id="booking-list">
+    <div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><p>Memuat...</p></div>
+  </div>
+
+  <button class="auto-refresh" id="btn-refresh" title="Refresh">
+    <i class="fa-solid fa-rotate"></i>
+  </button>
+
+  <script src="/js/kasir.js"></script>
+</body>
+</html>

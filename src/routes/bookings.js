@@ -1,6 +1,7 @@
 const express = require('express');
 const db = require('../db');
 const { SLOT_INTERVAL_MINUTES } = require('../config');
+const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -159,6 +160,33 @@ router.get('/check/:id', async (req, res) => {
     res.json({ success: true, data: booking });
   } catch (err) {
     console.error('[bookings/check]', err.message);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// ============================================
+// KASIR ENDPOINTS (requires login)
+// ============================================
+router.get('/kasir/today', requireAuth, async (req, res) => {
+  try {
+    const date = req.query.date || new Date().toISOString().split('T')[0];
+    const bookings = await db.getBookingsByDate(date);
+    res.json({ success: true, data: bookings, date });
+  } catch (err) {
+    console.error('[kasir/today]', err.message);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+router.put('/kasir/status/:id', requireAuth, async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!['pending', 'confirmed', 'completed', 'cancelled', 'no_show'].includes(status))
+      return res.json({ success: false, message: 'Status tidak valid' });
+    const booking = await db.updateBookingStatus(req.params.id, status);
+    res.json({ success: true, data: booking });
+  } catch (err) {
+    console.error('[kasir/status]', err.message);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
