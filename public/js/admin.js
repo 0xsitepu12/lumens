@@ -565,6 +565,7 @@ const DAY_MAP = { sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, f
 async function loadSettings() {
   loadResetPasswordStatus();
   loadKasirList();
+  loadStaffList();
   try {
     const res = await apiGet('/api/admin/hours');
     if (!res.data) return;
@@ -639,6 +640,50 @@ async function saveBarberPassword() {
       showToast(data.message, 'error');
     }
   } catch { showToast('Gagal mengubah password', 'error'); }
+}
+
+// ============================================
+// STAFF MANAGEMENT
+// ============================================
+async function loadStaffList() {
+  const container = document.getElementById('staff-list');
+  if (!container) return;
+  try {
+    const data = await apiGet('/api/admin/staff');
+    const users = data.data || [];
+    if (!users.length) {
+      container.innerHTML = '<p style="color:var(--text-muted);font-size:.85rem;">Belum ada akun staff.</p>';
+      return;
+    }
+    const ROLE_LABELS = { kasir: 'Kasir', barber: 'Barber' };
+    container.innerHTML = users.map(u => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg-elevated);border-radius:var(--radius-sm);gap:12px;">
+        <div>
+          <div style="font-weight:600;font-size:.875rem;">${esc(u.full_name || u.username)}</div>
+          <div style="font-size:.75rem;color:var(--text-muted);">@${esc(u.username)}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <select data-role-username="${esc(u.username)}" style="padding:5px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:.8rem;font-family:inherit;background:var(--bg-card);">
+            <option value="kasir" ${u.role === 'kasir' ? 'selected' : ''}>Kasir</option>
+            <option value="barber" ${u.role === 'barber' ? 'selected' : ''}>Barber</option>
+          </select>
+          <button class="btn btn--primary btn--sm" data-save-role="${esc(u.username)}" style="white-space:nowrap;font-size:.78rem;">Simpan</button>
+        </div>
+      </div>
+    `).join('');
+
+    container.querySelectorAll('[data-save-role]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const username = btn.dataset.saveRole;
+        const sel = container.querySelector(`[data-role-username="${username}"]`);
+        const role = sel?.value;
+        if (!role) return;
+        const res = await apiPut(`/api/admin/staff/${username}/role`, { role });
+        if (res.success) { showToast(res.message); loadStaffList(); }
+        else showToast(res.message, 'error');
+      });
+    });
+  } catch { container.innerHTML = '<p style="color:var(--danger);font-size:.85rem;">Gagal memuat akun staff.</p>'; }
 }
 
 // ============================================

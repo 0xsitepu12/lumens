@@ -510,6 +510,33 @@ router.put('/barbers/:id/password', async (req, res) => {
 });
 
 // ============================================
+// STAFF - KELOLA AKUN (role + password)
+// ============================================
+router.get('/staff', async (req, res) => {
+  try {
+    const users = await db.getNonAdminUsers();
+    res.json({ success: true, data: users });
+  } catch (err) {
+    console.error('[admin/staff]', err.message);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+router.put('/staff/:username/role', async (req, res) => {
+  try {
+    const { role } = req.body;
+    if (!['kasir', 'barber'].includes(role))
+      return res.json({ success: false, message: 'Role tidak valid' });
+    const { error } = await db.supabase.from('users').update({ role }).eq('username', req.params.username).neq('role', 'admin');
+    if (error) throw error;
+    res.json({ success: true, message: 'Role berhasil diubah' });
+  } catch (err) {
+    console.error('[admin/staff/role]', err.message);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// ============================================
 // KASIR - GANTI PASSWORD
 // ============================================
 router.get('/kasir/list', async (req, res) => {
