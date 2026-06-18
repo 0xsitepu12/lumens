@@ -27,24 +27,41 @@ function renderServices() {
   const container = document.getElementById('service-list');
   if (!container) return;
 
-  const catNames = { haircut: 'Potong Rambut', coloring: 'Warna', treatment: 'Perawatan', styling: 'Styling', shaving: 'Cukur' };
+  const CAT_ORDER = ['potong', 'perawatan', 'warna', 'styling', 'cukur', 'paket', 'lainnya'];
+  const CAT_NAMES = {
+    potong:    'Potong Rambut',
+    perawatan: 'Perawatan',
+    warna:     'Pewarnaan',
+    styling:   'Styling',
+    cukur:     'Cukur',
+    paket:     'Paket',
+    lainnya:   'Lainnya',
+  };
+
+  // Group by category
   const grouped = {};
   state.services.forEach(s => {
-    const cat = s.category || 'other';
+    const cat = s.category || 'lainnya';
     if (!grouped[cat]) grouped[cat] = [];
     grouped[cat].push(s);
   });
 
+  // Render dalam urutan tetap, kategori tanpa isi tidak ditampilkan
   let html = '';
-  for (const [cat, items] of Object.entries(grouped)) {
-    html += `<div class="svc-group-label">${catNames[cat] || cat}</div>`;
-    html += items.map(s => `
+  const orderedKeys = [
+    ...CAT_ORDER.filter(k => grouped[k]),
+    ...Object.keys(grouped).filter(k => !CAT_ORDER.includes(k))
+  ];
+
+  orderedKeys.forEach(cat => {
+    html += `<div class="svc-group-label">${CAT_NAMES[cat] || cat}</div>`;
+    html += grouped[cat].map(s => `
       <div class="svc-row" data-id="${s.id}">
         <span class="svc-row-name">${esc(s.name)}</span>
         <span class="svc-row-price">${formatRupiah(s.price)}</span>
       </div>
     `).join('');
-  }
+  });
 
   container.innerHTML = html;
   container.querySelectorAll('.svc-row').forEach(c => {
