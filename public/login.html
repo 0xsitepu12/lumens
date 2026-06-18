@@ -52,10 +52,20 @@
     const errorEl = document.getElementById('login-error');
     const btnLogin = document.getElementById('btn-login');
 
-    function goToDashboard(user) {
-      if (user.role === 'admin') window.location.href = '/admin';
-      else if (user.role === 'barber') window.location.href = '/barber';
-      else window.location.href = '/kasir';
+    async function goToDashboard(user) {
+      if (user.role === 'admin') {
+        window.location.href = '/admin';
+      } else if (user.role === 'barber') {
+        // Verifikasi apakah punya profil barber — kalau tidak, arahkan ke kasir
+        try {
+          const check = await apiGet('/api/barber/me');
+          window.location.href = check.success ? '/barber' : '/kasir';
+        } catch {
+          window.location.href = '/kasir';
+        }
+      } else {
+        window.location.href = '/kasir';
+      }
     }
 
     (async () => {
