@@ -1,6 +1,33 @@
 let currentDate = new Date().toISOString().split('T')[0];
 let bookings = [];
 let refreshTimer = null;
+let lastBookingCount = -1;
+
+function playNotifSound() {
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  // Ding 1
+  const o1 = ctx.createOscillator();
+  const g1 = ctx.createGain();
+  o1.type = 'sine';
+  o1.frequency.value = 880;
+  g1.gain.setValueAtTime(0.3, ctx.currentTime);
+  g1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+  o1.connect(g1);
+  g1.connect(ctx.destination);
+  o1.start(ctx.currentTime);
+  o1.stop(ctx.currentTime + 0.4);
+  // Ding 2 (higher)
+  const o2 = ctx.createOscillator();
+  const g2 = ctx.createGain();
+  o2.type = 'sine';
+  o2.frequency.value = 1175;
+  g2.gain.setValueAtTime(0.3, ctx.currentTime + 0.15);
+  g2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.55);
+  o2.connect(g2);
+  g2.connect(ctx.destination);
+  o2.start(ctx.currentTime + 0.15);
+  o2.stop(ctx.currentTime + 0.55);
+}
 
 const STATUS_MAP = {
   pending: { label: 'Pending', cls: 'pending' },
@@ -25,7 +52,12 @@ async function loadBookings() {
     const res = await fetch(`/api/booking/kasir/today?date=${currentDate}`, { credentials: 'include' });
     const data = await res.json();
     if (!data.success) { if (res.status === 401) window.location.href = '/login'; return; }
-    bookings = data.data || [];
+    const newBookings = data.data || [];
+    if (lastBookingCount >= 0 && newBookings.length > lastBookingCount) {
+      playNotifSound();
+    }
+    lastBookingCount = newBookings.length;
+    bookings = newBookings;
     render();
   } catch {}
 }
