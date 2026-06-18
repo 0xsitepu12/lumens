@@ -527,12 +527,18 @@ router.put('/staff/:username/role', async (req, res) => {
     const { role } = req.body;
     if (!['kasir', 'barber'].includes(role))
       return res.json({ success: false, message: 'Role tidak valid' });
-    const { error } = await db.supabase.from('users').update({ role }).eq('username', req.params.username).neq('role', 'admin');
+
+    // Pastikan bukan admin sebelum update
+    const target = await db.getUserByUsername(req.params.username);
+    if (!target) return res.json({ success: false, message: 'User tidak ditemukan' });
+    if (target.role === 'admin') return res.json({ success: false, message: 'Tidak bisa mengubah role admin' });
+
+    const { error } = await db.supabase.from('users').update({ role }).eq('username', req.params.username);
     if (error) throw error;
-    res.json({ success: true, message: 'Role berhasil diubah' });
+    res.json({ success: true, message: `Role ${req.params.username} berhasil diubah ke ${role}` });
   } catch (err) {
     console.error('[admin/staff/role]', err.message);
-    res.status(500).json({ success: false, message: 'Server error' });
+    res.status(500).json({ success: false, message: err.message });
   }
 });
 
