@@ -1,4 +1,5 @@
 const express = require('express');
+const bcrypt = require('bcryptjs');
 const db = require('../db');
 const { requireAuth } = require('../middleware/auth');
 
@@ -57,6 +58,28 @@ router.get('/stats', async (req, res) => {
     });
   } catch (err) {
     console.error('[barber/stats]', err.message);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+router.put('/change-password', async (req, res) => {
+  try {
+    const { oldPassword, newPassword, confirmPassword } = req.body;
+    if (!newPassword || newPassword.length < 6)
+      return res.json({ success: false, message: 'Password baru minimal 6 karakter' });
+    if (newPassword !== confirmPassword)
+      return res.json({ success: false, message: 'Konfirmasi password tidak cocok' });
+
+    const user = await db.getUserByUsername(req.user.username);
+    if (!user) return res.json({ success: false, message: 'Akun tidak ditemukan' });
+
+    const valid = await bcrypt.compare(oldPassword, user.password_hash);
+    if (!valid) return res.json({ success: false, message: 'Password lama salah' });
+
+    await db.updateUserPassword(req.user.username, await bcrypt.hash(newPassword, 10));
+    res.json({ success: true, message: 'Password berhasil diubah' });
+  } catch (err) {
+    console.error('[barber/change-password]', err.message);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });

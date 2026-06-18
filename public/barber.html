@@ -284,6 +284,82 @@
     }
     @keyframes shimmer { to { background-position: -200% 0; } }
 
+    /* ========== CHANGE PASSWORD MODAL ========== */
+    .pw-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 60;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .pw-overlay.show { display: flex; }
+    .pw-sheet {
+      background: #fff;
+      border-radius: 20px 20px 0 0;
+      width: 100%;
+      max-width: 480px;
+      padding: 8px 20px 36px;
+      animation: slideUp 0.25s ease;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(60px); opacity: 0; }
+      to   { transform: translateY(0);   opacity: 1; }
+    }
+    .pw-handle {
+      width: 36px; height: 4px;
+      background: #ddd; border-radius: 4px;
+      margin: 10px auto 18px;
+    }
+    .pw-title { font-size: 1rem; font-weight: 800; margin-bottom: 16px; }
+    .pw-field { margin-bottom: 14px; }
+    .pw-field label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #666;
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .pw-field input {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      background: #f9f9f9;
+      outline: none;
+    }
+    .pw-field input:focus { border-color: #1a1a1a; background: #fff; }
+    .pw-error { color: #dc2626; font-size: 0.78rem; margin-bottom: 10px; display: none; }
+    .pw-submit {
+      width: 100%;
+      padding: 13px;
+      background: #1a1a1a;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+    }
+    .pw-submit:disabled { opacity: 0.5; }
+    .btn-key {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #555;
+      border: 1px solid #e0e0e0;
+      background: #fff;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
     /* ========== ERROR BANNER ========== */
     .error-banner {
       margin: 16px;
@@ -308,6 +384,7 @@
           <div class="hdr-sub">Dashboard Barber</div>
         </div>
       </div>
+      <button class="btn-key" id="btn-change-pw" title="Ubah Password"><i class="fa-solid fa-key"></i></button>
       <button class="btn-logout" id="btn-logout">Logout</button>
     </div>
     <div class="period-tabs">
@@ -367,6 +444,30 @@
   </div>
   <div class="booking-list" id="booking-list">
     <div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><p>Memuat...</p></div>
+  </div>
+
+  <!-- Modal Ubah Password -->
+  <div class="pw-overlay" id="pw-overlay">
+    <div class="pw-sheet">
+      <div class="pw-handle"></div>
+      <div class="pw-title"><i class="fa-solid fa-key"></i> Ubah Password</div>
+      <div class="pw-field">
+        <label>Password Lama</label>
+        <input type="password" id="pw-old" placeholder="Password saat ini">
+      </div>
+      <div class="pw-field">
+        <label>Password Baru</label>
+        <input type="password" id="pw-new" placeholder="Minimal 6 karakter">
+      </div>
+      <div class="pw-field">
+        <label>Konfirmasi Password Baru</label>
+        <input type="password" id="pw-confirm" placeholder="Ulangi password baru">
+      </div>
+      <p class="pw-error" id="pw-error"></p>
+      <button class="pw-submit" id="pw-submit">
+        <i class="fa-solid fa-check"></i> Simpan Password
+      </button>
+    </div>
   </div>
 
   <script src="/js/barber.js"></script>

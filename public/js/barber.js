@@ -143,6 +143,61 @@ function switchPeriod(period) {
   loadDashboard();
 }
 
+// ============================================
+// UBAH PASSWORD
+// ============================================
+function openPwModal() {
+  document.getElementById('pw-old').value = '';
+  document.getElementById('pw-new').value = '';
+  document.getElementById('pw-confirm').value = '';
+  document.getElementById('pw-error').style.display = 'none';
+  document.getElementById('pw-overlay').classList.add('show');
+}
+
+function closePwModal() {
+  document.getElementById('pw-overlay').classList.remove('show');
+}
+
+async function submitChangePassword() {
+  const oldPw     = document.getElementById('pw-old').value;
+  const newPw     = document.getElementById('pw-new').value;
+  const confirmPw = document.getElementById('pw-confirm').value;
+  const errEl     = document.getElementById('pw-error');
+  const btn       = document.getElementById('pw-submit');
+
+  errEl.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = 'Menyimpan...';
+
+  try {
+    const res = await fetch('/api/barber/change-password', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ oldPassword: oldPw, newPassword: newPw, confirmPassword: confirmPw })
+    });
+    const data = await res.json();
+    if (data.success) {
+      closePwModal();
+      // Tampilkan notif sukses sederhana
+      const toast = document.createElement('div');
+      toast.textContent = data.message;
+      toast.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:10px 20px;border-radius:10px;font-size:.85rem;font-weight:600;z-index:999;animation:none';
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    } else {
+      errEl.textContent = data.message;
+      errEl.style.display = '';
+    }
+  } catch {
+    errEl.textContent = 'Terjadi kesalahan. Coba lagi.';
+    errEl.style.display = '';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-check"></i> Simpan Password';
+  }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   await checkAuth();
 
@@ -153,6 +208,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('btn-logout')?.addEventListener('click', async () => {
     await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
     window.location.href = '/login';
+  });
+
+  document.getElementById('btn-change-pw')?.addEventListener('click', openPwModal);
+  document.getElementById('pw-submit')?.addEventListener('click', submitChangePassword);
+  document.getElementById('pw-overlay')?.addEventListener('click', e => {
+    if (e.target === document.getElementById('pw-overlay')) closePwModal();
   });
 
   await loadDashboard();
