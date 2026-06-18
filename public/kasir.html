@@ -26,7 +26,18 @@
       align-items: center;
       justify-content: space-between;
     }
-    .kasir-logo { height: 36px; }
+    .kasir-logo { height: 48px; }
+    .btn-logout-kasir {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #dc2626;
+      border: 1px solid #fecaca;
+      background: #fff;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: inherit;
+    }
     .kasir-date { font-size: 0.78rem; color: #888; }
     .kasir-tabs {
       display: flex;
@@ -126,9 +137,9 @@
 
     .status-btn {
       flex-shrink: 0;
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 0.7rem;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 0.75rem;
       font-weight: 700;
       border: none;
       cursor: pointer;
@@ -143,39 +154,64 @@
     .status-btn.cancelled { background: #fee2e2; color: #991b1b; }
 
     .status-wrap { position: relative; flex-shrink: 0; }
+
+    .status-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.3);
+      z-index: 50;
+    }
+    .status-overlay.show { display: block; }
+
     .status-menu {
       display: none;
-      position: absolute;
-      bottom: 100%;
-      right: 0;
+      position: fixed;
+      bottom: 0;
       left: 0;
+      right: 0;
       background: #fff;
-      border: 1px solid #e0e0e0;
-      border-radius: 8px;
-      padding: 4px;
-      margin-bottom: 6px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      z-index: 5;
+      border-radius: 16px 16px 0 0;
+      padding: 8px 8px 24px;
+      z-index: 51;
+      max-width: 480px;
+      margin: 0 auto;
     }
     .status-menu.show { display: block; }
+    .status-menu-handle {
+      width: 36px;
+      height: 4px;
+      background: #ddd;
+      border-radius: 4px;
+      margin: 8px auto 16px;
+    }
+    .status-menu-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      padding: 0 8px;
+    }
     .status-menu-item {
-      display: block;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
       width: 100%;
-      padding: 8px 12px;
-      border: none;
-      background: none;
-      text-align: left;
-      font-size: 0.78rem;
-      font-weight: 600;
+      padding: 16px 12px;
+      border: 1px solid #e5e5e5;
+      background: #fff;
+      text-align: center;
+      font-size: 0.85rem;
+      font-weight: 700;
       cursor: pointer;
-      border-radius: 6px;
+      border-radius: 12px;
       font-family: inherit;
     }
-    .status-menu-item:hover { background: #f5f5f5; }
-    .status-menu-item.confirm { color: #2563eb; }
-    .status-menu-item.complete { color: #16a34a; }
-    .status-menu-item.cancel { color: #dc2626; }
-    .status-menu-item.noshow { color: #666; }
+    .status-menu-item:active { transform: scale(0.97); }
+    .status-menu-item.confirm { color: #2563eb; background: #eff6ff; border-color: #bfdbfe; }
+    .status-menu-item.complete { color: #16a34a; background: #f0fdf4; border-color: #bbf7d0; }
+    .status-menu-item.cancel { color: #dc2626; background: #fef2f2; border-color: #fecaca; }
+    .status-menu-item.noshow { color: #666; background: #f9fafb; border-color: #e5e7eb; }
 
     .empty-state {
       grid-column: 1 / -1;
@@ -210,7 +246,10 @@
   <header class="kasir-header">
     <div class="kasir-header-top">
       <img src="/Assets/logo1.png" alt="LUMEN'S STUDIO" class="kasir-logo">
-      <span class="kasir-date" id="kasir-date"></span>
+      <div style="display:flex;align-items:center;gap:12px">
+        <span class="kasir-date" id="kasir-date"></span>
+        <button class="btn-logout-kasir" id="btn-logout-kasir">Logout</button>
+      </div>
     </div>
     <div class="kasir-tabs">
       <button class="kasir-tab active">Hari Ini</button>
@@ -239,6 +278,13 @@
 
   <div class="kasir-list" id="booking-list">
     <div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><p>Memuat...</p></div>
+  </div>
+
+  <!-- Status Bottom Sheet -->
+  <div class="status-overlay" id="status-overlay"></div>
+  <div class="status-menu" id="status-sheet">
+    <div class="status-menu-handle"></div>
+    <div class="status-menu-grid" id="status-actions"></div>
   </div>
 
   <button class="auto-refresh" id="btn-refresh" title="Refresh">

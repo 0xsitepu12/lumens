@@ -65,40 +65,56 @@ function renderList() {
     const phone = esc(b.customer_phone || '');
 
     return `
-      <div class="booking-card">
+      <div class="booking-card" data-booking-id="${b.id}">
         <div class="booking-info">
           <span class="booking-time-badge">${time}</span>
           <div class="booking-name">${name}</div>
           <div class="booking-detail">${service} &middot; ${stylist}</div>
           <div class="booking-phone">${phone}</div>
         </div>
-        <div class="status-wrap">
-          <button class="status-btn ${s.cls}" data-toggle-menu>${s.label}</button>
-          <div class="status-menu">
-            <button class="status-menu-item confirm" data-action="confirmed" data-id="${b.id}"><i class="fa-solid fa-check"></i> Konfirmasi</button>
-            <button class="status-menu-item complete" data-action="completed" data-id="${b.id}"><i class="fa-solid fa-check-double"></i> Selesai</button>
-            <button class="status-menu-item noshow" data-action="no_show" data-id="${b.id}"><i class="fa-solid fa-user-slash"></i> Tidak Hadir</button>
-            <button class="status-menu-item cancel" data-action="cancelled" data-id="${b.id}"><i class="fa-solid fa-times"></i> Batalkan</button>
-          </div>
-        </div>
+        <button class="status-btn ${s.cls}" data-open-sheet="${b.id}">${s.label}</button>
       </div>
     `;
   }).join('');
 
-  container.querySelectorAll('[data-toggle-menu]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.status-menu.show').forEach(m => m.classList.remove('show'));
-      btn.nextElementSibling.classList.toggle('show');
-    });
-  });
-
-  container.querySelectorAll('[data-action]').forEach(btn => {
-    btn.addEventListener('click', () => updateStatus(btn.dataset.id, btn.dataset.action));
+  container.querySelectorAll('[data-open-sheet]').forEach(btn => {
+    btn.addEventListener('click', () => openStatusSheet(btn.dataset.openSheet));
   });
 }
 
+let activeBookingId = null;
+
+function openStatusSheet(id) {
+  activeBookingId = id;
+  const overlay = document.getElementById('status-overlay');
+  const sheet = document.getElementById('status-sheet');
+  const actions = document.getElementById('status-actions');
+
+  actions.innerHTML = `
+    <button class="status-menu-item confirm" data-action="confirmed"><i class="fa-solid fa-check"></i> Konfirmasi</button>
+    <button class="status-menu-item complete" data-action="completed"><i class="fa-solid fa-check-double"></i> Selesai</button>
+    <button class="status-menu-item noshow" data-action="no_show"><i class="fa-solid fa-user-slash"></i> Tidak Hadir</button>
+    <button class="status-menu-item cancel" data-action="cancelled"><i class="fa-solid fa-times"></i> Batalkan</button>
+  `;
+
+  actions.querySelectorAll('[data-action]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      updateStatus(activeBookingId, btn.dataset.action);
+      closeStatusSheet();
+    });
+  });
+
+  overlay.classList.add('show');
+  sheet.classList.add('show');
+}
+
+function closeStatusSheet() {
+  document.getElementById('status-overlay').classList.remove('show');
+  document.getElementById('status-sheet').classList.remove('show');
+  activeBookingId = null;
+}
+
 async function updateStatus(id, status) {
-  document.querySelectorAll('.status-menu.show').forEach(m => m.classList.remove('show'));
   try {
     const res = await fetch(`/api/booking/kasir/status/${id}`, {
       method: 'PUT',
@@ -141,11 +157,7 @@ function startAutoRefresh() {
   refreshTimer = setInterval(loadBookings, 30000);
 }
 
-document.addEventListener('click', function(e) {
-  if (!e.target.closest('.status-wrap')) {
-    document.querySelectorAll('.status-menu.show').forEach(m => m.classList.remove('show'));
-  }
-});
+document.getElementById('status-overlay')?.addEventListener('click', closeStatusSheet);
 
 document.addEventListener('DOMContentLoaded', async () => {
   await checkAuth();
@@ -156,6 +168,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   document.getElementById('btn-refresh')?.addEventListener('click', loadBookings);
+  document.getElementById('btn-logout-kasir')?.addEventListener('click', async () => {
+    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+    window.location.href = '/login';
+  });
 
   await loadBookings();
   startAutoRefresh();
