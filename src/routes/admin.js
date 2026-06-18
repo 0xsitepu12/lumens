@@ -460,6 +460,52 @@ router.get('/export/revenue', async (req, res) => {
 });
 
 // ============================================
+// BARBER - GANTI / SET PASSWORD
+// ============================================
+router.put('/barbers/:id/password', async (req, res) => {
+  try {
+    const { newPassword, confirmPassword } = req.body;
+    if (!newPassword || newPassword.length < 6)
+      return res.json({ success: false, message: 'Password minimal 6 karakter' });
+    if (newPassword !== confirmPassword)
+      return res.json({ success: false, message: 'Konfirmasi password tidak cocok' });
+
+    const barber = await db.getBarberById(req.params.id);
+    if (!barber) return res.json({ success: false, message: 'Barber tidak ditemukan' });
+
+    // Cari atau buat user account berdasarkan nama barber
+    let user = await db.getUserByUsername(barber.name.toLowerCase().replace(/\s+/g, '_'));
+    if (!user) {
+      // Coba cari by full_name (exact match)
+      const allUsers = await db.getNonAdminUsers();
+      user = allUsers.find(u => u.full_name?.toLowerCase() === barber.name.toLowerCase());
+    }
+
+    const hash = await bcrypt.hash(newPassword, 10);
+
+    if (user) {
+      await db.updateUserPassword(user.username, hash);
+      res.json({ success: true, message: `Password barber "${barber.name}" berhasil diubah` });
+    } else {
+      // Buat akun baru
+      const username = barber.name.toLowerCase().replace(/\s+/g, '_');
+      await db.createUser({
+        username,
+        password_hash: hash,
+        full_name: barber.name,
+        role: 'barber',
+        phone: '',
+        email: ''
+      });
+      res.json({ success: true, message: `Akun barber "${barber.name}" dibuat. Username: ${username}` });
+    }
+  } catch (err) {
+    console.error('[admin/barbers/password]', err.message);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// ============================================
 // KASIR - GANTI PASSWORD
 // ============================================
 router.get('/kasir/list', async (req, res) => {

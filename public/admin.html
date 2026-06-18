@@ -1679,6 +1679,38 @@
         </div>
     </div>
 
+    <!-- ==================== MODAL: BARBER PASSWORD ==================== -->
+    <div class="modal-overlay" id="modal-barber-password">
+        <div class="modal" style="max-width:400px;">
+            <div class="modal__header">
+                <h3 class="modal__title"><i class="fa-solid fa-key"></i> Password Barber</h3>
+                <button class="modal__close" data-close-modal="modal-barber-password" aria-label="Tutup">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal__body">
+                <p style="font-size:.875rem;color:var(--text-secondary);margin-bottom:16px;">
+                    Set atau ubah password login untuk barber <strong id="barber-pw-name"></strong>.
+                    Jika belum punya akun, akun baru akan dibuat otomatis.
+                </p>
+                <div class="form-group">
+                    <label>Password Baru</label>
+                    <input type="password" id="input-barber-new-pw" placeholder="Minimal 6 karakter">
+                </div>
+                <div class="form-group">
+                    <label>Konfirmasi Password</label>
+                    <input type="password" id="input-barber-confirm-pw" placeholder="Ulangi password baru">
+                </div>
+            </div>
+            <div class="modal__footer">
+                <button class="btn btn--outline" data-close-modal="modal-barber-password">Batal</button>
+                <button class="btn btn--primary" id="btn-save-barber-password">
+                    <i class="fa-solid fa-key"></i> Simpan Password
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- ==================== MODAL: RESET DASHBOARD ==================== -->
     <div class="modal-overlay" id="modal-reset">
         <div class="modal" style="max-width:420px;">

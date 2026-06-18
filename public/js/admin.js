@@ -447,14 +447,18 @@ async function loadAdminBarbers() {
               <span class="badge ${b.is_active ? 'badge-active' : 'badge-inactive'}" style="margin-top:6px">${b.is_active ? 'Aktif' : 'Nonaktif'}</span>
             </div>
           </div>
-          <div class="item-card__actions">
+          <div class="item-card__actions" style="display:flex;flex-direction:column;gap:6px">
             <button class="btn btn--outline btn--sm" data-edit-barber="${b.id}" title="Edit"><i class="fa-solid fa-pen"></i></button>
+            <button class="btn btn--outline btn--sm" data-pw-barber="${b.id}" data-pw-name="${esc(b.name)}" title="Ganti Password"><i class="fa-solid fa-key"></i></button>
           </div>
         </div>`;
     }).join('');
 
     container.querySelectorAll('[data-edit-barber]').forEach(btn => {
       btn.addEventListener('click', () => editBarber(btn.dataset.editBarber));
+    });
+    container.querySelectorAll('[data-pw-barber]').forEach(btn => {
+      btn.addEventListener('click', () => openBarberPasswordModal(btn.dataset.pwBarber, btn.dataset.pwName));
     });
   } catch { showToast('Gagal memuat barber', 'error'); }
 }
@@ -607,6 +611,34 @@ async function saveHours() {
     }
     showToast('Jam operasional disimpan');
   } catch { showToast('Gagal menyimpan', 'error'); }
+}
+
+// ============================================
+// BARBER PASSWORD
+// ============================================
+let barberPwId = null;
+
+function openBarberPasswordModal(id, name) {
+  barberPwId = id;
+  document.getElementById('barber-pw-name').textContent = name;
+  document.getElementById('input-barber-new-pw').value = '';
+  document.getElementById('input-barber-confirm-pw').value = '';
+  openModal('modal-barber-password');
+}
+
+async function saveBarberPassword() {
+  const newPw     = document.getElementById('input-barber-new-pw')?.value || '';
+  const confirmPw = document.getElementById('input-barber-confirm-pw')?.value || '';
+  if (!barberPwId) return;
+  try {
+    const data = await apiPut(`/api/admin/barbers/${barberPwId}/password`, { newPassword: newPw, confirmPassword: confirmPw });
+    if (data.success) {
+      showToast(data.message);
+      closeModal('modal-barber-password');
+    } else {
+      showToast(data.message, 'error');
+    }
+  } catch { showToast('Gagal mengubah password', 'error'); }
 }
 
 // ============================================
@@ -773,6 +805,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('btn-add-barber')?.addEventListener('click', () => showBarberModal());
   document.getElementById('btn-save-barber')?.addEventListener('click', saveBarber);
   document.getElementById('btn-save-hours')?.addEventListener('click', saveHours);
+  document.getElementById('btn-save-barber-password')?.addEventListener('click', saveBarberPassword);
   document.getElementById('btn-save-kasir-password')?.addEventListener('click', saveKasirPassword);
   document.getElementById('btn-create-kasir')?.addEventListener('click', createKasir);
   document.getElementById('btn-save-reset-password')?.addEventListener('click', saveResetPassword);
