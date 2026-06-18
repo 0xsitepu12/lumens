@@ -16,6 +16,21 @@ router.get('/services', async (req, res) => {
 
 router.get('/barbers', async (req, res) => {
   try {
+    const { date } = req.query;
+
+    if (date) {
+      const dayOfWeek = new Date(date + 'T00:00:00').getDay();
+      const available = await db.getAvailableBarbersForDay(dayOfWeek);
+      const barbers = available.map(s => ({
+        id: s.barbers.id,
+        name: s.barbers.name,
+        speciality: s.barbers.speciality,
+        shift_start: s.shift_start,
+        shift_end: s.shift_end
+      }));
+      return res.json({ success: true, data: barbers });
+    }
+
     const barbers = await db.getBarbers(true);
     res.json({ success: true, data: barbers });
   } catch (err) {
@@ -41,20 +56,20 @@ router.get('/slots', async (req, res) => {
       return res.json({ success: false, message: 'date, barber_id, dan duration wajib' });
 
     const dayOfWeek = new Date(date + 'T00:00:00').getDay();
-    const hours = await db.getOperatingHours();
-    const dayHours = hours.find(h => h.day_of_week === dayOfWeek);
 
-    if (!dayHours || dayHours.is_closed)
-      return res.json({ success: true, data: [], message: 'Tutup di hari ini' });
+    const schedule = await db.getBarberSchedule(barber_id, dayOfWeek);
+
+    if (!schedule || schedule.is_off)
+      return res.json({ success: true, data: [], message: 'Stylist tidak tersedia di hari ini' });
+
+    const [openH, openM] = schedule.shift_start.split(':').map(Number);
+    const [closeH, closeM] = schedule.shift_end.split(':').map(Number);
+    const openMinutes = openH * 60 + openM;
+    const closeMinutes = closeH * 60 + closeM;
 
     const existingBookings = await db.getBookingsByBarberAndDate(barber_id, date);
     const durationMin = parseInt(duration);
     const slots = [];
-
-    const [openH, openM] = dayHours.open_time.split(':').map(Number);
-    const [closeH, closeM] = dayHours.close_time.split(':').map(Number);
-    const openMinutes = openH * 60 + openM;
-    const closeMinutes = closeH * 60 + closeM;
 
     for (let m = openMinutes; m + durationMin <= closeMinutes; m += SLOT_INTERVAL_MINUTES) {
       const slotStart = m;
@@ -64,9 +79,7 @@ router.get('/slots', async (req, res) => {
       const conflict = existingBookings.some(b => {
         const [bh, bm] = b.booking_time.split(':').map(Number);
         const [eh, em] = b.end_time.split(':').map(Number);
-        const bStart = bh * 60 + bm;
-        const bEnd = eh * 60 + em;
-        return slotStart < bEnd && slotEnd > bStart;
+        return slotStart < eh * 60 + em && slotEnd > bh * 60 + bm;
       });
 
       slots.push({ time: timeStr, available: !conflict });
@@ -89,6 +102,11 @@ router.post('/create', async (req, res) => {
     const service = await db.getServiceById(service_id);
     if (!service) return res.json({ success: false, message: 'Layanan tidak ditemukan' });
 
+    const dayOfWeek = new Date(booking_date + 'T00:00:00').getDay();
+    const schedule = await db.getBarberSchedule(barber_id, dayOfWeek);
+    if (!schedule || schedule.is_off)
+      return res.json({ success: false, message: 'Stylist tidak tersedia di hari ini' });
+
     const [h, m] = booking_time.split(':').map(Number);
     const endMinutes = h * 60 + m + service.duration_minutes;
     const end_time = `${String(Math.floor(endMinutes / 60)).padStart(2, '0')}:${String(endMinutes % 60).padStart(2, '0')}`;
@@ -101,7 +119,7 @@ router.post('/create', async (req, res) => {
       const [eh, em] = b.end_time.split(':').map(Number);
       return slotStart < eh * 60 + em && slotEnd > bh * 60 + bm;
     });
-    if (conflict) return res.json({ success: false, message: 'Slot waktu sudah terisi' });
+    if (conflict) return res.json({ success: false, message: 'Maaf, slot ini baru saja terisi. Silakan pilih waktu lain.' });
 
     const booking = await db.createBooking({
       customer_name: customer_name.trim(),
@@ -119,6 +137,9 @@ router.post('/create', async (req, res) => {
 
     res.json({ success: true, data: booking });
   } catch (err) {
+    if (err.code === '23505') {
+      return res.json({ success: false, message: 'Maaf, slot ini baru saja terisi. Silakan pilih waktu lain.' });
+    }
     console.error('[bookings/create]', err.message);
     res.status(500).json({ success: false, message: 'Server error' });
   }

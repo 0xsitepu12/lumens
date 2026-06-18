@@ -10,14 +10,9 @@ const state = {
 
 async function init() {
   try {
-    const [servicesRes, barbersRes] = await Promise.all([
-      apiGet('/api/booking/services'),
-      apiGet('/api/booking/barbers')
-    ]);
-    state.services = servicesRes.data || [];
-    state.barbers = barbersRes.data || [];
+    const res = await apiGet('/api/booking/services');
+    state.services = res.data || [];
     renderServices();
-    renderBarbers();
     renderDatePicker();
     updateStepIndicator();
   } catch {
@@ -25,54 +20,64 @@ async function init() {
   }
 }
 
+// ============================================
+// STEP 1: LAYANAN
+// ============================================
 function renderServices() {
   const container = document.getElementById('service-list');
+  const tabsContainer = document.getElementById('category-tabs');
   if (!container) return;
-  container.innerHTML = state.services.map(s => `
-    <div class="service-card" data-id="${s.id}" onclick="selectService('${s.id}')">
-      <div class="service-card-header">
-        <div class="service-card-icon"><i class="fa-solid fa-scissors"></i></div>
-        <div class="service-card-price">${formatRupiah(s.price)}</div>
+
+  const categoryNames = { haircut: 'Haircut', coloring: 'Coloring', treatment: 'Treatment', styling: 'Styling', shaving: 'Beard' };
+  const categories = [];
+  state.services.forEach(s => {
+    const cat = s.category || 'other';
+    if (!categories.includes(cat)) categories.push(cat);
+  });
+
+  if (tabsContainer) {
+    tabsContainer.innerHTML = `<button class="cat-tab active" data-cat="all">Semua</button>` +
+      categories.map(c => `<button class="cat-tab" data-cat="${c}">${categoryNames[c] || c}</button>`).join('');
+    tabsContainer.querySelectorAll('.cat-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabsContainer.querySelectorAll('.cat-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderServiceList(btn.dataset.cat);
+      });
+    });
+  }
+  renderServiceList('all');
+}
+
+function renderServiceList(cat) {
+  const container = document.getElementById('service-list');
+  const filtered = cat === 'all' ? state.services : state.services.filter(s => (s.category || 'other') === cat);
+
+  container.innerHTML = filtered.map(s => `
+    <div class="svc-row ${state.selectedService?.id === s.id ? 'selected' : ''}" data-id="${s.id}">
+      <div class="svc-row-info">
+        <span class="svc-row-name">${esc(s.name)}</span>
+        <span class="svc-row-meta">${s.duration_minutes}min</span>
       </div>
-      <h3>${esc(s.name)}</h3>
-      <p>${esc(s.description || '')}</p>
-      <div class="service-card-meta">
-        <span><i class="fa-regular fa-clock"></i> ${s.duration_minutes} menit</span>
-      </div>
+      <span class="svc-row-price">${formatRupiah(s.price)}</span>
     </div>
   `).join('');
+  container.querySelectorAll('.svc-row').forEach(c => {
+    c.addEventListener('click', () => selectService(c.dataset.id));
+  });
 }
 
-function renderBarbers() {
-  const container = document.getElementById('barber-list');
-  if (!container) return;
-
-  let html = `
-    <div class="barber-card" data-id="any" onclick="selectBarber('any')">
-      <div class="barber-avatar-placeholder"><i class="fa-solid fa-shuffle"></i></div>
-      <div class="barber-info">
-        <h3>Barber Mana Saja</h3>
-        <p>Kami pilihkan yang tersedia</p>
-      </div>
-    </div>
-  `;
-
-  html += state.barbers.map(b => {
-    const initials = b.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
-    return `
-      <div class="barber-card" data-id="${b.id}" onclick="selectBarber('${b.id}')">
-        <div class="barber-avatar-placeholder">${initials}</div>
-        <div class="barber-info">
-          <h3>${esc(b.name)}</h3>
-          <p>${esc(b.speciality || 'Barber')}</p>
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  container.innerHTML = html;
+function selectService(id) {
+  state.selectedService = state.services.find(s => s.id === id);
+  document.querySelectorAll('#service-list .svc-row').forEach(c => {
+    c.classList.toggle('selected', c.dataset.id === id);
+  });
+  updateNavButtons();
 }
 
+// ============================================
+// STEP 2: JADWAL (tanggal + waktu)
+// ============================================
 function renderDatePicker() {
   const container = document.getElementById('date-picker');
   if (!container) return;
@@ -84,65 +89,26 @@ function renderDatePicker() {
     d.setDate(d.getDate() + i);
     const dateStr = d.toISOString().split('T')[0];
     html += `
-      <div class="date-item ${i === 0 ? 'today' : ''}" data-date="${dateStr}" onclick="selectDate('${dateStr}')">
+      <div class="date-item ${i === 0 ? 'today' : ''}" data-date="${dateStr}">
         <span class="day-name">${DAYS_SHORT[d.getDay()]}</span>
         <span class="day-number">${d.getDate()}</span>
       </div>
     `;
   }
   container.innerHTML = html;
-}
-
-function selectService(id) {
-  state.selectedService = state.services.find(s => s.id === id);
-  document.querySelectorAll('#service-list .service-card').forEach(c => {
-    c.classList.toggle('selected', c.dataset.id === id);
+  container.querySelectorAll('.date-item').forEach(c => {
+    c.addEventListener('click', () => selectDate(c.dataset.date));
   });
-  updateNavButtons();
-}
-
-function selectBarber(id) {
-  if (id === 'any' && state.barbers.length > 0) {
-    state.selectedBarber = state.barbers[Math.floor(Math.random() * state.barbers.length)];
-  } else {
-    state.selectedBarber = state.barbers.find(b => b.id === id);
-  }
-  document.querySelectorAll('#barber-list .barber-card').forEach(c => {
-    c.classList.toggle('selected', c.dataset.id === id);
-  });
-  updateNavButtons();
 }
 
 async function selectDate(dateStr) {
   state.selectedDate = dateStr;
   state.selectedTime = null;
+  state.selectedBarber = null;
 
   document.querySelectorAll('.date-item').forEach(c => {
     c.classList.toggle('selected', c.dataset.date === dateStr);
   });
-
-  const slotsContainer = document.getElementById('time-slots');
-  slotsContainer.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:1rem"><i class="fa-solid fa-spinner fa-spin" style="color:var(--gold)"></i></div>';
-
-  try {
-    const barberId = state.selectedBarber?.id;
-    const duration = state.selectedService?.duration_minutes || 30;
-    const res = await apiGet(`/api/booking/slots?date=${dateStr}&barber_id=${barberId}&duration=${duration}`);
-
-    if (res.data && res.data.length > 0) {
-      slotsContainer.innerHTML = res.data.map(s => `
-        <div class="time-slot ${s.available ? 'available' : 'unavailable'}"
-             data-time="${s.time}"
-             ${s.available ? `onclick="selectTime('${s.time}')"` : ''}>
-          ${s.time}
-        </div>
-      `).join('');
-    } else {
-      slotsContainer.innerHTML = '<p class="text-muted" style="grid-column:1/-1;text-align:center;padding:1rem">Tidak ada slot tersedia di hari ini</p>';
-    }
-  } catch {
-    slotsContainer.innerHTML = '<p class="text-muted" style="grid-column:1/-1;text-align:center">Gagal memuat jadwal</p>';
-  }
 
   updateNavButtons();
 }
@@ -155,6 +121,84 @@ function selectTime(time) {
   updateNavButtons();
 }
 
+// ============================================
+// STEP 3: STYLIST (filtered by selected date)
+// ============================================
+async function loadBarbersForDate() {
+  if (!state.selectedDate) return;
+
+  const container = document.getElementById('barber-list');
+  container.innerHTML = '<div style="text-align:center;padding:1rem"><i class="fa-solid fa-spinner fa-spin" style="color:var(--text-muted)"></i></div>';
+
+  try {
+    const res = await apiGet(`/api/booking/barbers?date=${state.selectedDate}`);
+    state.barbers = res.data || [];
+
+    if (state.barbers.length === 0) {
+      container.innerHTML = '<p class="text-muted" style="text-align:center;padding:1rem">Tidak ada stylist tersedia di hari ini</p>';
+      return;
+    }
+
+    container.innerHTML = state.barbers.map(b => `
+      <div class="svc-row" data-id="${b.id}">
+        <div class="svc-row-info">
+          <span class="svc-row-name">${esc(b.name)}</span>
+          <span class="svc-row-meta">${esc(b.speciality || 'Stylist')}</span>
+        </div>
+        <span class="svc-row-meta">${b.shift_start?.slice(0,5)} - ${b.shift_end?.slice(0,5)}</span>
+      </div>
+    `).join('');
+
+    container.querySelectorAll('.svc-row').forEach(c => {
+      c.addEventListener('click', () => selectBarber(c.dataset.id));
+    });
+  } catch {
+    container.innerHTML = '<p class="text-muted" style="text-align:center;padding:1rem">Gagal memuat stylist</p>';
+  }
+}
+
+async function selectBarber(id) {
+  state.selectedBarber = state.barbers.find(b => b.id === id);
+  state.selectedTime = null;
+
+  document.querySelectorAll('#barber-list .svc-row').forEach(c => {
+    c.classList.toggle('selected', c.dataset.id === id);
+  });
+
+  const section = document.getElementById('time-slots-section');
+  if (section) section.style.display = '';
+
+  await loadTimeSlotsForBarber();
+  updateNavButtons();
+}
+
+async function loadTimeSlotsForBarber() {
+  if (!state.selectedBarber || !state.selectedDate || !state.selectedService) return;
+
+  const slotsContainer = document.getElementById('time-slots');
+  slotsContainer.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:1rem"><i class="fa-solid fa-spinner fa-spin" style="color:var(--text-muted)"></i></div>';
+
+  try {
+    const res = await apiGet(`/api/booking/slots?date=${state.selectedDate}&barber_id=${state.selectedBarber.id}&duration=${state.selectedService.duration_minutes}`);
+
+    if (res.data && res.data.length > 0) {
+      slotsContainer.innerHTML = res.data.map(s => `
+        <div class="time-slot ${s.available ? 'available' : 'unavailable'}" data-time="${s.time}">${s.time}</div>
+      `).join('');
+      slotsContainer.querySelectorAll('.time-slot.available').forEach(s => {
+        s.addEventListener('click', () => selectTime(s.dataset.time));
+      });
+    } else {
+      slotsContainer.innerHTML = '<p class="text-muted" style="grid-column:1/-1;text-align:center;padding:1rem">Tidak ada slot tersedia</p>';
+    }
+  } catch {
+    slotsContainer.innerHTML = '<p class="text-muted" style="grid-column:1/-1;text-align:center">Gagal memuat jadwal</p>';
+  }
+}
+
+// ============================================
+// STEP 4: KONFIRMASI
+// ============================================
 function renderSummary() {
   const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
   set('summary-service', state.selectedService?.name || '-');
@@ -163,64 +207,6 @@ function renderSummary() {
   set('summary-time', state.selectedTime || '-');
   set('summary-duration', (state.selectedService?.duration_minutes || '-') + ' menit');
   set('summary-price', formatRupiah(state.selectedService?.price || 0));
-}
-
-function goToStep(step) {
-  if (step < 1) return;
-
-  if (step > state.step) {
-    if (state.step === 1 && !state.selectedService) { showToast('Pilih layanan terlebih dahulu', 'error'); return; }
-    if (state.step === 2 && !state.selectedBarber) { showToast('Pilih barber terlebih dahulu', 'error'); return; }
-    if (state.step === 3 && (!state.selectedDate || !state.selectedTime)) { showToast('Pilih tanggal dan waktu', 'error'); return; }
-  }
-
-  state.step = step;
-
-  document.querySelectorAll('.wizard-panel').forEach(el => {
-    const s = el.dataset.step;
-    if (s === 'success') {
-      el.style.display = step === 5 ? '' : 'none';
-      el.classList.toggle('active', step === 5);
-    } else {
-      el.style.display = parseInt(s) === step ? '' : 'none';
-      el.classList.toggle('active', parseInt(s) === step);
-    }
-  });
-
-  if (step === 4) renderSummary();
-
-  const nav = document.getElementById('wizard-nav');
-  if (nav) nav.style.display = step === 5 ? 'none' : '';
-
-  const btnBack = document.getElementById('btn-back');
-  if (btnBack) btnBack.style.display = step <= 1 || step >= 5 ? 'none' : '';
-
-  const btnNext = document.getElementById('btn-next');
-  if (btnNext) btnNext.style.display = step >= 4 ? 'none' : '';
-
-  const btnConfirm = document.getElementById('btn-confirm');
-  if (btnConfirm) btnConfirm.style.display = step === 4 ? '' : 'none';
-
-  updateStepIndicator();
-  updateNavButtons();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function updateStepIndicator() {
-  document.querySelectorAll('[data-step-indicator]').forEach(el => {
-    const s = parseInt(el.dataset.stepIndicator);
-    el.classList.remove('active', 'completed');
-    if (s === state.step) el.classList.add('active');
-    if (s < state.step) el.classList.add('completed');
-  });
-}
-
-function updateNavButtons() {
-  const btnNext = document.getElementById('btn-next');
-  if (!btnNext) return;
-  if (state.step === 1) btnNext.disabled = !state.selectedService;
-  else if (state.step === 2) btnNext.disabled = !state.selectedBarber;
-  else if (state.step === 3) btnNext.disabled = !state.selectedTime;
 }
 
 async function confirmBooking() {
@@ -270,6 +256,74 @@ function renderSuccess(booking) {
   set('success-time', state.selectedTime);
 }
 
+// ============================================
+// NAVIGATION
+// ============================================
+function goToStep(step) {
+  if (step < 1) return;
+
+  // Validation
+  if (step > state.step) {
+    if (state.step === 1 && !state.selectedService) { showToast('Pilih layanan terlebih dahulu', 'error'); return; }
+    if (state.step === 2 && !state.selectedDate) { showToast('Pilih tanggal terlebih dahulu', 'error'); return; }
+    if (state.step === 3 && (!state.selectedBarber || !state.selectedTime)) { showToast('Pilih stylist dan waktu', 'error'); return; }
+  }
+
+  state.step = step;
+
+  // Load data for entering step
+  if (step === 3) loadBarbersForDate();
+  if (step === 4) renderSummary();
+
+  // Show/hide panels
+  document.querySelectorAll('.wizard-panel').forEach(el => {
+    const s = el.dataset.step;
+    if (s === 'success') {
+      el.style.display = step === 5 ? '' : 'none';
+      el.classList.toggle('active', step === 5);
+    } else {
+      el.style.display = parseInt(s) === step ? '' : 'none';
+      el.classList.toggle('active', parseInt(s) === step);
+    }
+  });
+
+  const nav = document.getElementById('wizard-nav');
+  if (nav) nav.style.display = step === 5 ? 'none' : '';
+
+  const btnBack = document.getElementById('btn-back');
+  if (btnBack) btnBack.style.display = step <= 1 || step >= 5 ? 'none' : '';
+
+  const btnNext = document.getElementById('btn-next');
+  if (btnNext) btnNext.style.display = step >= 4 ? 'none' : '';
+
+  const btnConfirm = document.getElementById('btn-confirm');
+  if (btnConfirm) btnConfirm.style.display = step === 4 ? '' : 'none';
+
+  updateStepIndicator();
+  updateNavButtons();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function updateStepIndicator() {
+  document.querySelectorAll('[data-step-indicator]').forEach(el => {
+    const s = parseInt(el.dataset.stepIndicator);
+    el.classList.remove('active', 'completed');
+    if (s === state.step) el.classList.add('active');
+    if (s < state.step) el.classList.add('completed');
+  });
+}
+
+function updateNavButtons() {
+  const btnNext = document.getElementById('btn-next');
+  if (!btnNext) return;
+  if (state.step === 1) btnNext.disabled = !state.selectedService;
+  else if (state.step === 2) btnNext.disabled = !state.selectedDate;
+  else if (state.step === 3) btnNext.disabled = !state.selectedBarber || !state.selectedTime;
+}
+
+// ============================================
+// INIT
+// ============================================
 document.addEventListener('DOMContentLoaded', () => {
   init();
   document.getElementById('btn-next')?.addEventListener('click', () => goToStep(state.step + 1));

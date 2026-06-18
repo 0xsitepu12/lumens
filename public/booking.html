@@ -22,8 +22,7 @@
         <i class="fa-solid fa-arrow-left"></i>
       </a>
       <a href="/" class="logo" style="margin:0 auto">
-        <i class="fa-solid fa-scissors" style="color:var(--gold)"></i>
-        <span>LUMENS <span class="logo-accent">HAIR STUDIO</span></span>
+        <img src="/Assets/logo1.png" alt="LUMEN'S STUDIO" class="logo-img">
       </a>
       <div style="width:24px"></div>
     </div>
@@ -38,11 +37,11 @@
       </div>
       <div class="wizard-step" data-step-indicator="2">
         <div class="wizard-step-number">2</div>
-        <span class="wizard-step-label">Barber</span>
+        <span class="wizard-step-label">Jadwal</span>
       </div>
       <div class="wizard-step" data-step-indicator="3">
         <div class="wizard-step-number">3</div>
-        <span class="wizard-step-label">Jadwal</span>
+        <span class="wizard-step-label">Stylist</span>
       </div>
       <div class="wizard-step" data-step-indicator="4">
         <div class="wizard-step-number">4</div>
@@ -54,37 +53,31 @@
     <section class="wizard-panel active" id="step-1" data-step="1">
       <div class="wizard-panel-header">
         <h2>Pilih Layanan</h2>
-        <p>Pilih layanan yang kamu inginkan</p>
       </div>
-      <div class="services-grid" id="service-list">
-        <div class="text-center" style="padding:2rem"><i class="fa-solid fa-spinner fa-spin" style="font-size:1.5rem;color:var(--gold)"></i><p class="text-muted" style="margin-top:0.5rem">Memuat layanan...</p></div>
-      </div>
+      <div class="category-tabs" id="category-tabs"></div>
+      <div id="service-list"></div>
     </section>
 
-    <!-- STEP 2: Pilih Barber -->
+    <!-- STEP 2: Pilih Jadwal -->
+    <!-- STEP 2: Pilih Tanggal -->
     <section class="wizard-panel" id="step-2" data-step="2">
       <div class="wizard-panel-header">
-        <h2>Pilih Barber</h2>
-        <p>Pilih barber favoritmu</p>
-      </div>
-      <div class="barber-grid" id="barber-list"></div>
-    </section>
-
-    <!-- STEP 3: Pilih Jadwal -->
-    <section class="wizard-panel" id="step-3" data-step="3">
-      <div class="wizard-panel-header">
-        <h2>Pilih Jadwal</h2>
-        <p>Tentukan tanggal dan waktu kunjungan</p>
+        <h2>Kapan?</h2>
       </div>
       <div class="date-picker-section">
-        <label class="time-slots-label"><i class="fa-solid fa-calendar-alt"></i> Pilih Tanggal</label>
         <div class="date-scroll" id="date-picker"></div>
       </div>
-      <div>
-        <label class="time-slots-label"><i class="fa-solid fa-clock"></i> Pilih Waktu</label>
-        <div class="time-slots-grid" id="time-slots">
-          <p class="text-muted text-center" style="grid-column:1/-1">Pilih tanggal terlebih dahulu</p>
-        </div>
+    </section>
+
+    <!-- STEP 3: Pilih Stylist + Waktu -->
+    <section class="wizard-panel" id="step-3" data-step="3">
+      <div class="wizard-panel-header">
+        <h2>Pilih Stylist</h2>
+      </div>
+      <div id="barber-list"></div>
+      <div id="time-slots-section" style="display:none;margin-top:var(--space-lg)">
+        <label class="time-slots-label">Pilih Waktu</label>
+        <div class="time-slots-grid" id="time-slots"></div>
       </div>
     </section>
 
@@ -102,7 +95,7 @@
           <span class="value" id="summary-service">-</span>
         </div>
         <div class="booking-summary-item">
-          <span class="label">Barber</span>
+          <span class="label">Stylist</span>
           <span class="value" id="summary-barber">-</span>
         </div>
         <div class="booking-summary-item">
@@ -139,7 +132,7 @@
         </div>
         <div class="form-group">
           <label class="form-label">Catatan <span class="form-hint" style="display:inline">(opsional)</span></label>
-          <textarea class="form-input form-textarea" id="customer-notes" placeholder="Catatan tambahan untuk barber..." rows="3"></textarea>
+          <textarea class="form-input form-textarea" id="customer-notes" placeholder="Catatan tambahan untuk stylist..." rows="3"></textarea>
         </div>
       </div>
 
@@ -164,7 +157,7 @@
             <span class="value" id="success-service">-</span>
           </div>
           <div class="confirmation-row">
-            <span class="label">Barber</span>
+            <span class="label">Stylist</span>
             <span class="value" id="success-barber">-</span>
           </div>
           <div class="confirmation-row">

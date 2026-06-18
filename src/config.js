@@ -13,7 +13,7 @@ const ROLES = {
   BARBER: 'barber'
 };
 
-const SLOT_INTERVAL_MINUTES = 15;
+const SLOT_INTERVAL_MINUTES = 60;
 
 const DAYS_ID = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
 

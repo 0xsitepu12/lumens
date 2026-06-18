@@ -221,23 +221,22 @@ p {
 .logo {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.95rem;
-  font-weight: 800;
-  color: var(--text-primary);
-  text-transform: uppercase;
-  letter-spacing: 1px;
   text-decoration: none;
   flex-shrink: 0;
 }
 
-.logo img {
-  height: 36px;
+.logo-img {
+  height: 44px;
   width: auto;
+  filter: invert(1);
 }
 
-.logo .logo-accent {
-  color: var(--gold);
+.logo-img-sm {
+  height: 30px;
+}
+
+.logo-img-login {
+  height: 72px;
 }
 
 /* Desktop nav */
@@ -617,6 +616,85 @@ p {
   display: flex;
   align-items: center;
   gap: var(--space-xs);
+}
+
+/* ============================================================
+   Booking - Category Tabs & Compact Rows
+   ============================================================ */
+.category-tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: var(--space-sm);
+  margin-bottom: var(--space-md);
+  scrollbar-width: none;
+}
+
+.category-tabs::-webkit-scrollbar { display: none; }
+
+.cat-tab {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-family: inherit;
+}
+
+.cat-tab.active {
+  background: var(--text-primary);
+  color: var(--bg-darkest);
+  border-color: var(--text-primary);
+}
+
+.svc-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.svc-row:last-child { border-bottom: none; }
+
+.svc-row:hover { background: var(--bg-elevated); }
+
+.svc-row.selected {
+  background: var(--bg-elevated);
+  border-left: 3px solid var(--text-primary);
+}
+
+.svc-row-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.svc-row-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.svc-row-meta {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.svc-row-price {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  margin-left: var(--space-md);
 }
 
 /* ============================================================
@@ -2387,9 +2465,8 @@ p {
   h2 { font-size: 2rem; }
   h3 { font-size: 1.35rem; }
 
-  .logo {
-    font-size: 1.1rem;
-    letter-spacing: 2px;
+  .logo-img {
+    height: 48px;
   }
 
   .container {

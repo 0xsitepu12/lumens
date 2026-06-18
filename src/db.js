@@ -193,6 +193,51 @@ async function updateOperatingHours(dayOfWeek, updates) {
 }
 
 // ============================================
+// BARBER SCHEDULES
+// ============================================
+async function getBarberSchedule(barberId, dayOfWeek) {
+  const { data } = await supabase.from('barber_schedules')
+    .select('*')
+    .eq('barber_id', barberId)
+    .eq('day_of_week', dayOfWeek)
+    .single();
+  return data;
+}
+
+async function getBarberSchedules(barberId) {
+  const { data } = await supabase.from('barber_schedules')
+    .select('*')
+    .eq('barber_id', barberId)
+    .order('day_of_week');
+  return data || [];
+}
+
+async function getAvailableBarbersForDay(dayOfWeek) {
+  const { data } = await supabase.from('barber_schedules')
+    .select('*, barbers(id, name, speciality, is_active)')
+    .eq('day_of_week', dayOfWeek)
+    .eq('is_off', false);
+  return (data || []).filter(s => s.barbers?.is_active);
+}
+
+async function getAllBarberSchedules() {
+  const { data } = await supabase.from('barber_schedules')
+    .select('*')
+    .order('barber_id')
+    .order('day_of_week');
+  return data || [];
+}
+
+async function upsertBarberSchedule(barberId, dayOfWeek, updates) {
+  const { data, error } = await supabase.from('barber_schedules')
+    .upsert({ barber_id: barberId, day_of_week: dayOfWeek, ...updates }, { onConflict: 'barber_id,day_of_week' })
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+// ============================================
 // ANALYTICS HELPERS
 // ============================================
 async function getPopularServices(startDate, endDate) {
@@ -239,5 +284,6 @@ module.exports = {
   getBookingsByDate, getBookingsByDateRange, getBookingsByBarberAndDate,
   getBookingsCount, getRevenueByDateRange, getBookingsForAnalytics, getAllBookings,
   getOperatingHours, updateOperatingHours,
+  getBarberSchedule, getBarberSchedules, getAvailableBarbersForDay, getAllBarberSchedules, upsertBarberSchedule,
   getPopularServices, getBarberPerformance
 };
