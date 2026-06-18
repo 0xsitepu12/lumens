@@ -1091,6 +1091,21 @@ p {
   gap: 8px;
 }
 
+.date-month-label {
+  grid-column: 1 / -1;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  padding: 10px 0 2px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2px;
+  text-transform: capitalize;
+}
+
+.date-month-label:first-child {
+  padding-top: 0;
+}
+
 .date-cell {
   display: flex;
   flex-direction: column;
@@ -1112,9 +1127,10 @@ p {
 }
 
 .date-cell-day {
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   color: var(--text-muted);
   text-transform: uppercase;
+  font-weight: 600;
 }
 
 .date-cell-num {

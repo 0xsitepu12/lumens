@@ -70,12 +70,22 @@ function renderDatePicker() {
   const now = new Date();
   const startDay = now.getHours() >= 20 ? 1 : 0;
   let html = '';
+  let currentMonth = -1;
+
   for (let i = startDay; i < startDay + 28; i++) {
     const d = new Date(now);
     d.setDate(d.getDate() + i);
     const dateStr = d.toISOString().split('T')[0];
     const dayShort = DAYS_SHORT[d.getDay()];
     const dateNum = d.getDate();
+    const month = d.getMonth();
+
+    if (month !== currentMonth) {
+      currentMonth = month;
+      const monthName = d.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+      html += `<div class="date-month-label">${monthName}</div>`;
+    }
+
     html += `
       <div class="date-cell" data-date="${dateStr}">
         <span class="date-cell-day">${dayShort}</span>
