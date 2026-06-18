@@ -11,7 +11,8 @@ const STATUS_MAP = {
 const PERIOD_LABEL = {
   today: 'Hari ini',
   week:  'Minggu ini',
-  month: 'Bulan ini'
+  month: 'Bulan ini',
+  all:   'Semua waktu'
 };
 
 function fmt(n) {

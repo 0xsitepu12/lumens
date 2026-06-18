@@ -34,12 +34,14 @@ router.get('/stats', async (req, res) => {
 
     if (period === 'week') {
       const d = new Date();
-      d.setDate(d.getDate() - d.getDay() + 1); // Monday
+      d.setDate(d.getDate() - d.getDay() + 1);
       startDate = d.toISOString().split('T')[0];
     } else if (period === 'month') {
       startDate = today.slice(0, 7) + '-01';
+    } else if (period === 'all') {
+      startDate = '2000-01-01';
     } else {
-      startDate = today; // today
+      startDate = today;
     }
 
     const bookings = await db.getBarberStats(barber.id, startDate, today);
