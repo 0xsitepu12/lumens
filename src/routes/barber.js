@@ -52,11 +52,15 @@ router.get('/stats', async (req, res) => {
     const confirmed = bookings.filter(b => b.status === 'confirmed').length;
     const cancelled = bookings.filter(b => ['cancelled', 'no_show'].includes(b.status)).length;
     const revenue   = bookings.filter(b => b.status === 'completed').reduce((s, b) => s + (b.total_price || 0), 0);
+    const netRevenue = bookings.filter(b => b.status === 'completed').reduce((s, b) => {
+      const modal = b.services?.modal_price || 0;
+      return s + (b.total_price || 0) - modal;
+    }, 0);
     const rate      = total > 0 ? Math.round((completed / total) * 100) : 0;
 
     res.json({
       success: true,
-      data: { barber, total, completed, pending, confirmed, cancelled, revenue, rate, bookings }
+      data: { barber, total, completed, pending, confirmed, cancelled, revenue, netRevenue, rate, bookings }
     });
   } catch (err) {
     console.error('[barber/stats]', err.message);

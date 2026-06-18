@@ -360,6 +360,7 @@ function showServiceModal(id) {
   document.getElementById('service-description').value = '';
   document.getElementById('service-duration').value = '30';
   document.getElementById('service-price').value = '';
+  document.getElementById('service-modal').value = '0';
   document.getElementById('service-category').value = 'potong';
   openModal('modal-service');
 }
@@ -376,6 +377,7 @@ async function editService(id) {
     document.getElementById('service-description').value = svc.description || '';
     document.getElementById('service-duration').value = svc.duration_minutes;
     document.getElementById('service-price').value = svc.price;
+    document.getElementById('service-modal').value = svc.modal_price || 0;
     document.getElementById('service-category').value = svc.category || 'potong';
     openModal('modal-service');
   } catch {}
@@ -383,11 +385,12 @@ async function editService(id) {
 
 async function saveService() {
   const data = {
-    name: document.getElementById('service-name').value.trim(),
-    description: document.getElementById('service-description').value.trim(),
+    name:             document.getElementById('service-name').value.trim(),
+    description:      document.getElementById('service-description').value.trim(),
     duration_minutes: parseInt(document.getElementById('service-duration').value),
-    price: parseInt(document.getElementById('service-price').value),
-    category: document.getElementById('service-category').value
+    price:            parseInt(document.getElementById('service-price').value),
+    modal_price:      parseInt(document.getElementById('service-modal').value) || 0,
+    category:         document.getElementById('service-category').value
   };
 
   if (!data.name || !data.price) { showToast('Nama dan harga wajib diisi', 'error'); return; }

@@ -1589,9 +1589,13 @@
                             <input type="number" id="service-duration" name="duration" placeholder="30" min="5" step="5" required>
                         </div>
                         <div class="form-group">
-                            <label for="service-price">Harga (Rp)</label>
+                            <label for="service-price">Harga Jual (Rp)</label>
                             <input type="number" id="service-price" name="price" placeholder="50000" min="0" required>
                         </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="service-modal">Harga Modal (Rp) <span style="color:var(--text-muted);font-weight:400;font-size:.8em">— dipakai untuk hitung pendapatan bersih barber</span></label>
+                        <input type="number" id="service-modal" name="modal_price" placeholder="0" min="0">
                     </div>
                     <div class="form-group">
                         <label for="service-category">Kategori</label>

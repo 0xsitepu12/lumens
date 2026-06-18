@@ -296,7 +296,7 @@ async function getBarberByName(name) {
 
 async function getBarberStats(barberId, startDate, endDate) {
   const { data } = await supabase.from('bookings')
-    .select('id, status, total_price, booking_date, booking_time, customer_name, services(name, price)')
+    .select('id, status, total_price, booking_date, booking_time, customer_name, services(name, price, modal_price)')
     .eq('barber_id', barberId)
     .gte('booking_date', startDate)
     .lte('booking_date', endDate)

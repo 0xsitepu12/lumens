@@ -52,7 +52,8 @@ function updateRateCircle(rate) {
 }
 
 function renderStats(data) {
-  document.getElementById('stat-revenue').textContent  = fmt(data.revenue);
+  document.getElementById('stat-net-revenue').textContent = fmt(data.netRevenue ?? data.revenue);
+  document.getElementById('stat-revenue').textContent     = fmt(data.revenue);
   document.getElementById('stat-period-label').textContent = PERIOD_LABEL[currentPeriod];
   document.getElementById('stat-total').textContent     = data.total;
   document.getElementById('stat-completed').textContent = data.completed;
@@ -83,7 +84,10 @@ function renderChart(bookings) {
     if (!key) return;
     if (!groups[key]) groups[key] = { revenue: 0, count: 0 };
     groups[key].count++;
-    if (b.status === 'completed') groups[key].revenue += b.total_price || b.services?.price || 0;
+    if (b.status === 'completed') {
+      const modal = b.services?.modal_price || 0;
+      groups[key].revenue += (b.total_price || 0) - modal;
+    }
   });
 
   const labels  = Object.keys(groups).sort();
