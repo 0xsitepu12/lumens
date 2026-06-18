@@ -50,6 +50,7 @@ app.use(express.static(path.join(__dirname, 'public'), {
 app.use('/api/auth', authLimiter, require('./src/routes/auth'));
 app.use('/api/booking', require('./src/routes/bookings'));
 app.use('/api/admin', require('./src/routes/admin'));
+app.use('/api/barber', require('./src/routes/barber'));
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -58,6 +59,7 @@ app.get('/api/health', (req, res) => {
 app.get('/booking', (req, res) => res.sendFile(path.join(__dirname, 'public', 'booking.html')));
 app.get('/kasir', (req, res) => res.sendFile(path.join(__dirname, 'public', 'kasir.html')));
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
+app.get('/barber', (req, res) => res.sendFile(path.join(__dirname, 'public', 'barber.html')));
 app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));
 
 app.listen(PORT, () => {

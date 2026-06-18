@@ -286,6 +286,25 @@ async function getBarberPerformance(startDate, endDate) {
   return Object.values(stats).sort((a, b) => b.revenue - a.revenue);
 }
 
+// ============================================
+// BARBER DASHBOARD
+// ============================================
+async function getBarberByName(name) {
+  const { data } = await supabase.from('barbers').select('*').ilike('name', name).single();
+  return data;
+}
+
+async function getBarberStats(barberId, startDate, endDate) {
+  const { data } = await supabase.from('bookings')
+    .select('id, status, total_price, booking_date, booking_time, customer_name, services(name, price)')
+    .eq('barber_id', barberId)
+    .gte('booking_date', startDate)
+    .lte('booking_date', endDate)
+    .order('booking_date', { ascending: false })
+    .order('booking_time', { ascending: false });
+  return data || [];
+}
+
 async function resetAllBookings() {
   const { error } = await supabase.from('bookings').delete().gte('created_at', '2000-01-01');
   if (error) throw error;
@@ -302,5 +321,6 @@ module.exports = {
   getOperatingHours, updateOperatingHours,
   getBarberSchedule, getBarberSchedules, getAvailableBarbersForDay, getAllBarberSchedules, upsertBarberSchedule,
   getPopularServices, getBarberPerformance,
+  getBarberByName, getBarberStats,
   resetAllBookings
 };
