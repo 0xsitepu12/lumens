@@ -29,6 +29,17 @@ async function createUser({ username, password_hash, full_name, role, phone, ema
   return data;
 }
 
+async function updateUserPassword(username, password_hash) {
+  const { error } = await supabase.from('users').update({ password_hash }).eq('username', username);
+  if (error) throw error;
+}
+
+async function getNonAdminUsers() {
+  const { data, error } = await supabase.from('users').select('id, username, full_name, role, is_active').neq('role', 'admin');
+  if (error) throw error;
+  return data || [];
+}
+
 // ============================================
 // SERVICES
 // ============================================
@@ -275,9 +286,14 @@ async function getBarberPerformance(startDate, endDate) {
   return Object.values(stats).sort((a, b) => b.revenue - a.revenue);
 }
 
+async function resetAllBookings() {
+  const { error } = await supabase.from('bookings').delete().gte('created_at', '2000-01-01');
+  if (error) throw error;
+}
+
 module.exports = {
   supabase,
-  getUserByUsername, createUser,
+  getUserByUsername, createUser, updateUserPassword, getNonAdminUsers,
   getServices, getServiceById, createService, updateService, deleteService,
   getBarbers, getBarberById, createBarber, updateBarber,
   createBooking, getBookingById, updateBookingStatus,
@@ -285,5 +301,6 @@ module.exports = {
   getBookingsCount, getRevenueByDateRange, getBookingsForAnalytics, getAllBookings,
   getOperatingHours, updateOperatingHours,
   getBarberSchedule, getBarberSchedules, getAvailableBarbersForDay, getAllBarberSchedules, upsertBarberSchedule,
-  getPopularServices, getBarberPerformance
+  getPopularServices, getBarberPerformance,
+  resetAllBookings
 };

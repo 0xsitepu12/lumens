@@ -486,6 +486,8 @@ async function saveBarber() {
 const DAY_MAP = { sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6 };
 
 async function loadSettings() {
+  loadResetPasswordStatus();
+  loadKasirList();
   try {
     const res = await apiGet('/api/admin/hours');
     if (!res.data) return;
@@ -532,6 +534,119 @@ async function saveHours() {
     }
     showToast('Jam operasional disimpan');
   } catch { showToast('Gagal menyimpan', 'error'); }
+}
+
+// ============================================
+// KASIR PASSWORD
+// ============================================
+async function loadKasirList() {
+  try {
+    const data = await apiGet('/api/admin/kasir/list');
+    const sel = document.getElementById('select-kasir-user');
+    const noAccEl = document.getElementById('kasir-no-account');
+    if (!sel) return;
+    if (!data.data || data.data.length === 0) {
+      sel.innerHTML = '<option value="">— Belum ada akun kasir —</option>';
+      sel.disabled = true;
+      if (noAccEl) noAccEl.style.display = '';
+      return;
+    }
+    sel.disabled = false;
+    if (noAccEl) noAccEl.style.display = 'none';
+    sel.innerHTML = data.data.map(u =>
+      `<option value="${u.username}">${u.full_name || u.username} (${u.username})</option>`
+    ).join('');
+  } catch { /* ignore */ }
+}
+
+async function createKasir() {
+  const username = document.getElementById('input-kasir-username')?.value.trim();
+  const fullName = document.getElementById('input-kasir-fullname')?.value.trim();
+  const password = document.getElementById('input-kasir-create-pw')?.value;
+  if (!username) return showToast('Username wajib diisi', 'error');
+  try {
+    const data = await fetch('/api/admin/kasir', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, fullName, password })
+    }).then(r => r.json());
+    if (data.success) {
+      showToast(data.message);
+      document.getElementById('input-kasir-username').value = '';
+      document.getElementById('input-kasir-fullname').value = '';
+      document.getElementById('input-kasir-create-pw').value = '';
+      loadKasirList();
+    } else {
+      showToast(data.message, 'error');
+    }
+  } catch { showToast('Gagal membuat akun kasir', 'error'); }
+}
+
+async function saveKasirPassword() {
+  const username = document.getElementById('select-kasir-user')?.value;
+  const newPw = document.getElementById('input-kasir-new-pw')?.value || '';
+  const confirmPw = document.getElementById('input-kasir-confirm-pw')?.value || '';
+  if (!username) return showToast('Pilih akun kasir terlebih dahulu', 'error');
+  try {
+    const data = await apiPut(`/api/admin/kasir/${username}/password`, { newPassword: newPw, confirmPassword: confirmPw });
+    if (data.success) {
+      showToast(data.message);
+      document.getElementById('input-kasir-new-pw').value = '';
+      document.getElementById('input-kasir-confirm-pw').value = '';
+    } else {
+      showToast(data.message, 'error');
+    }
+  } catch { showToast('Gagal mengubah password', 'error'); }
+}
+
+// ============================================
+// RESET DASHBOARD
+// ============================================
+async function loadResetPasswordStatus() {
+  try {
+    const data = await apiGet('/api/admin/settings/reset-config');
+    const statusEl = document.getElementById('reset-password-set-status');
+    const wrapCurrent = document.getElementById('wrap-current-reset-pw');
+    if (statusEl) statusEl.textContent = data.isSet ? '✅ Password reset sudah diatur' : '⚠️ Password reset belum diatur';
+    if (wrapCurrent) wrapCurrent.style.display = data.isSet ? '' : 'none';
+  } catch { /* ignore */ }
+}
+
+async function saveResetPassword() {
+  const currentPw = document.getElementById('input-current-reset-pw')?.value || '';
+  const newPw = document.getElementById('input-new-reset-pw')?.value || '';
+  try {
+    const data = await apiPost('/api/admin/settings/reset-password', { currentPassword: currentPw, newPassword: newPw });
+    if (data.success) {
+      showToast(data.message);
+      document.getElementById('input-current-reset-pw').value = '';
+      document.getElementById('input-new-reset-pw').value = '';
+      loadResetPasswordStatus();
+    } else {
+      showToast(data.message, 'error');
+    }
+  } catch { showToast('Gagal menyimpan password', 'error'); }
+}
+
+async function confirmReset() {
+  const pw = document.getElementById('input-reset-confirm-pw')?.value || '';
+  const errEl = document.getElementById('reset-error-msg');
+  errEl.style.display = 'none';
+  try {
+    const data = await apiPost('/api/admin/reset', { password: pw });
+    if (data.success) {
+      closeModal('modal-reset');
+      document.getElementById('input-reset-confirm-pw').value = '';
+      showToast('Dashboard berhasil direset', 'success');
+      loadDashboard();
+    } else {
+      errEl.textContent = data.message;
+      errEl.style.display = '';
+    }
+  } catch {
+    errEl.textContent = 'Terjadi kesalahan. Coba lagi.';
+    errEl.style.display = '';
+  }
 }
 
 // ============================================
@@ -585,6 +700,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('btn-add-barber')?.addEventListener('click', () => showBarberModal());
   document.getElementById('btn-save-barber')?.addEventListener('click', saveBarber);
   document.getElementById('btn-save-hours')?.addEventListener('click', saveHours);
+  document.getElementById('btn-save-kasir-password')?.addEventListener('click', saveKasirPassword);
+  document.getElementById('btn-create-kasir')?.addEventListener('click', createKasir);
+  document.getElementById('btn-save-reset-password')?.addEventListener('click', saveResetPassword);
+  document.getElementById('btn-open-reset-modal')?.addEventListener('click', () => {
+    document.getElementById('input-reset-confirm-pw').value = '';
+    document.getElementById('reset-error-msg').style.display = 'none';
+    openModal('modal-reset');
+  });
+  document.getElementById('btn-confirm-reset')?.addEventListener('click', confirmReset);
 
   document.querySelectorAll('[data-close-modal]').forEach(btn => {
     btn.addEventListener('click', () => closeModal(btn.dataset.closeModal));

@@ -1,8 +1,22 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
+const fs = require('fs');
+const path = require('path');
 const db = require('../db');
 const { requireAdmin } = require('../middleware/auth');
 const { DAYS_ID } = require('../config');
+
+const RESET_CONFIG_PATH = path.join(__dirname, '../config/reset-config.json');
+
+function getResetConfig() {
+  try { return JSON.parse(fs.readFileSync(RESET_CONFIG_PATH, 'utf8')); }
+  catch { return { passwordHash: null }; }
+}
+
+function saveResetConfig(config) {
+  fs.mkdirSync(path.dirname(RESET_CONFIG_PATH), { recursive: true });
+  fs.writeFileSync(RESET_CONFIG_PATH, JSON.stringify(config, null, 2));
+}
 
 const router = express.Router();
 router.use(requireAdmin);
@@ -401,6 +415,117 @@ router.get('/export/revenue', async (req, res) => {
     await wb.xlsx.write(res);
   } catch (err) {
     console.error('[admin/export/revenue]', err.message);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// ============================================
+// KASIR - GANTI PASSWORD
+// ============================================
+router.get('/kasir/list', async (req, res) => {
+  try {
+    const users = await db.getNonAdminUsers();
+    res.json({ success: true, data: users });
+  } catch (err) {
+    console.error('[admin/kasir/list]', err.message);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+router.post('/kasir', async (req, res) => {
+  try {
+    const { username, fullName, password } = req.body;
+    if (!username || !password || password.length < 6)
+      return res.json({ success: false, message: 'Username dan password (min 6 karakter) wajib diisi' });
+
+    const existing = await db.getUserByUsername(username.toLowerCase().trim());
+    if (existing)
+      return res.json({ success: false, message: 'Username sudah digunakan' });
+
+    await db.createUser({
+      username: username.toLowerCase().trim(),
+      password_hash: await bcrypt.hash(password, 10),
+      full_name: fullName || username,
+      role: 'kasir',
+      phone: '',
+      email: ''
+    });
+    res.json({ success: true, message: `Akun kasir "${username}" berhasil dibuat` });
+  } catch (err) {
+    console.error('[admin/kasir/create]', err.message);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+router.put('/kasir/:username/password', async (req, res) => {
+  try {
+    const { newPassword, confirmPassword } = req.body;
+    if (!newPassword || newPassword.length < 6)
+      return res.json({ success: false, message: 'Password minimal 6 karakter' });
+    if (newPassword !== confirmPassword)
+      return res.json({ success: false, message: 'Konfirmasi password tidak cocok' });
+
+    const user = await db.getUserByUsername(req.params.username);
+    if (!user || user.role === 'admin')
+      return res.json({ success: false, message: 'User tidak ditemukan' });
+
+    await db.updateUserPassword(req.params.username, await bcrypt.hash(newPassword, 10));
+    res.json({ success: true, message: `Password kasir "${req.params.username}" berhasil diubah` });
+  } catch (err) {
+    console.error('[admin/kasir/password]', err.message);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// ============================================
+// RESET CONFIG - SET PASSWORD
+// ============================================
+router.post('/settings/reset-password', async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!newPassword || newPassword.length < 6)
+      return res.json({ success: false, message: 'Password minimal 6 karakter' });
+
+    const config = getResetConfig();
+    if (config.passwordHash) {
+      if (!currentPassword)
+        return res.json({ success: false, message: 'Masukkan password reset saat ini' });
+      const valid = await bcrypt.compare(currentPassword, config.passwordHash);
+      if (!valid)
+        return res.json({ success: false, message: 'Password saat ini salah' });
+    }
+
+    saveResetConfig({ passwordHash: await bcrypt.hash(newPassword, 10) });
+    res.json({ success: true, message: 'Password reset berhasil diatur' });
+  } catch (err) {
+    console.error('[admin/settings/reset-password]', err.message);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+router.get('/settings/reset-config', (req, res) => {
+  const config = getResetConfig();
+  res.json({ success: true, isSet: !!config.passwordHash });
+});
+
+// ============================================
+// RESET DASHBOARD
+// ============================================
+router.post('/reset', async (req, res) => {
+  try {
+    const { password } = req.body;
+    const config = getResetConfig();
+    if (!config.passwordHash)
+      return res.json({ success: false, message: 'Password reset belum diatur di Pengaturan' });
+
+    const valid = await bcrypt.compare(password, config.passwordHash);
+    if (!valid)
+      return res.json({ success: false, message: 'Password salah' });
+
+    await db.resetAllBookings();
+    res.json({ success: true, message: 'Semua data booking berhasil dihapus' });
+  } catch (err) {
+    console.error('[admin/reset]', err.message);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });

@@ -131,23 +131,24 @@
 
     <!-- STEP 5: Sukses -->
     <section class="wizard-panel" id="step-success" data-step="success" style="display:none">
-      <div class="success-overlay" id="success-overlay">
+      <div class="success-header">
         <div class="success-checkmark">
           <svg class="checkmark-svg" viewBox="0 0 52 52">
             <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
             <path class="checkmark-path" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
           </svg>
         </div>
-        <div class="success-text">Booking Berhasil!</div>
+        <h2 class="success-title">Booking Berhasil!</h2>
+        <p class="success-subtitle">Booking kamu sudah tercatat dan sedang menunggu konfirmasi.</p>
       </div>
-      <div class="confirmation-card success-slide-up">
-        <h2 class="metallic-text" style="text-align:center;margin-bottom:var(--space-sm)">Booking Berhasil</h2>
-        <p style="text-align:center">Terima kasih, booking kamu sudah tercatat.</p>
+
+      <div class="success-card success-slide-up">
+        <div class="success-id-row">
+          <span class="success-id-label">BOOKING ID</span>
+          <span class="success-id-value" id="success-booking-id">-</span>
+        </div>
+
         <div class="confirmation-details">
-          <div class="confirmation-row">
-            <span class="label">Booking ID</span>
-            <span class="value" id="success-booking-id">-</span>
-          </div>
           <div class="confirmation-row">
             <span class="label">Layanan</span>
             <span class="value" id="success-service">-</span>
@@ -165,13 +166,19 @@
             <span class="value" id="success-time">-</span>
           </div>
         </div>
-        <div style="text-align:center;margin-bottom:var(--space-lg)">
+
+        <div class="success-status-row">
           <span class="badge badge-pending"><i class="fa-solid fa-hourglass-half"></i> Menunggu Konfirmasi</span>
         </div>
-        <div class="confirmation-actions">
-          <a href="#" id="btn-wa" target="_blank" class="btn btn-block" style="background:#25D366;color:#fff;border:none;font-weight:700"><i class="fa-brands fa-whatsapp"></i> Konfirmasi via WhatsApp</a>
-          <a href="/booking" class="btn btn-primary btn-block"><i class="fa-solid fa-plus"></i> Booking Lagi</a>
-          <a href="/" class="btn btn-secondary btn-block"><i class="fa-solid fa-home"></i> Kembali</a>
+
+        <div class="success-actions">
+          <a href="#" id="btn-wa" target="_blank" class="btn-wa">
+            <i class="fa-brands fa-whatsapp"></i> Konfirmasi via WhatsApp
+          </a>
+          <div class="success-actions-secondary">
+            <a href="/booking" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Booking Lagi</a>
+            <a href="/" class="btn btn-secondary"><i class="fa-solid fa-house"></i> Beranda</a>
+          </div>
         </div>
       </div>
     </section>

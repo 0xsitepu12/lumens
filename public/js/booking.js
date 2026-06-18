@@ -299,6 +299,9 @@ function goToStep(step) {
   const nav = document.getElementById('wizard-nav');
   if (nav) nav.style.display = (step <= 2 || step === 5) ? 'none' : '';
 
+  const stepsEl = document.getElementById('wizard-steps');
+  if (stepsEl) stepsEl.style.display = step === 5 ? 'none' : '';
+
   const btnBack = document.getElementById('btn-back');
   if (btnBack) btnBack.style.display = step <= 1 || step >= 5 ? 'none' : '';
 

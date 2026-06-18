@@ -63,3 +63,11 @@ app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public', 'log
 app.listen(PORT, () => {
   console.log(`LUMENS HAIR STUDIO running on port ${PORT}`);
 });
+
+process.on('uncaughtException', (err) => {
+  console.error('[uncaughtException]', err.message);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('[unhandledRejection]', reason);
+});
