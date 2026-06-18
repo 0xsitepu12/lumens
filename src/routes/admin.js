@@ -285,34 +285,44 @@ router.put('/hours/:day', async (req, res) => {
 });
 
 // ============================================
-// EXPORT TO CSV (Excel-compatible)
+// EXPORT TO XLSX
 // ============================================
+const ExcelJS = require('exceljs');
+
+const HEADER_STYLE = { font: { bold: true, color: { argb: 'FFFFFFFF' } }, fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1a1a1a' } }, alignment: { horizontal: 'center' } };
+const NUM_FMT = '#,##0';
+
 router.get('/export/bookings', async (req, res) => {
   try {
     const { start, end } = req.query;
     const startDate = start || '2020-01-01';
     const endDate = end || new Date().toISOString().split('T')[0];
     const bookings = await db.getBookingsForAnalytics(startDate, endDate);
-
     const statusMap = { pending: 'Menunggu', confirmed: 'Dikonfirmasi', completed: 'Selesai', cancelled: 'Dibatalkan', no_show: 'Tidak Hadir' };
-    const header = 'Tanggal,Waktu,Pelanggan,HP,Layanan,Kategori,Stylist,Durasi (menit),Harga,Status';
-    const rows = bookings.map(b => [
-      b.booking_date,
-      b.booking_time?.slice(0, 5),
-      `"${(b.customer_name || '').replace(/"/g, '""')}"`,
-      b.customer_phone || '',
-      `"${(b.services?.name || '').replace(/"/g, '""')}"`,
-      b.services?.category || '',
-      b.barbers?.name || '',
-      b.duration_minutes,
-      b.total_price,
-      statusMap[b.status] || b.status
-    ].join(','));
 
-    const csv = '﻿' + header + '\n' + rows.join('\n');
-    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    res.setHeader('Content-Disposition', `attachment; filename="bookings_${startDate}_${endDate}.csv"`);
-    res.send(csv);
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet('Booking');
+    ws.columns = [
+      { header: 'Tanggal', key: 'date', width: 14 },
+      { header: 'Waktu', key: 'time', width: 8 },
+      { header: 'Pelanggan', key: 'name', width: 20 },
+      { header: 'HP', key: 'phone', width: 16 },
+      { header: 'Layanan', key: 'service', width: 22 },
+      { header: 'Stylist', key: 'stylist', width: 14 },
+      { header: 'Durasi', key: 'duration', width: 8 },
+      { header: 'Harga', key: 'price', width: 14 },
+      { header: 'Status', key: 'status', width: 14 }
+    ];
+    ws.getRow(1).eachCell(c => Object.assign(c, HEADER_STYLE));
+
+    bookings.forEach(b => {
+      ws.addRow({ date: b.booking_date, time: b.booking_time?.slice(0, 5), name: b.customer_name, phone: b.customer_phone, service: b.services?.name, stylist: b.barbers?.name, duration: b.duration_minutes, price: b.total_price, status: statusMap[b.status] || b.status });
+    });
+    ws.getColumn('price').numFmt = NUM_FMT;
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="booking_${startDate}_${endDate}.xlsx"`);
+    await wb.xlsx.write(res);
   } catch (err) {
     console.error('[admin/export/bookings]', err.message);
     res.status(500).json({ success: false, message: 'Server error' });
@@ -322,20 +332,27 @@ router.get('/export/bookings', async (req, res) => {
 router.get('/export/services', async (req, res) => {
   try {
     const services = await db.getServices(false);
-    const header = 'Nama,Deskripsi,Durasi (menit),Harga,Kategori,Status';
-    const rows = services.map(s => [
-      `"${(s.name || '').replace(/"/g, '""')}"`,
-      `"${(s.description || '').replace(/"/g, '""')}"`,
-      s.duration_minutes,
-      s.price,
-      s.category || '',
-      s.is_active ? 'Aktif' : 'Nonaktif'
-    ].join(','));
 
-    const csv = '﻿' + header + '\n' + rows.join('\n');
-    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    res.setHeader('Content-Disposition', 'attachment; filename="layanan.csv"');
-    res.send(csv);
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet('Layanan');
+    ws.columns = [
+      { header: 'Nama', key: 'name', width: 24 },
+      { header: 'Deskripsi', key: 'desc', width: 30 },
+      { header: 'Durasi (menit)', key: 'duration', width: 14 },
+      { header: 'Harga', key: 'price', width: 14 },
+      { header: 'Kategori', key: 'cat', width: 12 },
+      { header: 'Status', key: 'status', width: 10 }
+    ];
+    ws.getRow(1).eachCell(c => Object.assign(c, HEADER_STYLE));
+
+    services.forEach(s => {
+      ws.addRow({ name: s.name, desc: s.description, duration: s.duration_minutes, price: s.price, cat: s.category, status: s.is_active ? 'Aktif' : 'Nonaktif' });
+    });
+    ws.getColumn('price').numFmt = NUM_FMT;
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename="layanan.xlsx"');
+    await wb.xlsx.write(res);
   } catch (err) {
     console.error('[admin/export/services]', err.message);
     res.status(500).json({ success: false, message: 'Server error' });
@@ -347,7 +364,6 @@ router.get('/export/revenue', async (req, res) => {
     const { start, end } = req.query;
     const startDate = start || new Date().toISOString().split('T')[0].slice(0, 7) + '-01';
     const endDate = end || new Date().toISOString().split('T')[0];
-
     const bookings = await db.getBookingsForAnalytics(startDate, endDate);
 
     const daily = {};
@@ -358,15 +374,31 @@ router.get('/export/revenue', async (req, res) => {
       if (b.status === 'cancelled') daily[b.booking_date].cancelled++;
     });
 
-    const header = 'Tanggal,Total Booking,Selesai,Dibatalkan,Pendapatan';
-    const rows = Object.entries(daily).sort().map(([date, d]) =>
-      [date, d.total, d.completed, d.cancelled, d.revenue].join(',')
-    );
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet('Revenue');
+    ws.columns = [
+      { header: 'Tanggal', key: 'date', width: 14 },
+      { header: 'Total Booking', key: 'total', width: 14 },
+      { header: 'Selesai', key: 'completed', width: 10 },
+      { header: 'Dibatalkan', key: 'cancelled', width: 12 },
+      { header: 'Pendapatan', key: 'revenue', width: 16 }
+    ];
+    ws.getRow(1).eachCell(c => Object.assign(c, HEADER_STYLE));
 
-    const csv = '﻿' + header + '\n' + rows.join('\n');
-    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    res.setHeader('Content-Disposition', `attachment; filename="revenue_${startDate}_${endDate}.csv"`);
-    res.send(csv);
+    Object.entries(daily).sort().forEach(([date, d]) => {
+      ws.addRow({ date, total: d.total, completed: d.completed, cancelled: d.cancelled, revenue: d.revenue });
+    });
+    ws.getColumn('revenue').numFmt = NUM_FMT;
+
+    const totalRow = ws.addRow({ date: 'TOTAL', total: '', completed: '', cancelled: '', revenue: '' });
+    const lastDataRow = ws.rowCount;
+    totalRow.getCell('total').value = { formula: `SUM(B2:B${lastDataRow - 1})` };
+    totalRow.getCell('revenue').value = { formula: `SUM(E2:E${lastDataRow - 1})` };
+    totalRow.eachCell(c => { c.font = { bold: true }; });
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="revenue_${startDate}_${endDate}.xlsx"`);
+    await wb.xlsx.write(res);
   } catch (err) {
     console.error('[admin/export/revenue]', err.message);
     res.status(500).json({ success: false, message: 'Server error' });
