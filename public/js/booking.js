@@ -247,6 +247,22 @@ function renderSuccess(booking) {
   set('success-barber', state.selectedBarber?.name || '-');
   set('success-date', formatDate(state.selectedDate));
   set('success-time', state.selectedTime);
+
+  const waBtn = document.getElementById('btn-wa');
+  if (waBtn) {
+    const name = document.getElementById('customer-name').value.trim();
+    const msg = encodeURIComponent(
+      `Halo LUMEN'S STUDIO,\n` +
+      `Saya ${name} sudah booking:\n` +
+      `📋 ${state.selectedService?.name}\n` +
+      `💇 Stylist: ${state.selectedBarber?.name}\n` +
+      `📅 ${formatDate(state.selectedDate)}\n` +
+      `⏰ ${state.selectedTime}\n` +
+      `🆔 ${booking.id?.slice(0, 8).toUpperCase()}\n\n` +
+      `Mohon konfirmasinya. Terima kasih!`
+    );
+    waBtn.href = `https://wa.me/6281367586550?text=${msg}`;
+  }
 }
 
 // ============================================
