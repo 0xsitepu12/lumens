@@ -11,21 +11,32 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Inter', sans-serif; background: #f8f8f8; color: #1a1a1a; min-height: 100vh; }
+    body { font-family: 'Inter', sans-serif; background: #f4f4f4; color: #1a1a1a; min-height: 100vh; }
+
+    /* ========== CONTAINER ========== */
+    .container {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
 
     /* ========== HEADER ========== */
     .hdr {
       background: #fff;
       border-bottom: 1px solid #e5e5e5;
-      padding: 14px 20px 0;
       position: sticky;
       top: 0;
       z-index: 10;
     }
+    .hdr-inner {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 14px 16px 0;
+    }
     .hdr-top {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      gap: 10px;
       padding-bottom: 12px;
     }
     .hdr-avatar {
@@ -34,16 +45,31 @@
       border-radius: 50%;
       background: #1a1a1a;
       color: #fff;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       font-weight: 800;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
     }
-    .hdr-info { flex: 1; margin-left: 10px; }
+    .hdr-info { flex: 1; min-width: 0; }
     .hdr-name { font-size: 0.95rem; font-weight: 800; line-height: 1.2; }
     .hdr-sub  { font-size: 0.7rem; color: #999; margin-top: 1px; }
+    .hdr-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    .btn-icon {
+      font-size: 0.78rem;
+      color: #555;
+      border: 1px solid #e0e0e0;
+      background: #fff;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
     .btn-logout {
       font-size: 0.72rem;
       font-weight: 600;
@@ -51,16 +77,18 @@
       border: 1px solid #fecaca;
       background: #fff;
       padding: 6px 12px;
-      border-radius: 6px;
+      height: 32px;
+      border-radius: 8px;
       cursor: pointer;
       font-family: inherit;
+      white-space: nowrap;
     }
 
     /* ========== PERIOD TABS ========== */
     .period-tabs {
       display: flex;
       gap: 6px;
-      padding-bottom: 14px;
+      padding-bottom: 12px;
     }
     .period-tab {
       flex: 1;
@@ -76,15 +104,12 @@
       font-family: inherit;
       transition: all 0.15s;
     }
-    .period-tab.active {
-      background: #1a1a1a;
-      color: #fff;
-      border-color: #1a1a1a;
-    }
+    .period-tab.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
 
-    /* ========== STATS ========== */
-    .stats-section { padding: 14px 16px 4px; }
+    /* ========== MAIN CONTENT ========== */
+    .main { padding: 16px 0 60px; }
 
+    /* ========== REVENUE CARD ========== */
     .revenue-card {
       background: #fff;
       border: 1px solid #e5e5e5;
@@ -96,115 +121,61 @@
       margin-bottom: 10px;
     }
     .revenue-label {
-      font-size: 0.68rem;
+      font-size: 0.67rem;
       font-weight: 600;
       color: #999;
       text-transform: uppercase;
       letter-spacing: 0.5px;
       margin-bottom: 4px;
     }
-    .revenue-num {
-      font-size: 1.55rem;
-      font-weight: 800;
-      color: #16a34a;
-    }
-    .revenue-sub {
-      font-size: 0.7rem;
-      color: #999;
-      margin-top: 3px;
-    }
+    .revenue-num { font-size: 1.55rem; font-weight: 800; color: #16a34a; }
+    .revenue-sub { font-size: 0.7rem; color: #aaa; margin-top: 3px; }
 
     /* Rate circle */
     .rate-wrap { text-align: center; }
     .rate-circle {
-      width: 58px;
-      height: 58px;
+      width: 58px; height: 58px;
       border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
       position: relative;
     }
-    .rate-circle svg {
-      position: absolute;
-      inset: 0;
-      transform: rotate(-90deg);
-    }
-    .rate-circle svg circle {
-      fill: none;
-      stroke-width: 5;
-      stroke-linecap: round;
-    }
+    .rate-circle svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+    .rate-circle svg circle { fill: none; stroke-width: 5; stroke-linecap: round; }
     .rate-circle svg .bg  { stroke: #f0f0f0; }
     .rate-circle svg .fg  { stroke: #16a34a; transition: stroke-dashoffset 0.6s ease; }
-    .rate-val {
-      font-size: 0.8rem;
-      font-weight: 800;
-      color: #1a1a1a;
-      position: relative;
-      z-index: 1;
-    }
-    .rate-label {
-      font-size: 0.62rem;
-      color: #999;
-      margin-top: 4px;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-    }
+    .rate-val { font-size: 0.78rem; font-weight: 800; position: relative; z-index: 1; }
+    .rate-label { font-size: 0.62rem; color: #999; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.3px; }
 
+    /* ========== STATS GRID ========== */
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 8px;
+      margin-bottom: 10px;
     }
     .stat-card {
       background: #fff;
       border: 1px solid #e5e5e5;
       border-radius: 12px;
-      padding: 14px 16px;
+      padding: 14px 12px;
     }
-    .stat-num {
-      font-size: 1.55rem;
-      font-weight: 800;
-      line-height: 1;
-    }
+    .stat-num { font-size: 1.45rem; font-weight: 800; line-height: 1; }
     .stat-num.green  { color: #16a34a; }
     .stat-num.blue   { color: #2563eb; }
     .stat-num.amber  { color: #d97706; }
-    .stat-num.red    { color: #dc2626; }
-    .stat-label {
-      font-size: 0.67rem;
-      color: #999;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
-      margin-top: 4px;
-    }
+    .stat-label { font-size: 0.62rem; color: #999; text-transform: uppercase; letter-spacing: 0.3px; margin-top: 5px; }
 
     /* ========== BOOKING LIST ========== */
     .list-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 16px 16px 8px;
+      padding: 6px 0 10px;
     }
-    .list-title {
-      font-size: 0.78rem;
-      font-weight: 700;
-      color: #555;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .list-count {
-      font-size: 0.72rem;
-      color: #999;
-    }
+    .list-title { font-size: 0.75rem; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: 0.5px; }
+    .list-count { font-size: 0.72rem; color: #aaa; }
 
-    .booking-list {
-      padding: 0 16px 100px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
+    .booking-list { display: flex; flex-direction: column; gap: 8px; }
 
     .bk-card {
       background: #fff;
@@ -223,66 +194,43 @@
       padding: 4px 8px;
       border-radius: 6px;
       white-space: nowrap;
-      min-width: 44px;
+      min-width: 46px;
       text-align: center;
     }
     .bk-info { flex: 1; min-width: 0; }
-    .bk-date {
-      font-size: 0.65rem;
-      color: #bbb;
-      margin-bottom: 1px;
-    }
-    .bk-name {
-      font-size: 0.85rem;
-      font-weight: 700;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .bk-svc {
-      font-size: 0.72rem;
-      color: #888;
-      margin-top: 1px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+    .bk-date { font-size: 0.65rem; color: #bbb; margin-bottom: 1px; }
+    .bk-name { font-size: 0.85rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .bk-svc  { font-size: 0.72rem; color: #888; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .bk-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
-    .bk-badge {
-      font-size: 0.62rem;
-      font-weight: 700;
-      padding: 3px 8px;
-      border-radius: 20px;
-      white-space: nowrap;
-    }
+    .bk-badge { font-size: 0.62rem; font-weight: 700; padding: 3px 8px; border-radius: 20px; white-space: nowrap; }
     .bk-badge.completed { background: #dcfce7; color: #166534; }
     .bk-badge.confirmed { background: #dbeafe; color: #1e40af; }
     .bk-badge.pending   { background: #fef3c7; color: #92400e; }
     .bk-badge.cancelled { background: #fee2e2; color: #991b1b; }
     .bk-badge.no_show   { background: #f3f4f6; color: #4b5563; }
-    .bk-price {
-      font-size: 0.78rem;
-      font-weight: 700;
-      color: #1a1a1a;
-    }
+    .bk-price { font-size: 0.78rem; font-weight: 700; }
     .bk-price.muted { color: #ccc; text-decoration: line-through; }
 
-    /* ========== EMPTY / LOADING ========== */
-    .empty-state {
-      text-align: center;
-      padding: 60px 20px;
-      color: #ccc;
-    }
-    .empty-state i { font-size: 2.2rem; margin-bottom: 12px; display: block; }
-    .empty-state p { font-size: 0.88rem; }
+    /* ========== EMPTY / ERROR ========== */
+    .empty-state { text-align: center; padding: 48px 20px; color: #ccc; }
+    .empty-state i { font-size: 2rem; margin-bottom: 10px; display: block; }
+    .empty-state p { font-size: 0.85rem; }
 
-    .skeleton {
-      background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.2s infinite;
-      border-radius: 8px;
+    .error-banner {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 0.85rem;
+      color: #dc2626;
+      margin-bottom: 12px;
+      display: none;
     }
-    @keyframes shimmer { to { background-position: -200% 0; } }
+
+    /* ========== RESPONSIVE: tablet/desktop ========== */
+    @media (max-width: 480px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
 
     /* ========== CHANGE PASSWORD MODAL ========== */
     .pw-overlay {
@@ -299,21 +247,17 @@
       background: #fff;
       border-radius: 20px 20px 0 0;
       width: 100%;
-      max-width: 480px;
+      max-width: 640px;
       padding: 8px 20px 36px;
       animation: slideUp 0.25s ease;
     }
     @keyframes slideUp {
       from { transform: translateY(60px); opacity: 0; }
-      to   { transform: translateY(0);   opacity: 1; }
+      to   { transform: translateY(0); opacity: 1; }
     }
-    .pw-handle {
-      width: 36px; height: 4px;
-      background: #ddd; border-radius: 4px;
-      margin: 10px auto 18px;
-    }
-    .pw-title { font-size: 1rem; font-weight: 800; margin-bottom: 16px; }
-    .pw-field { margin-bottom: 14px; }
+    .pw-handle { width: 36px; height: 4px; background: #ddd; border-radius: 4px; margin: 10px auto 18px; }
+    .pw-title  { font-size: 1rem; font-weight: 800; margin-bottom: 16px; }
+    .pw-field  { margin-bottom: 14px; }
     .pw-field label {
       display: block;
       font-size: 0.72rem;
@@ -334,7 +278,7 @@
       outline: none;
     }
     .pw-field input:focus { border-color: #1a1a1a; background: #fff; }
-    .pw-error { color: #dc2626; font-size: 0.78rem; margin-bottom: 10px; display: none; }
+    .pw-error  { color: #dc2626; font-size: 0.78rem; margin-bottom: 10px; display: none; }
     .pw-submit {
       width: 100%;
       padding: 13px;
@@ -348,102 +292,84 @@
       cursor: pointer;
     }
     .pw-submit:disabled { opacity: 0.5; }
-    .btn-key {
-      font-size: 0.72rem;
-      font-weight: 600;
-      color: #555;
-      border: 1px solid #e0e0e0;
-      background: #fff;
-      padding: 6px 10px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-family: inherit;
-    }
-
-    /* ========== ERROR BANNER ========== */
-    .error-banner {
-      margin: 16px;
-      background: #fef2f2;
-      border: 1px solid #fecaca;
-      border-radius: 10px;
-      padding: 14px 16px;
-      font-size: 0.85rem;
-      color: #dc2626;
-      display: none;
-    }
   </style>
 </head>
 <body>
 
   <header class="hdr">
-    <div class="hdr-top">
-      <div style="display:flex;align-items:center;gap:0">
+    <div class="hdr-inner">
+      <div class="hdr-top">
         <div class="hdr-avatar" id="hdr-avatar">?</div>
         <div class="hdr-info">
           <div class="hdr-name" id="hdr-name">—</div>
           <div class="hdr-sub">Dashboard Barber</div>
         </div>
+        <div class="hdr-actions">
+          <button class="btn-icon" id="btn-change-pw" title="Ubah Password"><i class="fa-solid fa-key"></i></button>
+          <button class="btn-logout" id="btn-logout">Logout</button>
+        </div>
       </div>
-      <button class="btn-key" id="btn-change-pw" title="Ubah Password"><i class="fa-solid fa-key"></i></button>
-      <button class="btn-logout" id="btn-logout">Logout</button>
-    </div>
-    <div class="period-tabs">
-      <button class="period-tab active" data-period="today">Hari Ini</button>
-      <button class="period-tab" data-period="week">Minggu Ini</button>
-      <button class="period-tab" data-period="month">Bulan Ini</button>
+      <div class="period-tabs">
+        <button class="period-tab active" data-period="today">Hari Ini</button>
+        <button class="period-tab" data-period="week">Minggu Ini</button>
+        <button class="period-tab" data-period="month">Bulan Ini</button>
+      </div>
     </div>
   </header>
 
-  <div id="error-banner" class="error-banner"></div>
+  <div class="main">
+    <div class="container">
+      <div id="error-banner" class="error-banner"></div>
 
-  <!-- Stats -->
-  <div class="stats-section">
-    <div class="revenue-card">
-      <div>
-        <div class="revenue-label">Total Penghasilan</div>
-        <div class="revenue-num" id="stat-revenue">Rp 0</div>
-        <div class="revenue-sub" id="stat-period-label">Hari ini</div>
-      </div>
-      <div class="rate-wrap">
-        <div class="rate-circle">
-          <svg viewBox="0 0 58 58" width="58" height="58">
-            <circle class="bg" cx="29" cy="29" r="26"/>
-            <circle class="fg" id="rate-arc" cx="29" cy="29" r="26"
-              stroke-dasharray="163.4" stroke-dashoffset="163.4"/>
-          </svg>
-          <span class="rate-val" id="stat-rate">0%</span>
+      <!-- Revenue + Rate -->
+      <div class="revenue-card">
+        <div>
+          <div class="revenue-label">Total Penghasilan</div>
+          <div class="revenue-num" id="stat-revenue">Rp 0</div>
+          <div class="revenue-sub" id="stat-period-label">Hari ini</div>
         </div>
-        <div class="rate-label">Selesai</div>
+        <div class="rate-wrap">
+          <div class="rate-circle">
+            <svg viewBox="0 0 58 58" width="58" height="58">
+              <circle class="bg" cx="29" cy="29" r="26"/>
+              <circle class="fg" id="rate-arc" cx="29" cy="29" r="26"
+                stroke-dasharray="163.4" stroke-dashoffset="163.4"/>
+            </svg>
+            <span class="rate-val" id="stat-rate">0%</span>
+          </div>
+          <div class="rate-label">Selesai</div>
+        </div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-num" id="stat-total">0</div>
+          <div class="stat-label">Total</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num green" id="stat-completed">0</div>
+          <div class="stat-label">Selesai</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num blue" id="stat-confirmed">0</div>
+          <div class="stat-label">Confirmed</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num amber" id="stat-pending">0</div>
+          <div class="stat-label">Pending</div>
+        </div>
+      </div>
+
+      <!-- Booking List -->
+      <div class="list-header">
+        <div class="list-title">Daftar Booking</div>
+        <div class="list-count" id="list-count"></div>
+      </div>
+      <div class="booking-list" id="booking-list">
+        <div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><p>Memuat...</p></div>
       </div>
     </div>
-
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-num" id="stat-total">0</div>
-        <div class="stat-label">Total Booking</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num green" id="stat-completed">0</div>
-        <div class="stat-label">Selesai</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num blue" id="stat-confirmed">0</div>
-        <div class="stat-label">Dikonfirmasi</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num amber" id="stat-pending">0</div>
-        <div class="stat-label">Pending</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Booking list -->
-  <div class="list-header">
-    <div class="list-title">Daftar Booking</div>
-    <div class="list-count" id="list-count"></div>
-  </div>
-  <div class="booking-list" id="booking-list">
-    <div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><p>Memuat...</p></div>
   </div>
 
   <!-- Modal Ubah Password -->
