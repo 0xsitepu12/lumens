@@ -1116,7 +1116,14 @@
 
         <!-- ==================== TAB: DASHBOARD ==================== -->
         <section class="admin-tab-content active" id="tab-dashboard">
-            <h2 class="section-title">Dashboard</h2>
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px">
+              <h2 class="section-title" style="margin-bottom:0">Dashboard</h2>
+              <div style="display:flex;gap:6px">
+                <button class="btn btn--outline btn--sm" id="btn-export-bookings"><i class="fa-solid fa-file-excel"></i> Booking</button>
+                <button class="btn btn--outline btn--sm" id="btn-export-revenue"><i class="fa-solid fa-file-excel"></i> Revenue</button>
+                <button class="btn btn--outline btn--sm" id="btn-export-services"><i class="fa-solid fa-file-excel"></i> Layanan</button>
+              </div>
+            </div>
 
             <!-- Date Filter -->
             <div class="date-filter">

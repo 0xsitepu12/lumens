@@ -284,4 +284,93 @@ router.put('/hours/:day', async (req, res) => {
   }
 });
 
+// ============================================
+// EXPORT TO CSV (Excel-compatible)
+// ============================================
+router.get('/export/bookings', async (req, res) => {
+  try {
+    const { start, end } = req.query;
+    const startDate = start || '2020-01-01';
+    const endDate = end || new Date().toISOString().split('T')[0];
+    const bookings = await db.getBookingsForAnalytics(startDate, endDate);
+
+    const statusMap = { pending: 'Menunggu', confirmed: 'Dikonfirmasi', completed: 'Selesai', cancelled: 'Dibatalkan', no_show: 'Tidak Hadir' };
+    const header = 'Tanggal,Waktu,Pelanggan,HP,Layanan,Kategori,Stylist,Durasi (menit),Harga,Status';
+    const rows = bookings.map(b => [
+      b.booking_date,
+      b.booking_time?.slice(0, 5),
+      `"${(b.customer_name || '').replace(/"/g, '""')}"`,
+      b.customer_phone || '',
+      `"${(b.services?.name || '').replace(/"/g, '""')}"`,
+      b.services?.category || '',
+      b.barbers?.name || '',
+      b.duration_minutes,
+      b.total_price,
+      statusMap[b.status] || b.status
+    ].join(','));
+
+    const csv = '﻿' + header + '\n' + rows.join('\n');
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="bookings_${startDate}_${endDate}.csv"`);
+    res.send(csv);
+  } catch (err) {
+    console.error('[admin/export/bookings]', err.message);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+router.get('/export/services', async (req, res) => {
+  try {
+    const services = await db.getServices(false);
+    const header = 'Nama,Deskripsi,Durasi (menit),Harga,Kategori,Status';
+    const rows = services.map(s => [
+      `"${(s.name || '').replace(/"/g, '""')}"`,
+      `"${(s.description || '').replace(/"/g, '""')}"`,
+      s.duration_minutes,
+      s.price,
+      s.category || '',
+      s.is_active ? 'Aktif' : 'Nonaktif'
+    ].join(','));
+
+    const csv = '﻿' + header + '\n' + rows.join('\n');
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="layanan.csv"');
+    res.send(csv);
+  } catch (err) {
+    console.error('[admin/export/services]', err.message);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+router.get('/export/revenue', async (req, res) => {
+  try {
+    const { start, end } = req.query;
+    const startDate = start || new Date().toISOString().split('T')[0].slice(0, 7) + '-01';
+    const endDate = end || new Date().toISOString().split('T')[0];
+
+    const bookings = await db.getBookingsForAnalytics(startDate, endDate);
+
+    const daily = {};
+    bookings.forEach(b => {
+      if (!daily[b.booking_date]) daily[b.booking_date] = { total: 0, completed: 0, revenue: 0, cancelled: 0 };
+      daily[b.booking_date].total++;
+      if (b.status === 'completed') { daily[b.booking_date].completed++; daily[b.booking_date].revenue += b.total_price || 0; }
+      if (b.status === 'cancelled') daily[b.booking_date].cancelled++;
+    });
+
+    const header = 'Tanggal,Total Booking,Selesai,Dibatalkan,Pendapatan';
+    const rows = Object.entries(daily).sort().map(([date, d]) =>
+      [date, d.total, d.completed, d.cancelled, d.revenue].join(',')
+    );
+
+    const csv = '﻿' + header + '\n' + rows.join('\n');
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="revenue_${startDate}_${endDate}.csv"`);
+    res.send(csv);
+  } catch (err) {
+    console.error('[admin/export/revenue]', err.message);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 module.exports = router;

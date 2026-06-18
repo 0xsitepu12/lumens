@@ -548,6 +548,15 @@ function closeModal(id) {
 }
 
 // ============================================
+// EXPORT
+// ============================================
+function exportData(type) {
+  const period = document.getElementById('filter-period')?.value || 'month';
+  const { start, end } = getDateRange(period);
+  window.open(`/api/admin/export/${type}?start=${start}&end=${end}`, '_blank');
+}
+
+// ============================================
 // INIT
 // ============================================
 document.addEventListener('DOMContentLoaded', async () => {
@@ -558,6 +567,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   document.getElementById('btn-logout')?.addEventListener('click', logout);
+  document.getElementById('btn-export-bookings')?.addEventListener('click', () => exportData('bookings'));
+  document.getElementById('btn-export-revenue')?.addEventListener('click', () => exportData('revenue'));
+  document.getElementById('btn-export-services')?.addEventListener('click', () => { window.open('/api/admin/export/services', '_blank'); });
 
   document.getElementById('filter-period')?.addEventListener('change', (e) => {
     const custom = document.getElementById('custom-date-range');
