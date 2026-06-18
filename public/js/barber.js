@@ -116,38 +116,41 @@ function renderChart(bookings) {
   if (perfChart) { perfChart.destroy(); perfChart = null; }
 
   perfChart = new Chart(canvas, {
-    type: 'bar',
+    type: 'line',
     data: {
       labels: displayLabels,
       datasets: [
         {
           label: 'Omset',
           data: omset,
-          backgroundColor: 'rgba(100,116,139,0.15)',
           borderColor: '#94a3b8',
+          backgroundColor: 'rgba(148,163,184,0.08)',
           borderWidth: 2,
-          borderRadius: 4,
+          pointRadius: 3,
+          tension: 0.3,
+          fill: true,
           yAxisID: 'y',
         },
         {
           label: 'Pendapatan Bersih',
           data: net,
-          backgroundColor: 'rgba(22,163,74,0.2)',
           borderColor: '#16a34a',
+          backgroundColor: 'rgba(22,163,74,0.1)',
           borderWidth: 2,
-          borderRadius: 4,
+          pointRadius: 3,
+          tension: 0.3,
+          fill: true,
           yAxisID: 'y',
         },
         {
           label: 'Booking',
           data: counts,
-          type: 'line',
           borderColor: '#2563eb',
           backgroundColor: 'transparent',
           borderWidth: 2,
           pointRadius: 3,
-          pointBackgroundColor: '#2563eb',
           tension: 0.3,
+          fill: false,
           yAxisID: 'y2',
         }
       ]
