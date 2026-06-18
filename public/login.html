@@ -52,10 +52,14 @@
     const errorEl = document.getElementById('login-error');
     const btnLogin = document.getElementById('btn-login');
 
+    function goToDashboard(user) {
+      window.location.href = user.role === 'admin' ? '/admin' : '/kasir';
+    }
+
     (async () => {
       try {
         const res = await apiGet('/api/auth/me');
-        if (res.success) window.location.href = '/admin';
+        if (res.success) goToDashboard(res.user);
       } catch {}
     })();
 
@@ -72,7 +76,7 @@
         });
 
         if (res.success) {
-          window.location.href = '/admin';
+          goToDashboard(res.user);
         } else {
           errorEl.textContent = res.message || 'Login gagal';
           errorEl.style.display = 'block';
