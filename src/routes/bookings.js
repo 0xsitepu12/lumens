@@ -71,10 +71,17 @@ router.get('/slots', async (req, res) => {
     const durationMin = parseInt(duration);
     const slots = [];
 
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+    const isToday = date === today;
+    const nowMinutes = isToday ? now.getHours() * 60 + now.getMinutes() : 0;
+
     for (let m = openMinutes; m + durationMin <= closeMinutes; m += SLOT_INTERVAL_MINUTES) {
       const slotStart = m;
       const slotEnd = m + durationMin;
       const timeStr = `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+
+      if (isToday && slotStart <= nowMinutes) continue;
 
       const conflict = existingBookings.some(b => {
         const [bh, bm] = b.booking_time.split(':').map(Number);

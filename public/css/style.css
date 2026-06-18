@@ -652,49 +652,44 @@ p {
   border-color: var(--text-primary);
 }
 
+.svc-group-label {
+  font-size: 0.58rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  padding: 6px 0 1px;
+}
+
 .svc-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--border);
+  padding: 7px 0;
   cursor: pointer;
-  transition: background var(--transition-fast);
+  border-bottom: 1px solid var(--border);
 }
-
-.svc-row:last-child { border-bottom: none; }
-
-.svc-row:hover { background: var(--bg-elevated); }
 
 .svc-row.selected {
-  background: var(--bg-elevated);
   border-left: 3px solid var(--text-primary);
-}
-
-.svc-row-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
+  padding-left: 10px;
 }
 
 .svc-row-name {
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: 0.8rem;
+  font-weight: 500;
   color: var(--text-primary);
 }
 
 .svc-row-meta {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: var(--text-muted);
 }
 
 .svc-row-price {
-  font-size: 0.88rem;
-  font-weight: 700;
-  color: var(--text-secondary);
+  font-size: 0.75rem;
+  color: var(--text-muted);
   flex-shrink: 0;
-  margin-left: var(--space-md);
 }
 
 /* ============================================================
@@ -745,8 +740,8 @@ p {
 .booking-page {
   max-width: 720px;
   margin: 0 auto;
-  padding: var(--space-lg) 20px;
-  padding-top: calc(var(--header-height) + var(--space-md));
+  padding: 0 16px;
+  padding-top: var(--header-height);
 }
 
 .booking-page-title {
@@ -768,8 +763,8 @@ p {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: var(--space-xl);
-  padding: 0;
+  margin: 0;
+  padding: 2px 0;
   gap: 0;
 }
 
@@ -782,13 +777,13 @@ p {
 }
 
 .wizard-step-number {
-  width: 36px;
-  height: 36px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   background: var(--bg-elevated);
   border: 2px solid var(--border);
   color: var(--text-muted);
-  font-size: 0.85rem;
+  font-size: 0.72rem;
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -799,7 +794,8 @@ p {
 }
 
 .wizard-step-label {
-  font-size: 0.65rem;
+  display: none;
+  font-size: 0.55rem;
   color: var(--text-muted);
   margin-top: var(--space-xs);
   text-align: center;
@@ -813,9 +809,9 @@ p {
 .wizard-step:not(:last-child)::after {
   content: '';
   position: absolute;
-  top: 18px;
-  left: calc(50% + 22px);
-  width: calc(100% - 44px);
+  top: 12px;
+  left: calc(50% + 16px);
+  width: calc(100% - 32px);
   height: 2px;
   background: var(--border);
   z-index: 1;
@@ -857,11 +853,11 @@ p {
 }
 
 .wizard-panel-header {
-  margin-bottom: var(--space-lg);
+  margin-bottom: 2px;
 }
 
 .wizard-panel-header h2 {
-  font-size: 1.25rem;
+  font-size: 0.95rem;
   margin-bottom: var(--space-xs);
 }
 
@@ -1028,6 +1024,85 @@ p {
   opacity: 0.35;
   cursor: not-allowed;
   pointer-events: none;
+}
+
+/* Stylist grid (2 columns) */
+#barber-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.stylist-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-align: center;
+}
+
+.stylist-cell.selected {
+  background: var(--text-primary);
+  border-color: var(--text-primary);
+}
+
+.stylist-cell.selected .stylist-name,
+.stylist-cell.selected .stylist-spec {
+  color: var(--bg-darkest);
+}
+
+.stylist-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.stylist-spec {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Date grid (4 columns) */
+#date-picker {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.date-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.date-cell.selected {
+  background: var(--text-primary);
+  border-color: var(--text-primary);
+}
+
+.date-cell.selected .date-cell-day,
+.date-cell.selected .date-cell-num {
+  color: var(--bg-darkest);
+}
+
+.date-cell-day {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.date-cell-num {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
 }
 
 /* Time slots */

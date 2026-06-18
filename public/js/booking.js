@@ -25,43 +25,28 @@ async function init() {
 // ============================================
 function renderServices() {
   const container = document.getElementById('service-list');
-  const tabsContainer = document.getElementById('category-tabs');
   if (!container) return;
 
-  const categoryNames = { haircut: 'Haircut', coloring: 'Coloring', treatment: 'Treatment', styling: 'Styling', shaving: 'Beard' };
-  const categories = [];
+  const catNames = { haircut: 'Potong Rambut', coloring: 'Warna', treatment: 'Perawatan', styling: 'Styling', shaving: 'Cukur' };
+  const grouped = {};
   state.services.forEach(s => {
     const cat = s.category || 'other';
-    if (!categories.includes(cat)) categories.push(cat);
+    if (!grouped[cat]) grouped[cat] = [];
+    grouped[cat].push(s);
   });
 
-  if (tabsContainer) {
-    tabsContainer.innerHTML = `<button class="cat-tab active" data-cat="all">Semua</button>` +
-      categories.map(c => `<button class="cat-tab" data-cat="${c}">${categoryNames[c] || c}</button>`).join('');
-    tabsContainer.querySelectorAll('.cat-tab').forEach(btn => {
-      btn.addEventListener('click', () => {
-        tabsContainer.querySelectorAll('.cat-tab').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        renderServiceList(btn.dataset.cat);
-      });
-    });
-  }
-  renderServiceList('all');
-}
-
-function renderServiceList(cat) {
-  const container = document.getElementById('service-list');
-  const filtered = cat === 'all' ? state.services : state.services.filter(s => (s.category || 'other') === cat);
-
-  container.innerHTML = filtered.map(s => `
-    <div class="svc-row ${state.selectedService?.id === s.id ? 'selected' : ''}" data-id="${s.id}">
-      <div class="svc-row-info">
+  let html = '';
+  for (const [cat, items] of Object.entries(grouped)) {
+    html += `<div class="svc-group-label">${catNames[cat] || cat}</div>`;
+    html += items.map(s => `
+      <div class="svc-row" data-id="${s.id}">
         <span class="svc-row-name">${esc(s.name)}</span>
-        <span class="svc-row-meta">${s.duration_minutes}min</span>
+        <span class="svc-row-price">${formatRupiah(s.price)}</span>
       </div>
-      <span class="svc-row-price">${formatRupiah(s.price)}</span>
-    </div>
-  `).join('');
+    `).join('');
+  }
+
+  container.innerHTML = html;
   container.querySelectorAll('.svc-row').forEach(c => {
     c.addEventListener('click', () => selectService(c.dataset.id));
   });
@@ -72,7 +57,7 @@ function selectService(id) {
   document.querySelectorAll('#service-list .svc-row').forEach(c => {
     c.classList.toggle('selected', c.dataset.id === id);
   });
-  updateNavButtons();
+  goToStep(2);
 }
 
 // ============================================
@@ -82,21 +67,24 @@ function renderDatePicker() {
   const container = document.getElementById('date-picker');
   if (!container) return;
 
-  const today = new Date();
+  const now = new Date();
+  const startDay = now.getHours() >= 20 ? 1 : 0;
   let html = '';
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(today);
+  for (let i = startDay; i < startDay + 28; i++) {
+    const d = new Date(now);
     d.setDate(d.getDate() + i);
     const dateStr = d.toISOString().split('T')[0];
+    const dayShort = DAYS_SHORT[d.getDay()];
+    const dateNum = d.getDate();
     html += `
-      <div class="date-item ${i === 0 ? 'today' : ''}" data-date="${dateStr}">
-        <span class="day-name">${DAYS_SHORT[d.getDay()]}</span>
-        <span class="day-number">${d.getDate()}</span>
+      <div class="date-cell" data-date="${dateStr}">
+        <span class="date-cell-day">${dayShort}</span>
+        <span class="date-cell-num">${dateNum}</span>
       </div>
     `;
   }
   container.innerHTML = html;
-  container.querySelectorAll('.date-item').forEach(c => {
+  container.querySelectorAll('.date-cell').forEach(c => {
     c.addEventListener('click', () => selectDate(c.dataset.date));
   });
 }
@@ -110,7 +98,7 @@ async function selectDate(dateStr) {
     c.classList.toggle('selected', c.dataset.date === dateStr);
   });
 
-  updateNavButtons();
+  goToStep(3);
 }
 
 function selectTime(time) {
@@ -140,16 +128,13 @@ async function loadBarbersForDate() {
     }
 
     container.innerHTML = state.barbers.map(b => `
-      <div class="svc-row" data-id="${b.id}">
-        <div class="svc-row-info">
-          <span class="svc-row-name">${esc(b.name)}</span>
-          <span class="svc-row-meta">${esc(b.speciality || 'Stylist')}</span>
-        </div>
-        <span class="svc-row-meta">${b.shift_start?.slice(0,5)} - ${b.shift_end?.slice(0,5)}</span>
+      <div class="stylist-cell" data-id="${b.id}">
+        <span class="stylist-name">${esc(b.name)}</span>
+        <span class="stylist-spec">${b.shift_start?.slice(0,5)} - ${b.shift_end?.slice(0,5)}</span>
       </div>
     `).join('');
 
-    container.querySelectorAll('.svc-row').forEach(c => {
+    container.querySelectorAll('.stylist-cell').forEach(c => {
       c.addEventListener('click', () => selectBarber(c.dataset.id));
     });
   } catch {
@@ -161,7 +146,7 @@ async function selectBarber(id) {
   state.selectedBarber = state.barbers.find(b => b.id === id);
   state.selectedTime = null;
 
-  document.querySelectorAll('#barber-list .svc-row').forEach(c => {
+  document.querySelectorAll('#barber-list .stylist-cell').forEach(c => {
     c.classList.toggle('selected', c.dataset.id === id);
   });
 
@@ -288,7 +273,7 @@ function goToStep(step) {
   });
 
   const nav = document.getElementById('wizard-nav');
-  if (nav) nav.style.display = step === 5 ? 'none' : '';
+  if (nav) nav.style.display = (step <= 2 || step === 5) ? 'none' : '';
 
   const btnBack = document.getElementById('btn-back');
   if (btnBack) btnBack.style.display = step <= 1 || step >= 5 ? 'none' : '';
