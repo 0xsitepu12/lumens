@@ -239,6 +239,134 @@
       cursor: pointer;
       box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     }
+
+    .fab-walkin {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background: #16a34a;
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      padding: 0 18px;
+      height: 44px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      box-shadow: 0 3px 12px rgba(22,163,74,0.35);
+      letter-spacing: 0.2px;
+    }
+    .fab-walkin:active { transform: scale(0.97); }
+
+    /* Modal walk-in */
+    .walkin-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 60;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .walkin-overlay.show { display: flex; }
+
+    .walkin-sheet {
+      background: #fff;
+      border-radius: 20px 20px 0 0;
+      width: 100%;
+      max-width: 480px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 8px 20px 32px;
+      animation: slideUp 0.25s ease;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(60px); opacity: 0; }
+      to   { transform: translateY(0);   opacity: 1; }
+    }
+
+    .walkin-handle {
+      width: 36px; height: 4px;
+      background: #ddd; border-radius: 4px;
+      margin: 10px auto 18px;
+    }
+
+    .walkin-title {
+      font-size: 1rem;
+      font-weight: 800;
+      margin-bottom: 18px;
+      color: #1a1a1a;
+    }
+
+    .walkin-field {
+      margin-bottom: 14px;
+    }
+    .walkin-field label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .walkin-field input,
+    .walkin-field select {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      background: #f9f9f9;
+      color: #1a1a1a;
+      outline: none;
+    }
+    .walkin-field input:focus,
+    .walkin-field select:focus {
+      border-color: #1a1a1a;
+      background: #fff;
+    }
+
+    .walkin-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .walkin-divider {
+      border: none;
+      border-top: 1px solid #f0f0f0;
+      margin: 16px 0;
+    }
+
+    .walkin-submit {
+      width: 100%;
+      padding: 14px;
+      background: #1a1a1a;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      margin-top: 6px;
+      letter-spacing: 0.2px;
+    }
+    .walkin-submit:active { transform: scale(0.98); }
+    .walkin-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .walkin-error {
+      color: #dc2626;
+      font-size: 0.8rem;
+      margin-top: 8px;
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -291,6 +419,59 @@
   <button class="auto-refresh" id="btn-refresh" title="Refresh">
     <i class="fa-solid fa-rotate"></i>
   </button>
+
+  <button class="fab-walkin" id="btn-walkin">
+    <i class="fa-solid fa-plus"></i> Walk-in
+  </button>
+
+  <!-- Modal Walk-in Booking -->
+  <div class="walkin-overlay" id="walkin-overlay">
+    <div class="walkin-sheet">
+      <div class="walkin-handle"></div>
+      <div class="walkin-title"><i class="fa-solid fa-person-walking-arrow-right"></i> Booking Walk-in</div>
+
+      <div class="walkin-field">
+        <label>Nama Tamu</label>
+        <input type="text" id="wi-name" placeholder="Nama tamu (kosongkan → Tamu Umum)">
+      </div>
+      <div class="walkin-field">
+        <label>No. HP</label>
+        <input type="tel" id="wi-phone" placeholder="08... (opsional)" inputmode="tel">
+      </div>
+
+      <hr class="walkin-divider">
+
+      <div class="walkin-field">
+        <label>Layanan <span style="color:#dc2626">*</span></label>
+        <select id="wi-service">
+          <option value="">— Pilih Layanan —</option>
+        </select>
+      </div>
+      <div class="walkin-field">
+        <label>Stylist <span style="color:#dc2626">*</span></label>
+        <select id="wi-barber">
+          <option value="">— Pilih Stylist —</option>
+        </select>
+      </div>
+
+      <div class="walkin-row">
+        <div class="walkin-field">
+          <label>Tanggal <span style="color:#dc2626">*</span></label>
+          <input type="date" id="wi-date">
+        </div>
+        <div class="walkin-field">
+          <label>Jam <span style="color:#dc2626">*</span></label>
+          <input type="time" id="wi-time">
+        </div>
+      </div>
+
+      <p class="walkin-error" id="wi-error"></p>
+
+      <button class="walkin-submit" id="wi-submit">
+        <i class="fa-solid fa-check"></i> Buat Booking
+      </button>
+    </div>
+  </div>
 
   <script src="/js/kasir.js"></script>
 </body>

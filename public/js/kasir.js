@@ -186,6 +186,110 @@ function startAutoRefresh() {
   refreshTimer = setInterval(loadBookings, 30000);
 }
 
+// ============================================
+// WALK-IN BOOKING
+// ============================================
+function nowRoundedUp() {
+  const d = new Date();
+  d.setMinutes(d.getMinutes() < 30 ? 30 : 60, 0, 0);
+  return d.toTimeString().slice(0, 5);
+}
+
+async function openWalkInModal() {
+  const overlay = document.getElementById('walkin-overlay');
+  const errEl  = document.getElementById('wi-error');
+  errEl.style.display = 'none';
+
+  // Default tanggal & jam
+  document.getElementById('wi-date').value = currentDate;
+  document.getElementById('wi-time').value = nowRoundedUp();
+  document.getElementById('wi-name').value = '';
+  document.getElementById('wi-phone').value = '';
+
+  // Load layanan
+  const svcSel = document.getElementById('wi-service');
+  svcSel.innerHTML = '<option value="">— Memuat... —</option>';
+  try {
+    const res = await fetch('/api/booking/services', { credentials: 'include' });
+    const data = await res.json();
+    const services = data.data || [];
+    svcSel.innerHTML = '<option value="">— Pilih Layanan —</option>' +
+      services.map(s => `<option value="${s.id}" data-price="${s.price}">${s.name} — Rp ${s.price.toLocaleString('id-ID')}</option>`).join('');
+  } catch {
+    svcSel.innerHTML = '<option value="">— Gagal memuat —</option>';
+  }
+
+  // Load barbers
+  const barberSel = document.getElementById('wi-barber');
+  barberSel.innerHTML = '<option value="">— Memuat... —</option>';
+  try {
+    const res = await fetch(`/api/booking/barbers?date=${currentDate}`, { credentials: 'include' });
+    const data = await res.json();
+    const barbers = data.data || [];
+    barberSel.innerHTML = '<option value="">— Pilih Stylist —</option>' +
+      barbers.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
+  } catch {
+    barberSel.innerHTML = '<option value="">— Gagal memuat —</option>';
+  }
+
+  overlay.classList.add('show');
+}
+
+function closeWalkInModal() {
+  document.getElementById('walkin-overlay').classList.remove('show');
+}
+
+async function submitWalkIn() {
+  const name    = document.getElementById('wi-name').value.trim() || 'Tamu Umum';
+  const phone   = document.getElementById('wi-phone').value.trim() || '-';
+  const service = document.getElementById('wi-service').value;
+  const barber  = document.getElementById('wi-barber').value;
+  const date    = document.getElementById('wi-date').value;
+  const time    = document.getElementById('wi-time').value;
+  const errEl   = document.getElementById('wi-error');
+  const btn     = document.getElementById('wi-submit');
+
+  errEl.style.display = 'none';
+  if (!service || !barber || !date || !time) {
+    errEl.textContent = 'Layanan, stylist, tanggal, dan jam wajib diisi.';
+    errEl.style.display = '';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Menyimpan...';
+  try {
+    const res = await fetch('/api/booking', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        customer_name: name,
+        customer_phone: phone,
+        service_id: service,
+        barber_id: barber,
+        booking_date: date,
+        booking_time: time + ':00',
+        notes: 'Walk-in'
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      closeWalkInModal();
+      await loadBookings();
+    } else {
+      errEl.textContent = data.message || 'Gagal membuat booking.';
+      errEl.style.display = '';
+    }
+  } catch {
+    errEl.textContent = 'Terjadi kesalahan. Coba lagi.';
+    errEl.style.display = '';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-check"></i> Buat Booking';
+  }
+}
+
 document.getElementById('status-overlay')?.addEventListener('click', closeStatusSheet);
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -197,6 +301,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   document.getElementById('btn-refresh')?.addEventListener('click', loadBookings);
+  document.getElementById('btn-walkin')?.addEventListener('click', openWalkInModal);
+  document.getElementById('wi-submit')?.addEventListener('click', submitWalkIn);
+  document.getElementById('walkin-overlay')?.addEventListener('click', e => {
+    if (e.target === document.getElementById('walkin-overlay')) closeWalkInModal();
+  });
   document.getElementById('btn-test-sound')?.addEventListener('click', playNotifSound);
   document.getElementById('btn-logout-kasir')?.addEventListener('click', async () => {
     await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
