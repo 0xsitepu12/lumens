@@ -131,10 +131,18 @@
 
     <!-- STEP 5: Sukses -->
     <section class="wizard-panel" id="step-success" data-step="success" style="display:none">
-      <div class="confirmation-card">
-        <div class="confirmation-icon"><i class="fa-solid fa-circle-check"></i></div>
-        <h2>Booking Berhasil!</h2>
-        <p>Terima kasih, booking kamu sudah tercatat dan menunggu konfirmasi.</p>
+      <div class="success-overlay" id="success-overlay">
+        <div class="success-checkmark">
+          <svg class="checkmark-svg" viewBox="0 0 52 52">
+            <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+            <path class="checkmark-path" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+          </svg>
+        </div>
+        <div class="success-text">Booking Berhasil!</div>
+      </div>
+      <div class="confirmation-card success-slide-up">
+        <h2 class="metallic-text" style="text-align:center;margin-bottom:var(--space-sm)">Booking Berhasil</h2>
+        <p style="text-align:center">Terima kasih, booking kamu sudah tercatat.</p>
         <div class="confirmation-details">
           <div class="confirmation-row">
             <span class="label">Booking ID</span>

@@ -207,8 +207,6 @@ function renderSummary() {
 async function confirmBooking() {
   const name = document.getElementById('customer-name').value.trim();
   const phone = document.getElementById('customer-phone').value.trim();
-  const email = document.getElementById('customer-email').value.trim();
-  const notes = document.getElementById('customer-notes').value.trim();
 
   if (!name || !phone) { showToast('Nama dan No. HP wajib diisi', 'error'); return; }
 
@@ -220,12 +218,12 @@ async function confirmBooking() {
     const res = await apiPost('/api/booking/create', {
       customer_name: name,
       customer_phone: phone,
-      customer_email: email || null,
+      customer_email: null,
       service_id: state.selectedService.id,
       barber_id: state.selectedBarber.id,
       booking_date: state.selectedDate,
       booking_time: state.selectedTime,
-      notes: notes || null
+      notes: null
     });
 
     if (res.success) {
