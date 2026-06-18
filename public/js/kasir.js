@@ -13,29 +13,23 @@ function getAudioCtx() {
 document.addEventListener('click', () => getAudioCtx(), { once: true });
 
 function playNotifSound() {
-  const ctx = getAudioCtx();
-  // Ding 1
-  const o1 = ctx.createOscillator();
-  const g1 = ctx.createGain();
-  o1.type = 'sine';
-  o1.frequency.value = 880;
-  g1.gain.setValueAtTime(0.3, ctx.currentTime);
-  g1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
-  o1.connect(g1);
-  g1.connect(ctx.destination);
-  o1.start(ctx.currentTime);
-  o1.stop(ctx.currentTime + 0.4);
-  // Ding 2 (higher)
-  const o2 = ctx.createOscillator();
-  const g2 = ctx.createGain();
-  o2.type = 'sine';
-  o2.frequency.value = 1175;
-  g2.gain.setValueAtTime(0.3, ctx.currentTime + 0.15);
-  g2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.55);
-  o2.connect(g2);
-  g2.connect(ctx.destination);
-  o2.start(ctx.currentTime + 0.15);
-  o2.stop(ctx.currentTime + 0.55);
+  try {
+    const ctx = getAudioCtx();
+    const t = ctx.currentTime;
+
+    [0, 0.2, 0.4].forEach((delay, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = [660, 880, 1100][i];
+      gain.gain.value = 0.5;
+      gain.gain.linearRampToValueAtTime(0, t + delay + 0.3);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t + delay);
+      osc.stop(t + delay + 0.3);
+    });
+  } catch {}
 }
 
 const STATUS_MAP = {
