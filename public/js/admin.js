@@ -166,15 +166,32 @@ function renderRevenueChart(data) {
     type: 'line',
     data: {
       labels: data.map(d => formatDateShort(d.date)),
-      datasets: [{
-        label: 'Pendapatan', data: data.map(d => d.amount),
-        borderColor: chartColors.green, backgroundColor: 'rgba(74,222,128,0.1)',
-        fill: true, tension: 0.3, pointRadius: 3
-      }]
+      datasets: [
+        {
+          label: 'Omset',
+          data: data.map(d => d.amount),
+          borderColor: '#94a3b8',
+          backgroundColor: 'rgba(148,163,184,0.08)',
+          fill: true, tension: 0.3, pointRadius: 3,
+          borderWidth: 2
+        },
+        {
+          label: 'Pendapatan Bersih',
+          data: data.map(d => d.net ?? d.amount),
+          borderColor: chartColors.green,
+          backgroundColor: 'rgba(74,222,128,0.12)',
+          fill: true, tension: 0.3, pointRadius: 3,
+          borderWidth: 2
+        }
+      ]
     },
     options: {
       ...chartDefaults,
-      plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => formatRupiah(c.parsed.y) } } },
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: true, position: 'top', align: 'end', labels: { font: { size: 11 }, boxWidth: 10, padding: 12 } },
+        tooltip: { callbacks: { label: c => c.dataset.label + ': ' + formatRupiah(c.parsed.y) } }
+      },
       scales: {
         x: { ticks: { color: '#555555' }, grid: { color: '#e0e0e0' } },
         y: { ticks: { color: '#555555', callback: v => formatRupiah(v) }, grid: { color: '#e0e0e0' }, beginAtZero: true }

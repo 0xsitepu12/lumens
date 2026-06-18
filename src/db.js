@@ -159,7 +159,7 @@ async function getBookingsCount(startDate, endDate) {
 
 async function getRevenueByDateRange(startDate, endDate) {
   const { data } = await supabase.from('bookings')
-    .select('total_price, booking_date, status')
+    .select('total_price, booking_date, status, services(modal_price)')
     .gte('booking_date', startDate)
     .lte('booking_date', endDate)
     .eq('status', 'completed');

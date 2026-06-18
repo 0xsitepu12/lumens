@@ -77,21 +77,23 @@ function renderChart(bookings) {
   bookings.forEach(b => {
     let key;
     if (currentPeriod === 'all') {
-      key = b.booking_date?.slice(0, 7); // YYYY-MM
+      key = b.booking_date?.slice(0, 7);
     } else {
-      key = b.booking_date; // YYYY-MM-DD
+      key = b.booking_date;
     }
     if (!key) return;
-    if (!groups[key]) groups[key] = { revenue: 0, count: 0 };
+    if (!groups[key]) groups[key] = { omset: 0, net: 0, count: 0 };
     groups[key].count++;
     if (b.status === 'completed') {
       const modal = b.services?.modal_price || 0;
-      groups[key].revenue += (b.total_price || 0) - modal;
+      groups[key].omset += b.total_price || 0;
+      groups[key].net   += (b.total_price || 0) - modal;
     }
   });
 
   const labels  = Object.keys(groups).sort();
-  const revenue = labels.map(k => groups[k].revenue);
+  const omset   = labels.map(k => groups[k].omset);
+  const net     = labels.map(k => groups[k].net);
   const counts  = labels.map(k => groups[k].count);
 
   // Format label
@@ -119,12 +121,21 @@ function renderChart(bookings) {
       labels: displayLabels,
       datasets: [
         {
-          label: 'Pendapatan (Rp)',
-          data: revenue,
-          backgroundColor: 'rgba(22,163,74,0.15)',
+          label: 'Omset',
+          data: omset,
+          backgroundColor: 'rgba(100,116,139,0.15)',
+          borderColor: '#94a3b8',
+          borderWidth: 2,
+          borderRadius: 4,
+          yAxisID: 'y',
+        },
+        {
+          label: 'Pendapatan Bersih',
+          data: net,
+          backgroundColor: 'rgba(22,163,74,0.2)',
           borderColor: '#16a34a',
           borderWidth: 2,
-          borderRadius: 6,
+          borderRadius: 4,
           yAxisID: 'y',
         },
         {
@@ -132,12 +143,11 @@ function renderChart(bookings) {
           data: counts,
           type: 'line',
           borderColor: '#2563eb',
-          backgroundColor: 'rgba(37,99,235,0.1)',
+          backgroundColor: 'transparent',
           borderWidth: 2,
           pointRadius: 3,
           pointBackgroundColor: '#2563eb',
           tension: 0.3,
-          fill: false,
           yAxisID: 'y2',
         }
       ]
@@ -147,12 +157,26 @@ function renderChart(bookings) {
       maintainAspectRatio: false,
       interaction: { mode: 'index', intersect: false },
       plugins: {
-        legend: { display: false },
+        legend: {
+          display: true,
+          position: 'top',
+          align: 'end',
+          labels: { font: { size: 10 }, boxWidth: 10, boxHeight: 10, padding: 10,
+            generateLabels: chart => chart.data.datasets.map((ds, i) => ({
+              text: ds.label,
+              fillStyle: ds.borderColor,
+              strokeStyle: ds.borderColor,
+              hidden: false,
+              index: i
+            }))
+          }
+        },
         tooltip: {
           callbacks: {
-            label: ctx => ctx.datasetIndex === 0
-              ? 'Rp ' + ctx.parsed.y.toLocaleString('id-ID')
-              : ctx.parsed.y + ' booking'
+            label: ctx => {
+              if (ctx.datasetIndex === 2) return ctx.dataset.label + ': ' + ctx.parsed.y + ' booking';
+              return ctx.dataset.label + ': Rp ' + ctx.parsed.y.toLocaleString('id-ID');
+            }
           }
         }
       },
@@ -165,8 +189,7 @@ function renderChart(bookings) {
           position: 'left',
           grid: { color: '#f0f0f0' },
           ticks: {
-            font: { size: 10 },
-            color: '#16a34a',
+            font: { size: 10 }, color: '#555',
             callback: v => v >= 1000 ? (v/1000).toFixed(0) + 'k' : v
           }
         },

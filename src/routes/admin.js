@@ -165,13 +165,15 @@ router.get('/analytics/revenue', async (req, res) => {
     const endDate = end || new Date().toISOString().split('T')[0];
 
     const data = await db.getRevenueByDateRange(startDate, endDate);
-    const dailyRevenue = {};
+    const daily = {};
     data.forEach(b => {
-      dailyRevenue[b.booking_date] = (dailyRevenue[b.booking_date] || 0) + (b.total_price || 0);
+      if (!daily[b.booking_date]) daily[b.booking_date] = { omset: 0, net: 0 };
+      daily[b.booking_date].omset += b.total_price || 0;
+      daily[b.booking_date].net   += (b.total_price || 0) - (b.services?.modal_price || 0);
     });
 
-    const result = Object.entries(dailyRevenue)
-      .map(([date, amount]) => ({ date, amount }))
+    const result = Object.entries(daily)
+      .map(([date, v]) => ({ date, amount: v.omset, net: v.net }))
       .sort((a, b) => a.date.localeCompare(b.date));
 
     res.json({ success: true, data: result });
