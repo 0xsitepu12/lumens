@@ -10,39 +10,42 @@
    CSS Custom Properties
    ============================================================ */
 :root {
-  /* Background */
-  --bg-darkest: #000000;
-  --bg-card: #111111;
-  --bg-elevated: #1a1a1a;
-  --bg-input: #0e0e0e;
+  /* Background — Light */
+  --bg-darkest: #ffffff;
+  --bg-card: #f5f5f5;
+  --bg-elevated: #eeeeee;
+  --bg-input: #f0f0f0;
 
-  /* Silver Accent */
-  --gold: #c0c0c0;
-  --gold-hover: #e0e0e0;
-  --gold-light: rgba(192, 192, 192, 0.12);
-  --gold-glow: rgba(192, 192, 192, 0.25);
+  /* Metallic Accent */
+  --gold: #2a2a2a;
+  --gold-hover: #111111;
+  --gold-light: rgba(0, 0, 0, 0.05);
+  --gold-glow: rgba(0, 0, 0, 0.1);
 
-  /* Text */
-  --text-primary: #f0f0f0;
-  --text-secondary: #8a8a9a;
-  --text-muted: #555566;
-  --text-inverse: #000000;
+  /* Text — Dark Metallic */
+  --text-primary: #1a1a1a;
+  --text-secondary: #555555;
+  --text-muted: #999999;
+  --text-inverse: #ffffff;
 
   /* Semantic */
-  --success: #4ade80;
-  --warning: #fbbf24;
-  --error: #f87171;
-  --info: #60a5fa;
+  --success: #16a34a;
+  --warning: #d97706;
+  --error: #dc2626;
+  --info: #2563eb;
 
   /* Borders */
-  --border: #1e1e28;
-  --border-light: #2e2e3a;
+  --border: #e0e0e0;
+  --border-light: #d0d0d0;
 
   /* Shadows */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.6);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.7);
-  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.8);
-  --shadow-gold: 0 4px 20px rgba(192, 192, 192, 0.15);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.12);
+  --shadow-gold: 0 4px 20px rgba(0, 0, 0, 0.08);
+
+  /* Metallic gradient */
+  --metallic: linear-gradient(135deg, #1a1a1a, #4a4a4a, #1a1a1a, #555555, #1a1a1a);
 
   /* Spacing */
   --space-xs: 0.25rem;
@@ -68,6 +71,22 @@
   --header-height: 64px;
   --container-max: 1200px;
   --sidebar-width: 260px;
+}
+
+/* Metallic shimmer animation */
+@keyframes metallic-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.metallic-text {
+  background: var(--metallic);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: metallic-shift 6s ease infinite;
 }
 
 /* ============================================================
@@ -151,8 +170,8 @@ p {
 }
 
 ::selection {
-  background-color: var(--gold);
-  color: var(--bg-darkest);
+  background-color: var(--text-primary);
+  color: var(--text-inverse);
 }
 
 /* Scrollbar */
@@ -162,11 +181,11 @@ p {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-darkest);
+  background: var(--bg-card);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border);
+  background: var(--border-light);
   border-radius: var(--radius-full);
 }
 
@@ -226,17 +245,16 @@ p {
 }
 
 .logo-img {
-  height: 44px;
+  height: 60px;
   width: auto;
-  filter: invert(1);
 }
 
 .logo-img-sm {
-  height: 30px;
+  height: 48px;
 }
 
 .logo-img-login {
-  height: 72px;
+  height: 90px;
 }
 
 /* Desktop nav */
@@ -2541,7 +2559,7 @@ p {
   h3 { font-size: 1.35rem; }
 
   .logo-img {
-    height: 48px;
+    height: 76px;
   }
 
   .container {

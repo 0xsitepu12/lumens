@@ -107,7 +107,7 @@ function getDateRange(period) {
 }
 
 const chartColors = {
-  gold: '#c0c0c0',
+  gold: '#2a2a2a',
   blue: '#60a5fa',
   green: '#4ade80',
   red: '#f87171',
@@ -122,8 +122,8 @@ const chartDefaults = {
   maintainAspectRatio: false,
   plugins: { legend: { display: false } },
   scales: {
-    x: { ticks: { color: '#8a8a9a' }, grid: { color: '#1e1e28' } },
-    y: { ticks: { color: '#8a8a9a', stepSize: 1 }, grid: { color: '#1e1e28' }, beginAtZero: true }
+    x: { ticks: { color: '#555555' }, grid: { color: '#e0e0e0' } },
+    y: { ticks: { color: '#555555', stepSize: 1 }, grid: { color: '#e0e0e0' }, beginAtZero: true }
   }
 };
 
@@ -176,8 +176,8 @@ function renderRevenueChart(data) {
       ...chartDefaults,
       plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => formatRupiah(c.parsed.y) } } },
       scales: {
-        x: { ticks: { color: '#8a8a9a' }, grid: { color: '#1e1e28' } },
-        y: { ticks: { color: '#8a8a9a', callback: v => formatRupiah(v) }, grid: { color: '#1e1e28' }, beginAtZero: true }
+        x: { ticks: { color: '#555555' }, grid: { color: '#e0e0e0' } },
+        y: { ticks: { color: '#555555', callback: v => formatRupiah(v) }, grid: { color: '#e0e0e0' }, beginAtZero: true }
       }
     }
   });
@@ -197,7 +197,7 @@ function renderServicesChart(data) {
     },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { position: 'bottom', labels: { color: '#8a8a9a', padding: 12 } } }
+      plugins: { legend: { position: 'bottom', labels: { color: '#555555', padding: 12 } } }
     }
   });
 }
