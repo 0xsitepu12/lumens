@@ -2,34 +2,28 @@ let currentDate = new Date().toISOString().split('T')[0];
 let bookings = [];
 let refreshTimer = null;
 let lastBookingCount = -1;
-let audioCtx = null;
-
-function getAudioCtx() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  if (audioCtx.state === 'suspended') audioCtx.resume();
-  return audioCtx;
-}
-
-document.addEventListener('click', () => getAudioCtx(), { once: true });
-
 function playNotifSound() {
-  try {
-    const ctx = getAudioCtx();
-    const t = ctx.currentTime;
+  var audio = new Audio('data:audio/wav;base64,UklGRl9vT19teleUQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAZGF0YQ==');
+  audio.volume = 1;
+  audio.play().catch(function(){});
 
-    [0, 0.2, 0.4].forEach((delay, i) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.value = [660, 880, 1100][i];
-      gain.gain.value = 0.5;
-      gain.gain.linearRampToValueAtTime(0, t + delay + 0.3);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(t + delay);
-      osc.stop(t + delay + 0.3);
-    });
-  } catch {}
+  var ctx = new (window.AudioContext || window.webkitAudioContext)();
+  if (ctx.state === 'suspended') ctx.resume();
+
+  function beep(freq, start, dur) {
+    var o = ctx.createOscillator();
+    var g = ctx.createGain();
+    o.frequency.value = freq;
+    g.gain.value = 1;
+    o.connect(g);
+    g.connect(ctx.destination);
+    o.start(ctx.currentTime + start);
+    o.stop(ctx.currentTime + start + dur);
+  }
+
+  beep(800, 0, 0.15);
+  beep(1000, 0.2, 0.15);
+  beep(1200, 0.4, 0.2);
 }
 
 const STATUS_MAP = {
