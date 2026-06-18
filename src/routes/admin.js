@@ -485,6 +485,10 @@ router.put('/barbers/:id/password', async (req, res) => {
 
     if (user) {
       await db.updateUserPassword(user.username, hash);
+      // Pastikan role-nya barber
+      if (user.role !== 'barber') {
+        await db.supabase.from('users').update({ role: 'barber', full_name: barber.name }).eq('username', user.username);
+      }
       res.json({ success: true, message: `Password barber "${barber.name}" berhasil diubah` });
     } else {
       // Buat akun baru
