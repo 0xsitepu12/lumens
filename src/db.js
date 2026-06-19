@@ -1,5 +1,8 @@
 const { createClient } = require('@supabase/supabase-js');
-const WebSocket = require('ws');
+
+if (!globalThis.WebSocket) {
+  globalThis.WebSocket = require('ws');
+}
 
 let _supabase = null;
 function getSupabase() {
@@ -7,9 +10,7 @@ function getSupabase() {
     if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
       throw new Error('SUPABASE_URL dan SUPABASE_SERVICE_ROLE_KEY harus diisi di .env');
     }
-    _supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
-      realtime: { transport: WebSocket }
-    });
+    _supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
   }
   return _supabase;
 }
