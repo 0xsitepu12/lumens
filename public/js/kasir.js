@@ -3,10 +3,6 @@ let bookings = [];
 let refreshTimer = null;
 let lastBookingCount = -1;
 function playNotifSound() {
-  var audio = new Audio('data:audio/wav;base64,UklGRl9vT19teleUQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAZGF0YQ==');
-  audio.volume = 1;
-  audio.play().catch(function(){});
-
   var ctx = new (window.AudioContext || window.webkitAudioContext)();
   if (ctx.state === 'suspended') ctx.resume();
 
