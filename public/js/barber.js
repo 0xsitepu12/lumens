@@ -347,11 +347,121 @@ async function submitChangePassword() {
   }
 }
 
+// ============================================
+// ATUR JADWAL
+// ============================================
+const DAYS = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+
+async function openScheduleModal() {
+  const overlay = document.getElementById('sched-overlay');
+  const body = document.getElementById('sched-body');
+  const errEl = document.getElementById('sched-error');
+  errEl.style.display = 'none';
+
+  body.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:#999"><i class="fa-solid fa-spinner fa-spin"></i> Memuat...</td></tr>';
+  overlay.classList.add('show');
+
+  try {
+    const res = await fetch('/api/barber/me', { credentials: 'include' });
+    const data = await res.json();
+    if (!data.success) { errEl.textContent = data.message; errEl.style.display = ''; return; }
+
+    const schedRes = await fetch('/api/barber/schedule', { credentials: 'include' });
+    const schedData = await schedRes.json();
+
+    const schedules = schedData.data?.schedules || [];
+
+    body.innerHTML = DAYS.map((day, i) => {
+      const s = schedules.find(sc => sc.day_of_week === i);
+      const start = s?.shift_start?.slice(0, 5) || '10:00';
+      const end = s?.shift_end?.slice(0, 5) || '21:00';
+      const off = s?.is_off ?? false;
+      return `<tr data-day="${i}" style="border-bottom:1px solid #f0f0f0">
+        <td style="padding:10px 4px;font-weight:500">${day}</td>
+        <td style="padding:10px 4px;text-align:center"><input type="time" name="start-${i}" value="${start}" style="padding:6px;border:1px solid #e0e0e0;border-radius:6px;font-family:inherit;font-size:0.82rem" ${off ? 'disabled' : ''}></td>
+        <td style="padding:10px 4px;text-align:center"><input type="time" name="end-${i}" value="${end}" style="padding:6px;border:1px solid #e0e0e0;border-radius:6px;font-family:inherit;font-size:0.82rem" ${off ? 'disabled' : ''}></td>
+        <td style="padding:10px 4px;text-align:center"><input type="checkbox" name="off-${i}" ${off ? 'checked' : ''} style="width:18px;height:18px;accent-color:#1a1a1a"></td>
+      </tr>`;
+    }).join('');
+
+    body.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+      cb.addEventListener('change', () => {
+        const day = cb.name.split('-')[1];
+        const row = body.querySelector(`tr[data-day="${day}"]`);
+        row.querySelectorAll('input[type="time"]').forEach(t => t.disabled = cb.checked);
+      });
+    });
+  } catch {
+    errEl.textContent = 'Gagal memuat jadwal.';
+    errEl.style.display = '';
+  }
+}
+
+function closeScheduleModal() {
+  document.getElementById('sched-overlay').classList.remove('show');
+}
+
+async function submitSchedule() {
+  const body = document.getElementById('sched-body');
+  const errEl = document.getElementById('sched-error');
+  const btn = document.getElementById('sched-submit');
+  errEl.style.display = 'none';
+
+  const schedules = [];
+  for (let i = 0; i < 7; i++) {
+    const row = body.querySelector(`tr[data-day="${i}"]`);
+    if (!row) continue;
+    schedules.push({
+      day_of_week: i,
+      shift_start: row.querySelector(`input[name="start-${i}"]`).value + ':00',
+      shift_end: row.querySelector(`input[name="end-${i}"]`).value + ':00',
+      is_off: row.querySelector(`input[name="off-${i}"]`).checked
+    });
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Menyimpan...';
+
+  try {
+    const res = await fetch('/api/barber/schedule', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ schedules })
+    });
+    const data = await res.json();
+    if (data.success) {
+      closeScheduleModal();
+      const toast = document.createElement('div');
+      toast.textContent = 'Jadwal berhasil disimpan';
+      toast.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:10px 20px;border-radius:10px;font-size:.85rem;font-weight:600;z-index:999';
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    } else {
+      errEl.textContent = data.message || 'Gagal menyimpan jadwal.';
+      errEl.style.display = '';
+    }
+  } catch {
+    errEl.textContent = 'Terjadi kesalahan.';
+    errEl.style.display = '';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-check"></i> Simpan Jadwal';
+  }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   await checkAuth();
 
   document.querySelectorAll('.period-tab').forEach(btn => {
     btn.addEventListener('click', () => switchPeriod(btn.dataset.period));
+  });
+
+  document.getElementById('btn-refresh')?.addEventListener('click', loadDashboard);
+  document.getElementById('btn-schedule')?.addEventListener('click', openScheduleModal);
+  document.getElementById('sched-submit')?.addEventListener('click', submitSchedule);
+  document.getElementById('sched-overlay')?.addEventListener('click', e => {
+    if (e.target === document.getElementById('sched-overlay')) closeScheduleModal();
   });
 
   document.getElementById('btn-logout')?.addEventListener('click', async () => {

@@ -329,6 +329,8 @@
           <div class="hdr-sub">Dashboard Barber</div>
         </div>
         <div class="hdr-actions">
+          <button class="btn-icon" id="btn-refresh" title="Refresh"><i class="fa-solid fa-rotate"></i></button>
+          <button class="btn-icon" id="btn-schedule" title="Atur Jadwal"><i class="fa-solid fa-calendar-days"></i></button>
           <button class="btn-icon" id="btn-change-pw" title="Ubah Password"><i class="fa-solid fa-key"></i></button>
           <button class="btn-logout" id="btn-logout">Logout</button>
         </div>
@@ -429,6 +431,30 @@
       <p class="pw-error" id="pw-error"></p>
       <button class="pw-submit" id="pw-submit">
         <i class="fa-solid fa-check"></i> Simpan Password
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal Atur Jadwal -->
+  <div class="pw-overlay" id="sched-overlay">
+    <div class="pw-sheet" style="max-height:85vh;overflow-y:auto">
+      <div class="pw-handle"></div>
+      <div class="pw-title"><i class="fa-solid fa-calendar-days"></i> Atur Jadwal Saya</div>
+      <p style="font-size:0.78rem;color:#999;margin-bottom:14px">Centang hari libur jika tidak tersedia. Jadwal baru berlaku untuk booking berikutnya.</p>
+      <table id="sched-table" style="width:100%;border-collapse:collapse;font-size:0.85rem">
+        <thead>
+          <tr style="border-bottom:1px solid #e5e5e5">
+            <th style="text-align:left;padding:8px 4px;font-weight:600">Hari</th>
+            <th style="padding:8px 4px;font-weight:600">Mulai</th>
+            <th style="padding:8px 4px;font-weight:600">Selesai</th>
+            <th style="padding:8px 4px;font-weight:600">Libur</th>
+          </tr>
+        </thead>
+        <tbody id="sched-body"></tbody>
+      </table>
+      <p class="pw-error" id="sched-error"></p>
+      <button class="pw-submit" id="sched-submit" style="margin-top:14px">
+        <i class="fa-solid fa-check"></i> Simpan Jadwal
       </button>
     </div>
   </div>

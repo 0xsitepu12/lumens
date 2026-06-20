@@ -91,4 +91,38 @@ router.put('/change-password', async (req, res) => {
   }
 });
 
+router.get('/schedule', async (req, res) => {
+  try {
+    const barber = await getMyBarber(req);
+    if (!barber) return res.json({ success: false, message: 'Profil barber tidak ditemukan' });
+    const schedules = await db.getBarberSchedules(barber.id);
+    res.json({ success: true, data: { ...barber, schedules } });
+  } catch (err) {
+    console.error('[barber/schedule]', err.message);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+router.put('/schedule', async (req, res) => {
+  try {
+    const barber = await getMyBarber(req);
+    if (!barber) return res.json({ success: false, message: 'Profil barber tidak ditemukan' });
+
+    const { schedules } = req.body;
+    if (!Array.isArray(schedules)) return res.json({ success: false, message: 'Format tidak valid' });
+
+    for (const s of schedules) {
+      await db.upsertBarberSchedule(barber.id, s.day_of_week, {
+        shift_start: s.shift_start,
+        shift_end: s.shift_end,
+        is_off: s.is_off
+      });
+    }
+    res.json({ success: true, message: 'Jadwal disimpan' });
+  } catch (err) {
+    console.error('[barber/schedule]', err.message);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 module.exports = router;
