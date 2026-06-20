@@ -1,9 +1,16 @@
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const db = require('../db');
 const { SLOT_INTERVAL_MINUTES, nowWIB, todayWIB } = require('../config');
 const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
+
+const bookingLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { success: false, message: 'Terlalu banyak booking. Coba lagi nanti.' }
+});
 
 router.get('/services', async (req, res) => {
   try {
@@ -100,7 +107,7 @@ router.get('/slots', async (req, res) => {
   }
 });
 
-router.post('/create', async (req, res) => {
+router.post('/create', bookingLimiter, async (req, res) => {
   try {
     const { customer_name, customer_phone, customer_email, service_id, barber_id, booking_date, booking_time, notes } = req.body;
 

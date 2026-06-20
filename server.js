@@ -9,6 +9,11 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3003;
 
+if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
+  console.error('JWT_SECRET harus minimal 32 karakter');
+  process.exit(1);
+}
+
 app.set('trust proxy', 1);
 
 app.use(helmet({
@@ -26,7 +31,7 @@ app.use(helmet({
 
 app.use(compression());
 app.use(cookieParser());
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '100kb' }));
 
 const isLocalhost = (req) => ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(req.ip);
 

@@ -469,7 +469,7 @@ async function loadAdminBarbers() {
           </div>
           <div class="item-card__actions" style="display:flex;flex-direction:column;gap:6px">
             <button class="btn btn--outline btn--sm" data-edit-barber="${b.id}" title="Edit"><i class="fa-solid fa-pen"></i></button>
-            <button class="btn btn--outline btn--sm" data-pw-barber="${b.id}" data-pw-name="${esc(b.name)}" title="Ganti Password"><i class="fa-solid fa-key"></i></button>
+            <button class="btn btn--outline btn--sm" data-pw-barber="${b.id}" data-pw-name="${escAttr(b.name)}" title="Ganti Password"><i class="fa-solid fa-key"></i></button>
           </div>
         </div>`;
     }).join('');
@@ -683,11 +683,11 @@ async function loadStaffList() {
           <div style="font-size:.75rem;color:var(--text-muted);">@${esc(u.username)}</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
-          <select data-role-username="${esc(u.username)}" style="padding:5px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:.8rem;font-family:inherit;background:var(--bg-card);">
+          <select data-role-username="${escAttr(u.username)}" style="padding:5px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:.8rem;font-family:inherit;background:var(--bg-card);">
             <option value="kasir" ${u.role === 'kasir' ? 'selected' : ''}>Kasir</option>
             <option value="barber" ${u.role === 'barber' ? 'selected' : ''}>Barber</option>
           </select>
-          <button class="btn btn--primary btn--sm" data-save-role="${esc(u.username)}" style="white-space:nowrap;font-size:.78rem;">Simpan</button>
+          <button class="btn btn--primary btn--sm" data-save-role="${escAttr(u.username)}" style="white-space:nowrap;font-size:.78rem;">Simpan</button>
         </div>
       </div>
     `).join('');

@@ -48,6 +48,9 @@ router.get('/me', requireAuth, (req, res) => {
 });
 
 router.post('/setup', async (req, res) => {
+  if (process.env.NODE_ENV === 'production')
+    return res.status(404).json({ success: false, message: 'Not found' });
+
   try {
     const existing = await db.getUserByUsername('admin');
     if (existing) return res.json({ success: false, message: 'Admin sudah ada' });

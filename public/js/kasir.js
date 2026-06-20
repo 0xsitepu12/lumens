@@ -250,7 +250,7 @@ async function openWalkInModal() {
     const data = await res.json();
     const services = data.data || [];
     svcSel.innerHTML = '<option value="">— Pilih Layanan —</option>' +
-      services.map(s => `<option value="${s.id}" data-price="${s.price}" data-duration="${s.duration_minutes}">${s.name} — Rp ${s.price.toLocaleString('id-ID')}</option>`).join('');
+      services.map(s => `<option value="${s.id}" data-price="${s.price}" data-duration="${s.duration_minutes}">${esc(s.name)} — Rp ${s.price.toLocaleString('id-ID')}</option>`).join('');
   } catch {
     svcSel.innerHTML = '<option value="">— Gagal memuat —</option>';
   }
@@ -263,7 +263,7 @@ async function openWalkInModal() {
     const data = await res.json();
     const barbers = data.data || [];
     barberSel.innerHTML = '<option value="">— Pilih Stylist —</option>' +
-      barbers.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
+      barbers.map(b => `<option value="${b.id}">${esc(b.name)}</option>`).join('');
   } catch {
     barberSel.innerHTML = '<option value="">— Gagal memuat —</option>';
   }

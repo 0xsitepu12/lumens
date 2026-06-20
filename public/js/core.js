@@ -4,6 +4,10 @@ function esc(str) {
   return d.innerHTML;
 }
 
+function escAttr(str) {
+  return (str ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 async function apiGet(endpoint) {
   const res = await fetch(endpoint, { credentials: 'include' });
   if (!res.ok) throw new Error(`${res.status} ${endpoint}`);

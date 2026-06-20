@@ -540,7 +540,7 @@ router.put('/staff/:username/role', async (req, res) => {
     res.json({ success: true, message: `Role ${req.params.username} berhasil diubah ke ${role}` });
   } catch (err) {
     console.error('[admin/staff/role]', err.message);
-    res.status(500).json({ success: false, message: err.message });
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 
