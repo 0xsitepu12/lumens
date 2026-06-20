@@ -20,7 +20,7 @@ router.get('/barbers', async (req, res) => {
     const { date } = req.query;
 
     if (date) {
-      const dayOfWeek = new Date(date + 'T00:00:00').getDay();
+      const dayOfWeek = new Date(date + 'T12:00:00').getDay();
       const available = await db.getAvailableBarbersForDay(dayOfWeek);
       const barbers = available.map(s => ({
         id: s.barbers.id,
@@ -56,7 +56,7 @@ router.get('/slots', async (req, res) => {
     if (!date || !barber_id || !duration)
       return res.json({ success: false, message: 'date, barber_id, dan duration wajib' });
 
-    const dayOfWeek = new Date(date + 'T00:00:00').getDay();
+    const dayOfWeek = new Date(date + 'T12:00:00').getDay();
 
     const schedule = await db.getBarberSchedule(barber_id, dayOfWeek);
 
@@ -72,8 +72,8 @@ router.get('/slots', async (req, res) => {
     const durationMin = parseInt(duration);
     const slots = [];
 
-    const now = new Date();
-    const today = now.toISOString().split('T')[0];
+    const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
+    const today = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
     const isToday = date === today;
     const nowMinutes = isToday ? now.getHours() * 60 + now.getMinutes() : 0;
 

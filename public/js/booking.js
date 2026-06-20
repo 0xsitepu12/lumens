@@ -92,7 +92,7 @@ function renderDatePicker() {
   for (let i = startDay; i < startDay + 28; i++) {
     const d = new Date(now);
     d.setDate(d.getDate() + i);
-    const dateStr = d.toISOString().split('T')[0];
+    const dateStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     const dayShort = DAYS_SHORT[d.getDay()];
     const dateNum = d.getDate();
     const month = d.getMonth();
