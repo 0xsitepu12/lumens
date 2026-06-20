@@ -24,4 +24,13 @@ const COOKIE_OPTIONS = {
   maxAge: 7 * 24 * 60 * 60 * 1000
 };
 
-module.exports = { STORE_NAME, BOOKING_STATUS, ROLES, SLOT_INTERVAL_MINUTES, DAYS_ID, COOKIE_OPTIONS };
+function nowWIB() {
+  return new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
+}
+
+function todayWIB() {
+  const d = nowWIB();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+module.exports = { STORE_NAME, BOOKING_STATUS, ROLES, SLOT_INTERVAL_MINUTES, DAYS_ID, COOKIE_OPTIONS, nowWIB, todayWIB };

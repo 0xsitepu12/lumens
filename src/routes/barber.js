@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const db = require('../db');
 const { requireAuth } = require('../middleware/auth');
+const { nowWIB, todayWIB } = require('../config');
 
 const router = express.Router();
 router.use(requireAuth);
@@ -29,13 +30,13 @@ router.get('/stats', async (req, res) => {
     if (!barber) return res.json({ success: false, message: 'Profil barber tidak ditemukan' });
 
     const { period } = req.query;
-    const today = new Date().toISOString().split('T')[0];
+    const today = todayWIB();
     let startDate;
 
     if (period === 'week') {
-      const d = new Date();
+      const d = nowWIB();
       d.setDate(d.getDate() - d.getDay() + 1);
-      startDate = d.toISOString().split('T')[0];
+      startDate = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     } else if (period === 'month') {
       startDate = today.slice(0, 7) + '-01';
     } else if (period === 'all') {

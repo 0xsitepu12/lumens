@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const db = require('../db');
 const { requireAdmin } = require('../middleware/auth');
-const { DAYS_ID } = require('../config');
+const { DAYS_ID, todayWIB } = require('../config');
 
 const RESET_CONFIG_PATH = path.join(__dirname, '../config/reset-config.json');
 
@@ -26,7 +26,7 @@ router.use(requireAdmin);
 // ============================================
 router.get('/dashboard', async (req, res) => {
   try {
-    const today = new Date().toISOString().split('T')[0];
+    const today = todayWIB();
     const startOfMonth = today.slice(0, 7) + '-01';
 
     const todayBookings = await db.getBookingsByDate(today);
@@ -73,8 +73,8 @@ router.get('/dashboard', async (req, res) => {
 router.get('/analytics/peak-hours', async (req, res) => {
   try {
     const { start, end } = req.query;
-    const startDate = start || new Date().toISOString().split('T')[0].slice(0, 7) + '-01';
-    const endDate = end || new Date().toISOString().split('T')[0];
+    const startDate = start || todayWIB().slice(0, 7) + '-01';
+    const endDate = end || todayWIB();
 
     const bookings = await db.getBookingsForAnalytics(startDate, endDate);
     const hourCounts = {};
@@ -102,14 +102,14 @@ router.get('/analytics/peak-hours', async (req, res) => {
 router.get('/analytics/peak-days', async (req, res) => {
   try {
     const { start, end } = req.query;
-    const startDate = start || new Date().toISOString().split('T')[0].slice(0, 7) + '-01';
-    const endDate = end || new Date().toISOString().split('T')[0];
+    const startDate = start || todayWIB().slice(0, 7) + '-01';
+    const endDate = end || todayWIB();
 
     const bookings = await db.getBookingsForAnalytics(startDate, endDate);
     const dayCounts = [0, 0, 0, 0, 0, 0, 0];
 
     bookings.forEach(b => {
-      const day = new Date(b.booking_date + 'T00:00:00').getDay();
+      const day = new Date(b.booking_date + 'T12:00:00').getDay();
       dayCounts[day]++;
     });
 
@@ -127,8 +127,8 @@ router.get('/analytics/peak-days', async (req, res) => {
 router.get('/analytics/services', async (req, res) => {
   try {
     const { start, end } = req.query;
-    const startDate = start || new Date().toISOString().split('T')[0].slice(0, 7) + '-01';
-    const endDate = end || new Date().toISOString().split('T')[0];
+    const startDate = start || todayWIB().slice(0, 7) + '-01';
+    const endDate = end || todayWIB();
 
     const data = await db.getPopularServices(startDate, endDate);
     res.json({ success: true, data });
@@ -144,8 +144,8 @@ router.get('/analytics/services', async (req, res) => {
 router.get('/analytics/barbers', async (req, res) => {
   try {
     const { start, end } = req.query;
-    const startDate = start || new Date().toISOString().split('T')[0].slice(0, 7) + '-01';
-    const endDate = end || new Date().toISOString().split('T')[0];
+    const startDate = start || todayWIB().slice(0, 7) + '-01';
+    const endDate = end || todayWIB();
 
     const data = await db.getBarberPerformance(startDate, endDate);
     res.json({ success: true, data });
@@ -161,8 +161,8 @@ router.get('/analytics/barbers', async (req, res) => {
 router.get('/analytics/revenue', async (req, res) => {
   try {
     const { start, end } = req.query;
-    const startDate = start || new Date().toISOString().split('T')[0].slice(0, 7) + '-01';
-    const endDate = end || new Date().toISOString().split('T')[0];
+    const startDate = start || todayWIB().slice(0, 7) + '-01';
+    const endDate = end || todayWIB();
 
     const data = await db.getRevenueByDateRange(startDate, endDate);
     const daily = {};
@@ -352,7 +352,7 @@ router.get('/export/bookings', async (req, res) => {
   try {
     const { start, end } = req.query;
     const startDate = start || '2020-01-01';
-    const endDate = end || new Date().toISOString().split('T')[0];
+    const endDate = end || todayWIB();
     const bookings = await db.getBookingsForAnalytics(startDate, endDate);
     const statusMap = { pending: 'Menunggu', confirmed: 'Dikonfirmasi', completed: 'Selesai', cancelled: 'Dibatalkan', no_show: 'Tidak Hadir' };
 
@@ -418,8 +418,8 @@ router.get('/export/services', async (req, res) => {
 router.get('/export/revenue', async (req, res) => {
   try {
     const { start, end } = req.query;
-    const startDate = start || new Date().toISOString().split('T')[0].slice(0, 7) + '-01';
-    const endDate = end || new Date().toISOString().split('T')[0];
+    const startDate = start || todayWIB().slice(0, 7) + '-01';
+    const endDate = end || todayWIB();
     const bookings = await db.getBookingsForAnalytics(startDate, endDate);
 
     const daily = {};

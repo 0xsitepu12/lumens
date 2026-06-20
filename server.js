@@ -44,7 +44,12 @@ const authLimiter = rateLimit({
 });
 
 app.use(express.static(path.join(__dirname, 'public'), {
-  maxAge: process.env.NODE_ENV === 'production' ? '1d' : 0
+  maxAge: process.env.NODE_ENV === 'production' ? '1h' : 0,
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-cache');
+    }
+  }
 }));
 
 app.use('/api/auth', authLimiter, require('./src/routes/auth'));

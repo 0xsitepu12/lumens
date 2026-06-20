@@ -1,6 +1,6 @@
 const express = require('express');
 const db = require('../db');
-const { SLOT_INTERVAL_MINUTES } = require('../config');
+const { SLOT_INTERVAL_MINUTES, nowWIB, todayWIB } = require('../config');
 const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
@@ -72,8 +72,8 @@ router.get('/slots', async (req, res) => {
     const durationMin = parseInt(duration);
     const slots = [];
 
-    const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
-    const today = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+    const now = nowWIB();
+    const today = todayWIB();
     const isToday = date === today;
     const nowMinutes = isToday ? now.getHours() * 60 + now.getMinutes() : 0;
 
@@ -110,7 +110,7 @@ router.post('/create', async (req, res) => {
     const service = await db.getServiceById(service_id);
     if (!service) return res.json({ success: false, message: 'Layanan tidak ditemukan' });
 
-    const dayOfWeek = new Date(booking_date + 'T00:00:00').getDay();
+    const dayOfWeek = new Date(booking_date + 'T12:00:00').getDay();
     const schedule = await db.getBarberSchedule(barber_id, dayOfWeek);
     if (!schedule || schedule.is_off)
       return res.json({ success: false, message: 'Stylist tidak tersedia di hari ini' });
@@ -169,7 +169,7 @@ router.get('/check/:id', async (req, res) => {
 // ============================================
 router.get('/kasir/today', requireAuth, async (req, res) => {
   try {
-    const date = req.query.date || new Date().toISOString().split('T')[0];
+    const date = req.query.date || todayWIB();
     const bookings = await db.getBookingsByDate(date);
     res.json({ success: true, data: bookings, date });
   } catch (err) {
