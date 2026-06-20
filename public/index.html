@@ -17,6 +17,252 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="/css/style.css">
+  <style>
+    /* ── Hero Section ── */
+    .hero-section {
+      position: relative;
+      overflow: hidden;
+      min-height: calc(100vh - var(--header-height));
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 70% 20%, rgba(0,0,0,0.03) 0%, transparent 60%),
+                  radial-gradient(ellipse at 20% 80%, rgba(0,0,0,0.02) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .hero-inner {
+      position: relative;
+      display: flex;
+      flex-direction: column-reverse;
+      align-items: center;
+      gap: 1rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1.5rem 20px 0;
+    }
+
+    /* ── Hero Text ── */
+    .hero-text {
+      text-align: center;
+      max-width: 520px;
+      animation: heroFadeUp 0.7s ease both;
+    }
+
+    @keyframes heroFadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 2.5px;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+      padding: 6px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+    }
+
+    .hero-label i { font-size: 0.55rem; }
+
+    .hero-text h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      line-height: 1.12;
+      margin-bottom: 1rem;
+      letter-spacing: -0.5px;
+    }
+
+    .hero-text .hero-desc {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      margin-bottom: 1.75rem;
+      line-height: 1.65;
+    }
+
+    .hero-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: stretch;
+      max-width: 300px;
+      margin: 0 auto 1.5rem;
+    }
+
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .hero-stat-num {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      line-height: 1;
+    }
+
+    .hero-stat-label {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 4px;
+    }
+
+    /* ── Hero Mockup ── */
+    .hero-mockup {
+      display: none;
+      position: relative;
+      max-width: 300px;
+      width: 100%;
+      animation: heroFloat 0.8s ease 0.15s both;
+    }
+
+    @keyframes heroFloat {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-mockup img {
+      width: 100%;
+      height: auto;
+      mix-blend-mode: multiply;
+      filter: contrast(1.02);
+    }
+
+    .hero-mockup::before {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 15%;
+      right: 15%;
+      height: 30px;
+      background: radial-gradient(ellipse, rgba(0,0,0,0.08) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    /* ── Features Strip ── */
+    .features-strip {
+      background: var(--bg-card);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 2.5rem 0;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      text-align: center;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .feature-item {
+      padding: 0.75rem;
+    }
+
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: var(--bg-elevated);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 0.75rem;
+      font-size: 1.15rem;
+      color: var(--text-primary);
+    }
+
+    .feature-item h4 {
+      font-size: 0.88rem;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+    }
+
+    .feature-item p {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* ── CTA Banner ── */
+    .cta-banner {
+      text-align: center;
+      padding: 3.5rem 20px;
+      position: relative;
+    }
+
+    .cta-banner::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center, rgba(0,0,0,0.02) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .cta-banner h2 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+      position: relative;
+    }
+
+    .cta-banner p {
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      font-size: 0.95rem;
+      position: relative;
+    }
+
+    /* ── Responsive ── */
+    @media (min-width: 768px) {
+      .hero-inner {
+        flex-direction: row;
+        align-items: center;
+        padding: 3rem 2rem 0;
+        gap: 2rem;
+      }
+      .hero-text {
+        text-align: left;
+        flex: 1;
+      }
+      .hero-text h1 { font-size: 2.75rem; }
+      .hero-buttons {
+        margin: 0 0 1.5rem;
+        flex-direction: row;
+        max-width: none;
+      }
+      .hero-stats { justify-content: flex-start; }
+      .hero-mockup { display: block; max-width: 360px; flex-shrink: 0; }
+      .features-grid { grid-template-columns: repeat(3, 1fr); }
+      .cta-banner h2 { font-size: 2rem; }
+    }
+
+    @media (min-width: 1024px) {
+      .hero-text h1 { font-size: 3.2rem; }
+      .hero-mockup { max-width: 420px; }
+      .hero-inner { padding: 2rem 2rem 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .hero-text, .hero-mockup { animation: none; }
+    }
+  </style>
 </head>
 <body>
 
@@ -42,7 +288,6 @@
       </div>
     </div>
 
-    <!-- Mobile Menu -->
     <div class="mobile-menu" id="mobile-menu">
       <a href="/" class="active">Beranda</a>
       <a href="#services">Layanan</a>
@@ -53,18 +298,59 @@
 
   <main>
     <!-- HERO -->
-    <section class="hero">
-      <div class="hero-content">
-        <div class="hero-badge">Your Style, Your Identity</div>
-        <h1 class="metallic-text">Look Good,<br>Feel Confident</h1>
-        <p>Rawat penampilanmu dengan layanan terbaik. Booking mudah, hasilnya nyata.</p>
-        <div class="hero-buttons">
-          <a href="/booking" class="btn btn-primary">
-            Booking Sekarang <i class="fa-solid fa-arrow-right"></i>
-          </a>
-          <a href="#services" class="btn btn-outline">
-            Lihat Layanan
-          </a>
+    <section class="hero-section">
+      <div class="hero-bg"></div>
+      <div class="hero-inner">
+        <div class="hero-text">
+          <div class="hero-label"><i class="fa-solid fa-scissors"></i> Your Style, Your Identity</div>
+          <h1 class="metallic-text">Look Good,<br>Feel Confident</h1>
+          <p class="hero-desc">Rawat penampilanmu dengan layanan terbaik. Booking mudah dari HP, pilih stylist favoritmu, dan dapatkan hasil yang nyata.</p>
+          <div class="hero-buttons">
+            <a href="/booking" class="btn btn-primary">
+              Booking Sekarang <i class="fa-solid fa-arrow-right"></i>
+            </a>
+            <a href="#services" class="btn btn-outline">
+              Lihat Layanan
+            </a>
+          </div>
+          <div class="hero-stats">
+            <div>
+              <div class="hero-stat-num">4</div>
+              <div class="hero-stat-label">Stylist</div>
+            </div>
+            <div>
+              <div class="hero-stat-num">13</div>
+              <div class="hero-stat-label">Layanan</div>
+            </div>
+            <div>
+              <div class="hero-stat-num">7/7</div>
+              <div class="hero-stat-label">Buka Setiap Hari</div>
+            </div>
+          </div>
+        </div>
+        <div class="hero-mockup">
+          <img src="/Assets/mockupip.png" alt="LUMEN'S STUDIO Booking App" loading="eager">
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="features-strip">
+      <div class="features-grid">
+        <div class="feature-item">
+          <div class="feature-icon"><i class="fa-solid fa-mobile-screen-button"></i></div>
+          <h4>Booking Online</h4>
+          <p>Pilih layanan dan waktu langsung dari HP. Tanpa telepon, tanpa ribet.</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon"><i class="fa-solid fa-user-check"></i></div>
+          <h4>Pilih Stylist</h4>
+          <p>Tentukan stylist favorit kamu sesuai jadwal yang tersedia.</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon"><i class="fa-solid fa-bolt"></i></div>
+          <h4>Tanpa Antri</h4>
+          <p>Datang sesuai jadwal booking, langsung dilayani.</p>
         </div>
       </div>
     </section>
@@ -73,7 +359,7 @@
     <section class="services-section section" id="services">
       <div class="container">
         <div class="section-header">
-          <h2>Layanan</h2>
+          <h2>Layanan Kami</h2>
           <p>Solusi lengkap untuk gaya dan perawatan rambut kamu</p>
         </div>
         <div class="services-grid" id="services-grid">
@@ -104,27 +390,13 @@
       </div>
     </section>
 
-    <!-- WHY US -->
-    <section class="section">
-      <div class="container">
-        <div class="section-header">
-          <h2 class="metallic-text">The LUMEN'S Experience</h2>
-        </div>
-        <div class="steps-grid">
-          <div class="step-item">
-            <h3>Booking Online</h3>
-            <p>Pilih layanan dan waktu langsung dari HP. Tanpa antri, tanpa ribet.</p>
-          </div>
-          <div class="step-item">
-            <h3>Tim Profesional</h3>
-            <p>Stylist berpengalaman yang paham kebutuhan gaya kamu.</p>
-          </div>
-          <div class="step-item">
-            <h3>Hasil Nyata</h3>
-            <p>Perawatan berkualitas yang bikin kamu tampil beda setiap hari.</p>
-          </div>
-        </div>
-      </div>
+    <!-- CTA BANNER -->
+    <section class="cta-banner">
+      <h2 class="metallic-text">Siap Tampil Beda?</h2>
+      <p>Booking sekarang dan rasakan pengalaman LUMEN'S STUDIO</p>
+      <a href="/booking" class="btn btn-primary btn-lg" style="position:relative">
+        Booking Sekarang <i class="fa-solid fa-arrow-right"></i>
+      </a>
     </section>
   </main>
 
@@ -166,7 +438,6 @@
 
   <script>
   (function() {
-    // Mobile menu toggle
     var toggle = document.getElementById('nav-toggle');
     var menu = document.getElementById('mobile-menu');
     toggle.addEventListener('click', function() {
@@ -182,7 +453,6 @@
       });
     });
 
-    // Smooth scroll
     document.querySelectorAll('a[href^="#"]').forEach(function(a) {
       a.addEventListener('click', function(e) {
         var target = document.querySelector(this.getAttribute('href'));
@@ -194,14 +464,12 @@
       });
     });
 
-    // Header scroll
     var header = document.getElementById('header');
     var ctaHeader = document.getElementById('cta-header');
     window.addEventListener('scroll', function() {
       header.style.borderBottomColor = window.scrollY > 50 ? '' : 'transparent';
       if (ctaHeader) ctaHeader.style.display = window.scrollY > 300 ? '' : 'none';
     }, { passive: true });
-
   })();
   </script>
 </body>
