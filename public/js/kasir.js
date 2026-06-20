@@ -295,7 +295,7 @@ async function submitWalkIn() {
   btn.disabled = true;
   btn.textContent = 'Menyimpan...';
   try {
-    const res = await fetch('/api/booking', {
+    const res = await fetch('/api/booking/create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
