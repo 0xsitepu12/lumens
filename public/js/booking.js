@@ -2,6 +2,7 @@ const state = {
   step: 1,
   services: [],
   barbers: [],
+  selectedServices: [],
   selectedService: null,
   selectedBarber: null,
   selectedDate: null,
@@ -67,11 +68,54 @@ function renderServices() {
 }
 
 function selectService(id) {
-  state.selectedService = state.services.find(s => s.id === id);
+  const idx = state.selectedServices.indexOf(id);
+  if (idx >= 0) {
+    state.selectedServices.splice(idx, 1);
+  } else {
+    state.selectedServices.push(id);
+  }
+
   document.querySelectorAll('#service-list .svc-row').forEach(c => {
-    c.classList.toggle('selected', c.dataset.id === id);
+    c.classList.toggle('selected', state.selectedServices.includes(c.dataset.id));
   });
-  goToStep(2);
+
+  if (state.selectedServices.length > 0) {
+    state.selectedService = state.services.find(s => s.id === state.selectedServices[0]);
+  } else {
+    state.selectedService = null;
+  }
+
+  updateServiceSummary();
+  updateNavButtons();
+}
+
+function getSelectedTotal() {
+  const selected = state.selectedServices.map(id => state.services.find(s => s.id === id)).filter(Boolean);
+  return {
+    names: selected.map(s => s.name),
+    price: selected.reduce((sum, s) => sum + (s.price || 0), 0),
+    duration: selected.reduce((sum, s) => sum + (s.duration_minutes || 0), 0),
+  };
+}
+
+function updateServiceSummary() {
+  let bar = document.getElementById('svc-summary-bar');
+  const total = getSelectedTotal();
+
+  if (state.selectedServices.length === 0) {
+    if (bar) bar.style.display = 'none';
+    return;
+  }
+
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.id = 'svc-summary-bar';
+    bar.style.cssText = 'position:sticky;bottom:60px;background:#1a1a1a;color:#fff;border-radius:12px;padding:10px 16px;margin:12px 0 0;display:flex;justify-content:space-between;align-items:center;font-size:0.82rem;z-index:5';
+    document.getElementById('service-list').after(bar);
+  }
+
+  bar.style.display = 'flex';
+  bar.innerHTML = '<span>' + state.selectedServices.length + ' layanan &middot; ' + total.duration + ' mnt</span><span style="font-weight:800">' + formatRupiah(total.price) + '</span>';
 }
 
 // ============================================
@@ -188,7 +232,8 @@ async function loadTimeSlotsForBarber() {
   slotsContainer.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:1rem"><i class="fa-solid fa-spinner fa-spin" style="color:var(--text-muted)"></i></div>';
 
   try {
-    const res = await apiGet(`/api/booking/slots?date=${state.selectedDate}&barber_id=${state.selectedBarber.id}&duration=${state.selectedService.duration_minutes}`);
+    const totalDuration = getSelectedTotal().duration || state.selectedService.duration_minutes;
+    const res = await apiGet(`/api/booking/slots?date=${state.selectedDate}&barber_id=${state.selectedBarber.id}&duration=${totalDuration}`);
 
     if (res.data && res.data.length > 0) {
       slotsContainer.innerHTML = res.data.map(s => `
@@ -210,12 +255,13 @@ async function loadTimeSlotsForBarber() {
 // ============================================
 function renderSummary() {
   const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-  set('summary-service', state.selectedService?.name || '-');
+  const total = getSelectedTotal();
+  set('summary-service', total.names.join(' + ') || '-');
   set('summary-barber', state.selectedBarber?.name || '-');
   set('summary-date', state.selectedDate ? formatDate(state.selectedDate) : '-');
   set('summary-time', state.selectedTime || '-');
-  set('summary-duration', (state.selectedService?.duration_minutes || '-') + ' menit');
-  set('summary-price', formatRupiah(state.selectedService?.price || 0));
+  set('summary-duration', total.duration + ' menit');
+  set('summary-price', formatRupiah(total.price));
 }
 
 async function confirmBooking() {
@@ -229,6 +275,9 @@ async function confirmBooking() {
   btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses...';
 
   try {
+    const total = getSelectedTotal();
+    const extraNames = total.names.length > 1 ? total.names.join(' + ') : null;
+
     const res = await apiPost('/api/booking/create', {
       customer_name: name,
       customer_phone: phone,
@@ -237,7 +286,9 @@ async function confirmBooking() {
       barber_id: state.selectedBarber.id,
       booking_date: state.selectedDate,
       booking_time: state.selectedTime,
-      notes: null
+      notes: extraNames,
+      total_price_override: total.names.length > 1 ? total.price : undefined,
+      duration_override: total.names.length > 1 ? total.duration : undefined
     });
 
     if (res.success) {
@@ -257,7 +308,8 @@ async function confirmBooking() {
 function renderSuccess(booking) {
   const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
   set('success-booking-id', booking.id?.slice(0, 8).toUpperCase() || '-');
-  set('success-service', state.selectedService?.name || '-');
+  const total = getSelectedTotal();
+  set('success-service', total.names.join(' + ') || '-');
   set('success-barber', state.selectedBarber?.name || '-');
   set('success-date', formatDate(state.selectedDate));
   set('success-time', state.selectedTime);
@@ -268,7 +320,7 @@ function renderSuccess(booking) {
     const msg = encodeURIComponent(
       `Halo LUMEN'S STUDIO,\n` +
       `Saya ${name} sudah booking:\n` +
-      `📋 ${state.selectedService?.name}\n` +
+      `📋 ${total.names.join(' + ')}\n` +
       `💇 Stylist: ${state.selectedBarber?.name}\n` +
       `📅 ${formatDate(state.selectedDate)}\n` +
       `⏰ ${state.selectedTime}\n` +
@@ -287,7 +339,7 @@ function goToStep(step) {
 
   // Validation
   if (step > state.step) {
-    if (state.step === 1 && !state.selectedService) { showToast('Pilih layanan terlebih dahulu', 'error'); return; }
+    if (state.step === 1 && state.selectedServices.length === 0) { showToast('Pilih layanan terlebih dahulu', 'error'); return; }
     if (state.step === 2 && !state.selectedDate) { showToast('Pilih tanggal terlebih dahulu', 'error'); return; }
     if (state.step === 3 && (!state.selectedBarber || !state.selectedTime)) { showToast('Pilih stylist dan waktu', 'error'); return; }
   }
@@ -342,7 +394,7 @@ function updateStepIndicator() {
 function updateNavButtons() {
   const btnNext = document.getElementById('btn-next');
   if (!btnNext) return;
-  if (state.step === 1) btnNext.disabled = !state.selectedService;
+  if (state.step === 1) btnNext.disabled = state.selectedServices.length === 0;
   else if (state.step === 2) btnNext.disabled = !state.selectedDate;
   else if (state.step === 3) btnNext.disabled = !state.selectedBarber || !state.selectedTime;
 }

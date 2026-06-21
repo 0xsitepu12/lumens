@@ -109,7 +109,7 @@ router.get('/slots', async (req, res) => {
 
 router.post('/create', bookingLimiter, async (req, res) => {
   try {
-    const { customer_name, customer_phone, customer_email, service_id, barber_id, booking_date, booking_time, notes } = req.body;
+    const { customer_name, customer_phone, customer_email, service_id, barber_id, booking_date, booking_time, notes, total_price_override, duration_override } = req.body;
 
     if (!customer_name || !customer_phone || !service_id || !barber_id || !booking_date || !booking_time)
       return res.json({ success: false, message: 'Semua field wajib diisi' });
@@ -122,8 +122,9 @@ router.post('/create', bookingLimiter, async (req, res) => {
     if (!schedule || schedule.is_off)
       return res.json({ success: false, message: 'Stylist tidak tersedia di hari ini' });
 
+    const actualDuration = duration_override || service.duration_minutes;
     const [h, m] = booking_time.split(':').map(Number);
-    const endMinutes = h * 60 + m + service.duration_minutes;
+    const endMinutes = h * 60 + m + actualDuration;
     const end_time = `${String(Math.floor(endMinutes / 60)).padStart(2, '0')}:${String(endMinutes % 60).padStart(2, '0')}`;
 
     const existingBookings = await db.getBookingsByBarberAndDate(barber_id, booking_date);
@@ -145,8 +146,8 @@ router.post('/create', bookingLimiter, async (req, res) => {
       booking_date,
       booking_time,
       end_time,
-      duration_minutes: service.duration_minutes,
-      total_price: service.price,
+      duration_minutes: actualDuration,
+      total_price: total_price_override || service.price,
       notes: notes?.trim() || null
     });
 
