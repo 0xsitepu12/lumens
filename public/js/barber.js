@@ -1,6 +1,7 @@
 let currentPeriod = 'today';
 let perfChart = null;
-let calYear, calMonth, calSelectedDate;
+let calWeekStart;
+let calSelectedDate;
 let bookingDates = {};
 
 const STATUS_MAP = {
@@ -18,11 +19,24 @@ const PERIOD_LABEL = {
   all:   'Semua waktu'
 };
 
-const MONTHS_ID = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const DAYS_SHORT = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
 
 function todayStr() {
   const d = new Date();
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function fmtDate(d) {
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function getWeekStart(dateStr) {
+  const d = dateStr ? new Date(dateStr + 'T12:00:00') : new Date();
+  const day = d.getDay();
+  const diff = day === 0 ? 6 : day - 1;
+  d.setDate(d.getDate() - diff);
+  return d;
 }
 
 function renderCalendar() {
@@ -30,34 +44,32 @@ function renderCalendar() {
   const title = document.getElementById('cal-title');
   if (!grid) return;
 
-  title.textContent = MONTHS_ID[calMonth] + ' ' + calYear;
-
-  const firstDay = new Date(calYear, calMonth, 1);
-  let startDay = firstDay.getDay() - 1;
-  if (startDay < 0) startDay = 6;
-
-  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
-  const daysInPrev = new Date(calYear, calMonth, 0).getDate();
   const today = todayStr();
+  const weekEnd = new Date(calWeekStart);
+  weekEnd.setDate(weekEnd.getDate() + 6);
+
+  const startMonth = MONTHS_SHORT[calWeekStart.getMonth()];
+  const endMonth = MONTHS_SHORT[weekEnd.getMonth()];
+  if (startMonth === endMonth) {
+    title.textContent = calWeekStart.getDate() + ' - ' + weekEnd.getDate() + ' ' + endMonth + ' ' + weekEnd.getFullYear();
+  } else {
+    title.textContent = calWeekStart.getDate() + ' ' + startMonth + ' - ' + weekEnd.getDate() + ' ' + endMonth;
+  }
 
   let html = '';
-
-  for (let i = startDay - 1; i >= 0; i--) {
-    html += '<button class="cal-cell other-month">' + (daysInPrev - i) + '</button>';
-  }
-
-  for (let d = 1; d <= daysInMonth; d++) {
-    const dateStr = calYear + '-' + String(calMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(calWeekStart);
+    d.setDate(d.getDate() + i);
+    const dateStr = fmtDate(d);
     const isToday = dateStr === today ? ' today' : '';
     const isSelected = dateStr === calSelectedDate ? ' selected' : '';
-    const hasDot = bookingDates[dateStr] ? '<span class="cal-dot"></span>' : '';
-    html += '<button class="cal-cell' + isToday + isSelected + '" data-date="' + dateStr + '">' + d + hasDot + '</button>';
-  }
+    const dot = bookingDates[dateStr] ? '<span class="cal-dot"></span>' : '';
 
-  const totalCells = startDay + daysInMonth;
-  const remaining = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
-  for (let i = 1; i <= remaining; i++) {
-    html += '<button class="cal-cell other-month">' + i + '</button>';
+    html += '<button class="cal-cell' + isToday + isSelected + '" data-date="' + dateStr + '">'
+      + '<span class="cal-day">' + DAYS_SHORT[d.getDay()] + '</span>'
+      + '<span class="cal-num">' + d.getDate() + '</span>'
+      + dot
+      + '</button>';
   }
 
   grid.innerHTML = html;
@@ -74,14 +86,12 @@ function renderCalendar() {
 }
 
 function calPrev() {
-  calMonth--;
-  if (calMonth < 0) { calMonth = 11; calYear--; }
+  calWeekStart.setDate(calWeekStart.getDate() - 7);
   renderCalendar();
 }
 
 function calNext() {
-  calMonth++;
-  if (calMonth > 11) { calMonth = 0; calYear++; }
+  calWeekStart.setDate(calWeekStart.getDate() + 7);
   renderCalendar();
 }
 
@@ -539,9 +549,7 @@ async function submitSchedule() {
 document.addEventListener('DOMContentLoaded', async () => {
   await checkAuth();
 
-  const now = new Date();
-  calYear = now.getFullYear();
-  calMonth = now.getMonth();
+  calWeekStart = getWeekStart();
   calSelectedDate = null;
   renderCalendar();
 
