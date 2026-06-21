@@ -66,11 +66,15 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-app.get('/booking', (req, res) => res.sendFile(path.join(__dirname, 'public', 'booking.html')));
-app.get('/kasir', (req, res) => res.sendFile(path.join(__dirname, 'public', 'kasir.html')));
-app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
-app.get('/barber', (req, res) => res.sendFile(path.join(__dirname, 'public', 'barber.html')));
-app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));
+const sendPage = (file) => (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.sendFile(path.join(__dirname, 'public', file));
+};
+app.get('/booking', sendPage('booking.html'));
+app.get('/kasir', sendPage('kasir.html'));
+app.get('/admin', sendPage('admin.html'));
+app.get('/barber', sendPage('barber.html'));
+app.get('/login', sendPage('login.html'));
 
 app.listen(PORT, () => {
   console.log(`LUMENS HAIR STUDIO running on port ${PORT}`);
