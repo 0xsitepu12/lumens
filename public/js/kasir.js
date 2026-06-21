@@ -1,7 +1,62 @@
-let currentDate = new Date().toISOString().split('T')[0];
+let currentDate = new Date().getFullYear() + '-' + String(new Date().getMonth()+1).padStart(2,'0') + '-' + String(new Date().getDate()).padStart(2,'0');
 let bookings = [];
 let refreshTimer = null;
 let lastBookingCount = -1;
+let kcalWeekStart = null;
+
+const KDAYS = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+const KMONTHS = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+
+function fmtDateStr(d) {
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function getKWeekStart(dateStr) {
+  const d = dateStr ? new Date(dateStr + 'T12:00:00') : new Date();
+  const day = d.getDay();
+  const diff = day === 0 ? 6 : day - 1;
+  d.setDate(d.getDate() - diff);
+  return d;
+}
+
+function renderKCalendar() {
+  const grid = document.getElementById('kcal-grid');
+  const title = document.getElementById('kcal-title');
+  if (!grid) return;
+
+  const today = fmtDateStr(new Date());
+  const weekEnd = new Date(kcalWeekStart);
+  weekEnd.setDate(weekEnd.getDate() + 6);
+
+  const sm = KMONTHS[kcalWeekStart.getMonth()];
+  const em = KMONTHS[weekEnd.getMonth()];
+  title.textContent = sm === em
+    ? kcalWeekStart.getDate() + ' - ' + weekEnd.getDate() + ' ' + em + ' ' + weekEnd.getFullYear()
+    : kcalWeekStart.getDate() + ' ' + sm + ' - ' + weekEnd.getDate() + ' ' + em;
+
+  let html = '';
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(kcalWeekStart);
+    d.setDate(d.getDate() + i);
+    const ds = fmtDateStr(d);
+    const isToday = ds === today ? ' today' : '';
+    const isSel = ds === currentDate ? ' selected' : '';
+    html += '<button class="kasir-cal-cell' + isToday + isSel + '" data-date="' + ds + '">'
+      + '<span class="kasir-cal-day">' + KDAYS[d.getDay()] + '</span>'
+      + '<span class="kasir-cal-num">' + d.getDate() + '</span>'
+      + '</button>';
+  }
+  grid.innerHTML = html;
+
+  grid.querySelectorAll('[data-date]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      currentDate = btn.dataset.date;
+      updateDateDisplay();
+      renderKCalendar();
+      loadBookings();
+    });
+  });
+}
 function playNotifSound() {
   var ctx = new (window.AudioContext || window.webkitAudioContext)();
   if (ctx.state === 'suspended') ctx.resume();
@@ -91,11 +146,10 @@ function renderList() {
 
     return `
       <div class="booking-card" data-booking-id="${b.id}">
+        <span class="booking-time-badge">${time}</span>
         <div class="booking-info">
-          <span class="booking-time-badge">${time}</span>
           <div class="booking-name">${name}</div>
           <div class="booking-detail">${service} &middot; ${stylist}</div>
-          <div class="booking-phone">${phone}</div>
         </div>
         <button class="status-btn ${s.cls}" data-open-sheet="${b.id}">${s.label}</button>
       </div>
@@ -152,17 +206,14 @@ async function updateStatus(id, status) {
   } catch {}
 }
 
-function switchDate(offset) {
-  const d = new Date();
-  d.setDate(d.getDate() + offset);
-  currentDate = d.toISOString().split('T')[0];
+function kcalPrev() {
+  kcalWeekStart.setDate(kcalWeekStart.getDate() - 7);
+  renderKCalendar();
+}
 
-  document.querySelectorAll('.kasir-tab').forEach((t, i) => {
-    t.classList.toggle('active', i === offset);
-  });
-
-  updateDateDisplay();
-  loadBookings();
+function kcalNext() {
+  kcalWeekStart.setDate(kcalWeekStart.getDate() + 7);
+  renderKCalendar();
 }
 
 function updateDateDisplay() {
@@ -353,9 +404,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   await checkAuth();
   updateDateDisplay();
 
-  document.querySelectorAll('.kasir-tab').forEach((tab, i) => {
-    tab.addEventListener('click', () => switchDate(i));
-  });
+  kcalWeekStart = getKWeekStart(currentDate);
+  renderKCalendar();
+  document.getElementById('kcal-prev')?.addEventListener('click', kcalPrev);
+  document.getElementById('kcal-next')?.addEventListener('click', kcalNext);
 
   document.getElementById('btn-refresh')?.addEventListener('click', loadBookings);
   document.getElementById('btn-walkin')?.addEventListener('click', openWalkInModal);
