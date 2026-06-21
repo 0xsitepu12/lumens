@@ -122,50 +122,54 @@
     }
 
     .hero-text .hero-desc {
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       color: var(--text-secondary);
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.15rem;
       line-height: 1.5;
     }
 
     .hero-buttons {
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       gap: 8px;
-      align-items: stretch;
+      align-items: center;
+      justify-content: center;
       margin: 0 auto 1.25rem;
+    }
+
+    .hero-buttons .btn {
+      font-size: 0.82rem;
+      padding: 0.65rem 1.25rem;
     }
 
     .hero-stats {
       display: flex;
       justify-content: center;
-      gap: 10px;
-      padding-top: 1.25rem;
+      gap: 8px;
+      padding-top: 1rem;
     }
 
     .hero-stat {
-      flex: 1;
-      max-width: 110px;
       text-align: center;
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px 8px;
+      border-radius: 10px;
+      padding: 10px 16px;
     }
 
     .hero-stat-num {
-      font-size: 1.15rem;
+      font-size: 1.05rem;
       font-weight: 800;
       color: var(--text-primary);
       line-height: 1;
     }
 
     .hero-stat-label {
-      font-size: 0.55rem;
+      font-size: 0.52rem;
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.3px;
-      margin-top: 4px;
+      margin-top: 3px;
     }
 
     /* ── Hero Mockup ── */
