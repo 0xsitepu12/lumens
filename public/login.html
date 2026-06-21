@@ -35,7 +35,12 @@
 
       <div class="form-group">
         <label class="form-label" for="password">Password</label>
-        <input type="password" class="form-input" id="password" name="password" placeholder="Masukkan password" required autocomplete="current-password">
+        <div style="position:relative">
+          <input type="password" class="form-input" id="password" name="password" placeholder="Masukkan password" required autocomplete="current-password" style="padding-right:44px">
+          <button type="button" id="toggle-pw" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:#999;font-size:1rem;cursor:pointer;padding:4px" title="Tampilkan password">
+            <i class="fa-solid fa-eye"></i>
+          </button>
+        </div>
       </div>
 
       <div id="login-error" class="form-error" style="display:none;margin-bottom:var(--space-md)"></div>
@@ -56,6 +61,18 @@
     const form = document.getElementById('login-form');
     const errorEl = document.getElementById('login-error');
     const btnLogin = document.getElementById('btn-login');
+
+    document.getElementById('toggle-pw').addEventListener('click', function() {
+      const pw = document.getElementById('password');
+      const icon = this.querySelector('i');
+      if (pw.type === 'password') {
+        pw.type = 'text';
+        icon.className = 'fa-solid fa-eye-slash';
+      } else {
+        pw.type = 'password';
+        icon.className = 'fa-solid fa-eye';
+      }
+    });
 
     async function goToDashboard(user) {
       if (user.role === 'admin') {
