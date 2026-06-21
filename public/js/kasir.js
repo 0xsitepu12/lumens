@@ -179,7 +179,28 @@ function esc(str) {
 
 function startAutoRefresh() {
   if (refreshTimer) clearInterval(refreshTimer);
-  refreshTimer = setInterval(loadBookings, 30000);
+  refreshTimer = setInterval(loadBookings, 60000);
+}
+
+async function startRealtime() {
+  try {
+    const configRes = await fetch('/api/config');
+    const config = await configRes.json();
+    if (!config.supabaseUrl || !config.supabaseAnonKey) return;
+
+    const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+    const supabase = createClient(config.supabaseUrl, config.supabaseAnonKey);
+
+    supabase.channel('kasir-bookings')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
+        loadBookings();
+      })
+      .subscribe();
+
+    if (refreshTimer) { clearInterval(refreshTimer); refreshTimer = null; }
+  } catch {
+    startAutoRefresh();
+  }
 }
 
 // ============================================
@@ -352,5 +373,5 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   await loadBookings();
-  startAutoRefresh();
+  startRealtime();
 });

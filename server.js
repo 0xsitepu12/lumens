@@ -23,7 +23,7 @@ app.use(helmet({
       scriptSrc: ["'self'", "'unsafe-inline'", 'cdn.jsdelivr.net', 'cdnjs.cloudflare.com'],
       styleSrc: ["'self'", "'unsafe-inline'", 'fonts.googleapis.com', 'cdnjs.cloudflare.com'],
       fontSrc: ["'self'", 'fonts.gstatic.com', 'cdnjs.cloudflare.com'],
-      connectSrc: ["'self'", 'https://*.supabase.co'],
+      connectSrc: ["'self'", 'https://*.supabase.co', 'wss://*.supabase.co'],
       imgSrc: ["'self'", 'data:', 'blob:']
     }
   }
@@ -64,6 +64,13 @@ app.use('/api/barber', require('./src/routes/barber'));
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+app.get('/api/config', (req, res) => {
+  res.json({
+    supabaseUrl: process.env.SUPABASE_URL,
+    supabaseAnonKey: process.env.SUPABASE_ANON_KEY
+  });
 });
 
 const sendPage = (file) => (req, res) => {
