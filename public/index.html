@@ -169,6 +169,28 @@
       margin-top: 4px;
     }
 
+    /* ── Hero Features Inline ── */
+    .hero-features {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      padding-top: 1rem;
+    }
+
+    .hero-feat {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .hero-feat i {
+      font-size: 0.65rem;
+      color: var(--text-secondary);
+    }
+
     /* ── Hero Mockup ── */
     .hero-mockup {
       display: none;
@@ -250,52 +272,6 @@
       50% { transform: scaleX(0.85); opacity: 0.4; }
     }
 
-    /* ── Features Strip ── */
-    .features-strip {
-      background: var(--bg-card);
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      padding: 2rem 0;
-    }
-
-    .features-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 1.25rem;
-      text-align: center;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 20px;
-    }
-
-    .feature-item {
-      padding: 0.5rem;
-    }
-
-    .feature-icon {
-      width: 44px;
-      height: 44px;
-      border-radius: 10px;
-      background: var(--bg-elevated);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 0.6rem;
-      font-size: 1.05rem;
-      color: var(--text-primary);
-    }
-
-    .feature-item h4 {
-      font-size: 0.85rem;
-      font-weight: 700;
-      margin-bottom: 0.2rem;
-    }
-
-    .feature-item p {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      line-height: 1.45;
-    }
 
     /* ── CTA Banner ── */
     .cta-banner {
@@ -349,10 +325,10 @@
         max-width: none;
       }
       .hero-stats { justify-content: flex-start; gap: 12px; }
+      .hero-features { justify-content: flex-start; }
       .hero-mockup { display: block; max-width: 420px; flex-shrink: 0; align-self: center; }
       .hero-mockup img { max-height: 580px; }
       .scroll-hint { display: none; }
-      .features-grid { grid-template-columns: repeat(3, 1fr); }
       .cta-banner h2 { font-size: 2rem; }
     }
 
@@ -508,6 +484,20 @@
               <div class="hero-stat-label">Buka Tiap Hari</div>
             </div>
           </div>
+          <div class="hero-features">
+            <div class="hero-feat">
+              <i class="fa-solid fa-mobile-screen-button"></i>
+              <span>Booking Online</span>
+            </div>
+            <div class="hero-feat">
+              <i class="fa-solid fa-user-check"></i>
+              <span>Pilih Stylist</span>
+            </div>
+            <div class="hero-feat">
+              <i class="fa-solid fa-bolt"></i>
+              <span>Tanpa Antri</span>
+            </div>
+          </div>
         </div>
         <div class="hero-mockup">
           <img src="/Assets/mockupip.png" alt="LUMEN'S STUDIO Booking App" loading="eager">
@@ -515,27 +505,6 @@
       </div>
       <div class="scroll-hint">
         <i class="fa-solid fa-chevron-down"></i>
-      </div>
-    </section>
-
-    <!-- FEATURES -->
-    <section class="features-strip">
-      <div class="features-grid">
-        <div class="feature-item reveal reveal-delay-1">
-          <div class="feature-icon"><i class="fa-solid fa-mobile-screen-button"></i></div>
-          <h4>Booking Online</h4>
-          <p>Pilih layanan dan waktu langsung dari HP. Tanpa telepon, tanpa ribet.</p>
-        </div>
-        <div class="feature-item reveal reveal-delay-2">
-          <div class="feature-icon"><i class="fa-solid fa-user-check"></i></div>
-          <h4>Pilih Stylist</h4>
-          <p>Tentukan stylist favorit kamu sesuai jadwal yang tersedia.</p>
-        </div>
-        <div class="feature-item reveal reveal-delay-3">
-          <div class="feature-icon"><i class="fa-solid fa-bolt"></i></div>
-          <h4>Tanpa Antri</h4>
-          <p>Datang sesuai jadwal booking, langsung dilayani.</p>
-        </div>
       </div>
     </section>
 
