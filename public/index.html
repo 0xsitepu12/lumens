@@ -97,33 +97,33 @@
     .hero-label {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      font-size: 0.6rem;
+      gap: 6px;
+      font-size: 0.7rem;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 1.8px;
+      letter-spacing: 2px;
       color: var(--text-muted);
-      margin-bottom: 0.75rem;
-      padding: 5px 12px;
+      margin-bottom: 0.85rem;
+      padding: 6px 14px;
       border: 1px solid var(--border);
       border-radius: var(--radius-full);
     }
 
-    .hero-label i { font-size: 0.5rem; }
+    .hero-label i { font-size: 0.55rem; }
 
     .hero-text h1 {
-      font-size: 1.85rem;
+      font-size: 2.1rem;
       font-weight: 800;
-      line-height: 1.15;
-      margin-bottom: 0.65rem;
+      line-height: 1.12;
+      margin-bottom: 0.75rem;
       letter-spacing: -0.3px;
     }
 
     .hero-text .hero-desc {
-      font-size: 0.82rem;
+      font-size: 0.92rem;
       color: var(--text-secondary);
-      margin-bottom: 1.15rem;
-      line-height: 1.5;
+      margin-bottom: 1.25rem;
+      line-height: 1.55;
     }
 
     .hero-buttons {
@@ -131,7 +131,7 @@
       flex-direction: column;
       gap: 8px;
       align-items: stretch;
-      max-width: 280px;
+      max-width: 300px;
       margin: 0 auto 1.25rem;
     }
 
@@ -150,23 +150,23 @@
       text-align: center;
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 10px 16px;
+      border-radius: 12px;
+      padding: 12px 18px;
     }
 
     .hero-stat-num {
-      font-size: 1.05rem;
+      font-size: 1.15rem;
       font-weight: 800;
       color: var(--text-primary);
       line-height: 1;
     }
 
     .hero-stat-label {
-      font-size: 0.52rem;
+      font-size: 0.58rem;
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.3px;
-      margin-top: 3px;
+      margin-top: 4px;
     }
 
     /* ── Hero Mockup ── */
@@ -183,6 +183,45 @@
       to   { opacity: 1; transform: translateY(0) scale(1); }
     }
 
+    @keyframes mockupFloat {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      25% { transform: translateY(-8px) rotate(0.5deg); }
+      50% { transform: translateY(-14px) rotate(0deg); }
+      75% { transform: translateY(-8px) rotate(-0.5deg); }
+    }
+
+    .hero-mockup.loaded {
+      animation: mockupFloat 6s ease-in-out infinite;
+    }
+
+    .hero-mockup.loaded::before {
+      content: '';
+      position: absolute;
+      top: -20px;
+      left: -15px;
+      right: -15px;
+      bottom: -20px;
+      background: radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0.08) 0%, transparent 65%);
+      border-radius: 50%;
+      animation: mockupGlow 6s ease-in-out infinite;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    @keyframes mockupGlow {
+      0%, 100% { opacity: 0.6; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.06); }
+    }
+
+    .hero-mockup.loaded img {
+      filter: contrast(1.03) drop-shadow(0 15px 35px rgba(0,0,0,0.25));
+      transition: filter 0.5s ease;
+    }
+
+    .hero-mockup.loaded:hover img {
+      filter: contrast(1.05) drop-shadow(0 20px 45px rgba(0,0,0,0.35));
+    }
+
     .hero-mockup img {
       width: 100%;
       height: auto;
@@ -196,13 +235,19 @@
     .hero-mockup::after {
       content: '';
       position: absolute;
-      bottom: 0;
-      left: 10%;
-      right: 10%;
-      height: 24px;
-      background: radial-gradient(ellipse, rgba(0,0,0,0.06) 0%, transparent 70%);
+      bottom: -8px;
+      left: 15%;
+      right: 15%;
+      height: 20px;
+      background: radial-gradient(ellipse, rgba(0,0,0,0.2) 0%, transparent 70%);
       border-radius: 50%;
       pointer-events: none;
+      animation: mockupShadow 6s ease-in-out infinite;
+    }
+
+    @keyframes mockupShadow {
+      0%, 100% { transform: scaleX(1); opacity: 0.7; }
+      50% { transform: scaleX(0.85); opacity: 0.4; }
     }
 
     /* ── Features Strip ── */
@@ -283,7 +328,7 @@
 
     /* ── Responsive ── */
     @media (min-width: 768px) {
-      .hero-section { min-height: auto; padding: 3rem 0 2rem; }
+      .hero-section { min-height: auto; padding: 0 0 1rem; }
       .hero-inner {
         flex-direction: row;
         align-items: center;
@@ -304,17 +349,17 @@
         max-width: none;
       }
       .hero-stats { justify-content: flex-start; gap: 12px; }
-      .hero-mockup { display: block; max-width: 300px; flex-shrink: 0; align-self: center; }
-      .hero-mockup img { max-height: 480px; }
+      .hero-mockup { display: block; max-width: 420px; flex-shrink: 0; align-self: center; }
+      .hero-mockup img { max-height: 580px; }
       .scroll-hint { display: none; }
       .features-grid { grid-template-columns: repeat(3, 1fr); }
       .cta-banner h2 { font-size: 2rem; }
     }
 
     @media (min-width: 1024px) {
-      .hero-section { padding: 4rem 0 2rem; }
+      .hero-section { padding: 0 0 1rem; }
       .hero-text h1 { font-size: 3.2rem; }
-      .hero-mockup { max-width: 340px; }
+      .hero-mockup { max-width: 720px; }
       .hero-inner { padding: 2rem 2rem 0; }
     }
 
@@ -602,6 +647,9 @@
         }
       });
     });
+
+    var mockup = document.querySelector('.hero-mockup');
+    if (mockup) setTimeout(function() { mockup.classList.add('loaded'); }, 1000);
 
     document.querySelectorAll('.glow').forEach(function(el) {
       var rx = getComputedStyle(el).borderRadius;

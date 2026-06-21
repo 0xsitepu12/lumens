@@ -45,7 +45,7 @@
   --shadow-gold: 0 4px 20px rgba(0, 0, 0, 0.08);
 
   /* Metallic gradient */
-  --metallic: linear-gradient(135deg, #1a1a1a, #4a4a4a, #1a1a1a, #555555, #1a1a1a);
+  --metallic: linear-gradient(135deg, #000000, #888888, #1a1a1a, #aaaaaa, #000000);
 
   /* Spacing */
   --space-xs: 0.25rem;
