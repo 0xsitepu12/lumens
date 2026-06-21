@@ -29,11 +29,14 @@ router.get('/stats', async (req, res) => {
     const barber = await getMyBarber(req);
     if (!barber) return res.json({ success: false, message: 'Profil barber tidak ditemukan' });
 
-    const { period } = req.query;
+    const { period, date } = req.query;
     const today = todayWIB();
-    let startDate;
+    let startDate, endDate = today;
 
-    if (period === 'week') {
+    if (period === 'date' && date) {
+      startDate = date;
+      endDate = date;
+    } else if (period === 'week') {
       const d = nowWIB();
       d.setDate(d.getDate() - d.getDay() + 1);
       startDate = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
@@ -45,7 +48,7 @@ router.get('/stats', async (req, res) => {
       startDate = today;
     }
 
-    const bookings = await db.getBarberStats(barber.id, startDate, today);
+    const bookings = await db.getBarberStats(barber.id, startDate, endDate);
 
     const total     = bookings.length;
     const completed = bookings.filter(b => b.status === 'completed').length;

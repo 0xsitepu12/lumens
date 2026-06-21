@@ -1,5 +1,7 @@
 let currentPeriod = 'today';
 let perfChart = null;
+let calYear, calMonth, calSelectedDate;
+let bookingDates = {};
 
 const STATUS_MAP = {
   pending:   { label: 'Pending',   cls: 'pending' },
@@ -15,6 +17,73 @@ const PERIOD_LABEL = {
   month: 'Bulan ini',
   all:   'Semua waktu'
 };
+
+const MONTHS_ID = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function renderCalendar() {
+  const grid = document.getElementById('cal-grid');
+  const title = document.getElementById('cal-title');
+  if (!grid) return;
+
+  title.textContent = MONTHS_ID[calMonth] + ' ' + calYear;
+
+  const firstDay = new Date(calYear, calMonth, 1);
+  let startDay = firstDay.getDay() - 1;
+  if (startDay < 0) startDay = 6;
+
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const daysInPrev = new Date(calYear, calMonth, 0).getDate();
+  const today = todayStr();
+
+  let html = '';
+
+  for (let i = startDay - 1; i >= 0; i--) {
+    html += '<button class="cal-cell other-month">' + (daysInPrev - i) + '</button>';
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = calYear + '-' + String(calMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+    const isToday = dateStr === today ? ' today' : '';
+    const isSelected = dateStr === calSelectedDate ? ' selected' : '';
+    const hasDot = bookingDates[dateStr] ? '<span class="cal-dot"></span>' : '';
+    html += '<button class="cal-cell' + isToday + isSelected + '" data-date="' + dateStr + '">' + d + hasDot + '</button>';
+  }
+
+  const totalCells = startDay + daysInMonth;
+  const remaining = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+  for (let i = 1; i <= remaining; i++) {
+    html += '<button class="cal-cell other-month">' + i + '</button>';
+  }
+
+  grid.innerHTML = html;
+
+  grid.querySelectorAll('[data-date]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      calSelectedDate = btn.dataset.date;
+      document.querySelectorAll('.period-tab').forEach(t => t.classList.remove('active'));
+      currentPeriod = 'date';
+      loadDashboard();
+      renderCalendar();
+    });
+  });
+}
+
+function calPrev() {
+  calMonth--;
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  renderCalendar();
+}
+
+function calNext() {
+  calMonth++;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  renderCalendar();
+}
 
 function fmt(n) {
   return 'Rp ' + (n || 0).toLocaleString('id-ID');
@@ -258,7 +327,12 @@ function renderList(bookings) {
 
 async function loadDashboard() {
   try {
-    const res  = await fetch(`/api/barber/stats?period=${currentPeriod}`, { credentials: 'include' });
+    let url = `/api/barber/stats?period=${currentPeriod}`;
+    if (currentPeriod === 'date' && calSelectedDate) {
+      url = `/api/barber/stats?period=date&date=${calSelectedDate}`;
+    }
+
+    const res  = await fetch(url, { credentials: 'include' });
     const data = await res.json();
 
     if (!data.success) {
@@ -266,12 +340,22 @@ async function loadDashboard() {
       return;
     }
 
-    // Set name & avatar
     const barber = data.data.barber;
     const nameEl = document.getElementById('hdr-name');
     const avatarEl = document.getElementById('hdr-avatar');
     if (nameEl) nameEl.textContent = barber.name;
     if (avatarEl) avatarEl.textContent = barber.name.charAt(0).toUpperCase();
+
+    if (currentPeriod === 'date') {
+      const d = new Date(calSelectedDate + 'T12:00:00');
+      document.getElementById('stat-period-label').textContent = d.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short' });
+    }
+
+    bookingDates = {};
+    (data.data.bookings || []).forEach(b => {
+      if (b.booking_date) bookingDates[b.booking_date] = true;
+    });
+    renderCalendar();
 
     renderStats(data.data);
     renderChart(data.data.bookings);
@@ -284,9 +368,11 @@ async function loadDashboard() {
 
 function switchPeriod(period) {
   currentPeriod = period;
+  calSelectedDate = null;
   document.querySelectorAll('.period-tab').forEach(t => {
     t.classList.toggle('active', t.dataset.period === period);
   });
+  renderCalendar();
   document.getElementById('booking-list').innerHTML =
     '<div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><p>Memuat...</p></div>';
   loadDashboard();
@@ -452,6 +538,15 @@ async function submitSchedule() {
 
 document.addEventListener('DOMContentLoaded', async () => {
   await checkAuth();
+
+  const now = new Date();
+  calYear = now.getFullYear();
+  calMonth = now.getMonth();
+  calSelectedDate = null;
+  renderCalendar();
+
+  document.getElementById('cal-prev')?.addEventListener('click', calPrev);
+  document.getElementById('cal-next')?.addEventListener('click', calNext);
 
   document.querySelectorAll('.period-tab').forEach(btn => {
     btn.addEventListener('click', () => switchPeriod(btn.dataset.period));
