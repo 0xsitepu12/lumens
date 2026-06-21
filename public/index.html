@@ -362,19 +362,23 @@
       stroke-width: var(--glow-blur-size);
     }
 
-    .glow:is(:hover, :focus) .glow-blur,
-    .glow:is(:hover, :focus) .glow-line {
-      stroke-dashoffset: -80px;
-      transition: stroke-dashoffset var(--glow-speed) ease-in;
+    .glow-container {
+      animation: glow-visibility 2.5s ease-in-out infinite;
     }
 
-    .glow:is(:hover, :focus) .glow-container {
-      animation: glow-visibility var(--glow-speed) ease-in;
+    .glow-blur,
+    .glow-line {
+      animation: glow-move 2.5s ease-in-out infinite;
     }
 
     @keyframes glow-visibility {
       0%, 100% { opacity: 0; }
-      25%, 75% { opacity: 1; }
+      20%, 80% { opacity: 1; }
+    }
+
+    @keyframes glow-move {
+      0% { stroke-dashoffset: 0; }
+      100% { stroke-dashoffset: -100px; }
     }
 
     /* ── Scroll Reveal ── */
