@@ -6,4 +6,5 @@ Thumbs.db
 test-results/
 playwright-report/
 scratch/
+test2/
 *.bak

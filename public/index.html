@@ -86,7 +86,7 @@
 
     /* ── Hero Text ── */
     .hero-text {
-      text-align: center;
+      text-align: left;
       max-width: 400px;
       animation: heroFadeUp 0.7s ease both;
     }
@@ -131,20 +131,15 @@
     .hero-buttons {
       display: flex;
       flex-direction: row;
-      gap: 8px;
+      gap: 10px;
       align-items: center;
-      justify-content: center;
-      margin: 0 auto 1.25rem;
-    }
-
-    .hero-buttons .btn {
-      font-size: 0.82rem;
-      padding: 0.65rem 1.25rem;
+      justify-content: flex-start;
+      margin: 0 0 1.25rem;
     }
 
     .hero-stats {
       display: flex;
-      justify-content: center;
+      justify-content: flex-start;
       gap: 8px;
       padding-top: 1rem;
     }
@@ -320,8 +315,23 @@
       .hero-inner { padding: 2rem 2rem 0; }
     }
 
+    /* ── Scroll Reveal ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+
     @media (prefers-reduced-motion: reduce) {
       .hero-text, .hero-mockup { animation: none; }
+      .reveal { opacity: 1; transform: none; transition: none; }
     }
   </style>
 </head>
@@ -401,17 +411,17 @@
     <!-- FEATURES -->
     <section class="features-strip">
       <div class="features-grid">
-        <div class="feature-item">
+        <div class="feature-item reveal reveal-delay-1">
           <div class="feature-icon"><i class="fa-solid fa-mobile-screen-button"></i></div>
           <h4>Booking Online</h4>
           <p>Pilih layanan dan waktu langsung dari HP. Tanpa telepon, tanpa ribet.</p>
         </div>
-        <div class="feature-item">
+        <div class="feature-item reveal reveal-delay-2">
           <div class="feature-icon"><i class="fa-solid fa-user-check"></i></div>
           <h4>Pilih Stylist</h4>
           <p>Tentukan stylist favorit kamu sesuai jadwal yang tersedia.</p>
         </div>
-        <div class="feature-item">
+        <div class="feature-item reveal reveal-delay-3">
           <div class="feature-icon"><i class="fa-solid fa-bolt"></i></div>
           <h4>Tanpa Antri</h4>
           <p>Datang sesuai jadwal booking, langsung dilayani.</p>
@@ -422,27 +432,27 @@
     <!-- SERVICES -->
     <section class="services-section section" id="services">
       <div class="container">
-        <div class="section-header">
+        <div class="section-header reveal">
           <h2>Layanan Kami</h2>
           <p>Solusi lengkap untuk gaya dan perawatan rambut kamu</p>
         </div>
         <div class="services-grid" id="services-grid">
-          <div class="service-card" style="cursor:default">
+          <div class="service-card reveal reveal-delay-1" style="cursor:default">
             <h3>Haircut</h3>
             <p>Basic, Style, hingga Haircut + Care</p>
             <div class="service-card-meta"><span>mulai Rp 80.000</span></div>
           </div>
-          <div class="service-card" style="cursor:default">
+          <div class="service-card reveal reveal-delay-2" style="cursor:default">
             <h3>Coloring</h3>
             <p>Black/Brown, Short Color, hingga Fullcolor</p>
             <div class="service-card-meta"><span>mulai Rp 70.000</span></div>
           </div>
-          <div class="service-card" style="cursor:default">
+          <div class="service-card reveal reveal-delay-1" style="cursor:default">
             <h3>Treatment</h3>
             <p>Hair Mask, Down Perm, Long Hair Perm</p>
             <div class="service-card-meta"><span>mulai Rp 100.000</span></div>
           </div>
-          <div class="service-card" style="cursor:default">
+          <div class="service-card reveal reveal-delay-2" style="cursor:default">
             <h3>Styling & Beard</h3>
             <p>Blow & Style, Shaving, Trim Beard</p>
             <div class="service-card-meta"><span>mulai Rp 35.000</span></div>
@@ -456,9 +466,9 @@
 
     <!-- CTA BANNER -->
     <section class="cta-banner">
-      <h2 class="metallic-text">Siap Tampil Beda?</h2>
-      <p>Booking sekarang dan rasakan pengalaman LUMEN'S STUDIO</p>
-      <a href="/booking" class="btn btn-primary btn-lg" style="position:relative">
+      <h2 class="metallic-text reveal">Siap Tampil Beda?</h2>
+      <p class="reveal reveal-delay-1">Booking sekarang dan rasakan pengalaman LUMEN'S STUDIO</p>
+      <a href="/booking" class="btn btn-primary btn-lg reveal reveal-delay-2" style="position:relative">
         Booking Sekarang <i class="fa-solid fa-arrow-right"></i>
       </a>
     </section>
@@ -534,6 +544,19 @@
       header.style.borderBottomColor = window.scrollY > 50 ? '' : 'transparent';
       if (ctaHeader) ctaHeader.style.display = window.scrollY > 300 ? '' : 'none';
     }, { passive: true });
+
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+
+    document.querySelectorAll('.reveal').forEach(function(el) {
+      observer.observe(el);
+    });
   })();
   </script>
 </body>
