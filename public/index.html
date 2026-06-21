@@ -173,6 +173,7 @@
       display: none;
       position: relative;
       width: 100%;
+      align-self: flex-end;
       animation: heroFloat 0.8s ease 0.15s both;
     }
 
@@ -184,8 +185,9 @@
     .hero-mockup img {
       width: 100%;
       height: auto;
-      max-height: 520px;
+      max-height: calc(100vh - 200px);
       object-fit: contain;
+      object-position: bottom;
       mix-blend-mode: multiply;
       filter: contrast(1.03);
     }
