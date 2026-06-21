@@ -27,15 +27,12 @@ function renderServices() {
   const container = document.getElementById('service-list');
   if (!container) return;
 
-  const CAT_ORDER = ['potong', 'perawatan', 'warna', 'styling', 'cukur', 'paket', 'lainnya'];
+  const CAT_ORDER = ['potong', 'perawatan', 'warna', 'lainnya'];
   const CAT_NAMES = {
-    potong:    'Potong Rambut',
-    perawatan: 'Perawatan',
-    warna:     'Pewarnaan',
-    styling:   'Styling',
-    cukur:     'Cukur',
-    paket:     'Paket',
-    lainnya:   'Lainnya',
+    potong:    'Haircut',
+    perawatan: 'Texturing & Conditioning',
+    warna:     'Colouring',
+    lainnya:   'Other Service',
   };
 
   // Group by category
