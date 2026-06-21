@@ -263,43 +263,11 @@ function nowRoundedUp() {
   return d.toTimeString().slice(0, 5);
 }
 
-async function loadWalkInSlots() {
-  const serviceEl = document.getElementById('wi-service');
-  const barberEl  = document.getElementById('wi-barber');
-  const dateEl    = document.getElementById('wi-date');
-  const timeSel   = document.getElementById('wi-time');
-  const msgEl     = document.getElementById('wi-slots-msg');
-
-  const serviceOpt = serviceEl.options[serviceEl.selectedIndex];
-  const duration   = serviceOpt ? serviceOpt.dataset.duration : null;
-  const barberId   = barberEl.value;
-  const date       = dateEl.value;
-
-  if (!duration || !barberId || !date) {
-    timeSel.innerHTML = '<option value="">— Pilih layanan &amp; stylist dulu —</option>';
-    msgEl.style.display = 'none';
-    return;
-  }
-
-  timeSel.innerHTML = '<option value="">— Memuat slot... —</option>';
-  msgEl.style.display = 'none';
-
-  try {
-    const res = await fetch(`/api/booking/slots?date=${date}&barber_id=${barberId}&duration=${duration}`, { credentials: 'include' });
-    const data = await res.json();
-    const slots = (data.data || []).filter(s => s.available);
-
-    if (slots.length === 0) {
-      timeSel.innerHTML = '<option value="">— Tidak ada slot tersedia —</option>';
-      msgEl.textContent = 'Semua jam sudah penuh atau stylist libur di hari ini.';
-      msgEl.style.display = '';
-    } else {
-      timeSel.innerHTML = '<option value="">— Pilih Jam —</option>' +
-        slots.map(s => `<option value="${s.time}">${s.time}</option>`).join('');
-    }
-  } catch {
-    timeSel.innerHTML = '<option value="">— Gagal memuat slot —</option>';
-  }
+function setDefaultWalkInTime() {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2, '0');
+  const m = String(now.getMinutes()).padStart(2, '0');
+  document.getElementById('wi-time').value = h + ':' + m;
 }
 
 async function openWalkInModal() {
@@ -307,12 +275,10 @@ async function openWalkInModal() {
   const errEl  = document.getElementById('wi-error');
   errEl.style.display = 'none';
 
-  // Reset fields
   document.getElementById('wi-date').value = currentDate;
   document.getElementById('wi-name').value = '';
   document.getElementById('wi-phone').value = '';
-  document.getElementById('wi-time').innerHTML = '<option value="">— Pilih layanan &amp; stylist dulu —</option>';
-  document.getElementById('wi-slots-msg').style.display = 'none';
+  setDefaultWalkInTime();
 
   // Load layanan
   const svcSel = document.getElementById('wi-service');
@@ -414,9 +380,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('wi-submit')?.addEventListener('click', submitWalkIn);
   document.getElementById('walkin-overlay')?.addEventListener('click', e => {
     if (e.target === document.getElementById('walkin-overlay')) closeWalkInModal();
-  });
-  ['wi-service', 'wi-barber', 'wi-date'].forEach(id => {
-    document.getElementById(id)?.addEventListener('change', loadWalkInSlots);
   });
   document.getElementById('btn-test-sound')?.addEventListener('click', playNotifSound);
   document.getElementById('btn-logout-kasir')?.addEventListener('click', async () => {
