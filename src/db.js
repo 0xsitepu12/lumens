@@ -309,6 +309,21 @@ async function getBarberStats(barberId, startDate, endDate) {
   return data || [];
 }
 
+async function logActivity({ action, category, actor, detail, ip }) {
+  await supabase.from('activity_logs').insert({ action, category, actor: actor || 'system', detail, ip });
+}
+
+async function getActivityLogs({ page = 1, limit = 50, category } = {}) {
+  const from = (page - 1) * limit;
+  let q = supabase.from('activity_logs')
+    .select('*', { count: 'exact' })
+    .order('created_at', { ascending: false })
+    .range(from, from + limit - 1);
+  if (category) q = q.eq('category', category);
+  const { data, count } = await q;
+  return { data: data || [], total: count || 0 };
+}
+
 async function resetAllBookings() {
   const { error } = await supabase.from('bookings').delete().gte('created_at', '2000-01-01');
   if (error) throw error;
@@ -326,5 +341,6 @@ module.exports = {
   getBarberSchedule, getBarberSchedules, getAvailableBarbersForDay, getAllBarberSchedules, upsertBarberSchedule,
   getPopularServices, getBarberPerformance,
   getBarberByName, getBarberStats,
+  logActivity, getActivityLogs,
   resetAllBookings
 };

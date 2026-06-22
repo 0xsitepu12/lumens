@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Activity Log - LUMENS</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="/Assets/favicon_io/favicon-32x32.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #0a0a0a; color: #e5e5e5; min-height: 100vh; }
+
+    .log-header {
+      background: #111;
+      border-bottom: 1px solid #222;
+      padding: 14px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .log-title { font-size: 0.9rem; font-weight: 800; color: #fff; }
+    .log-title i { color: #16a34a; margin-right: 6px; }
+    .log-actions { display: flex; gap: 6px; }
+    .log-btn {
+      font-size: 0.7rem; font-weight: 600; padding: 6px 12px;
+      border: 1px solid #333; border-radius: 6px; background: #181818;
+      color: #999; cursor: pointer; font-family: inherit;
+    }
+    .log-btn:hover { border-color: #555; color: #fff; }
+    .log-btn.active { background: #fff; color: #000; border-color: #fff; }
+    .log-btn.danger { color: #dc2626; border-color: #333; }
+
+    .log-filters {
+      display: flex; gap: 6px; padding: 12px 20px;
+      overflow-x: auto; scrollbar-width: none;
+    }
+    .log-filters::-webkit-scrollbar { display: none; }
+    .filter-chip {
+      flex-shrink: 0; font-size: 0.68rem; font-weight: 600;
+      padding: 5px 12px; border-radius: 20px; border: 1px solid #333;
+      background: transparent; color: #888; cursor: pointer; font-family: inherit;
+    }
+    .filter-chip.active { background: #fff; color: #000; border-color: #fff; }
+
+    .log-list { padding: 0 16px 80px; }
+
+    .log-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 12px 0; border-bottom: 1px solid #1a1a1a;
+    }
+    .log-icon {
+      width: 30px; height: 30px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; flex-shrink: 0; margin-top: 2px;
+    }
+    .log-icon.auth { background: #1e3a5f; color: #60a5fa; }
+    .log-icon.booking { background: #1a3a2a; color: #4ade80; }
+    .log-icon.admin { background: #3a2a1a; color: #fbbf24; }
+    .log-icon.barber { background: #2a1a3a; color: #c084fc; }
+    .log-icon.system { background: #1a1a1a; color: #666; }
+
+    .log-body { flex: 1; min-width: 0; }
+    .log-action { font-size: 0.78rem; font-weight: 600; color: #fff; }
+    .log-detail { font-size: 0.7rem; color: #666; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .log-meta { font-size: 0.6rem; color: #444; margin-top: 3px; }
+
+    .log-empty { text-align: center; padding: 60px 20px; color: #444; }
+    .log-empty i { font-size: 2rem; margin-bottom: 10px; display: block; }
+
+    .log-more {
+      display: block; width: calc(100% - 32px); margin: 12px 16px;
+      padding: 12px; background: #181818; border: 1px solid #222;
+      border-radius: 10px; color: #888; font-size: 0.8rem; font-weight: 600;
+      text-align: center; cursor: pointer; font-family: inherit;
+    }
+    .log-more:hover { border-color: #444; color: #fff; }
+  </style>
+</head>
+<body>
+  <div class="log-header">
+    <div class="log-title"><i class="fa-solid fa-terminal"></i> Activity Log</div>
+    <div class="log-actions">
+      <button class="log-btn" id="btn-refresh"><i class="fa-solid fa-rotate"></i></button>
+      <button class="log-btn danger" id="btn-logout">Logout</button>
+    </div>
+  </div>
+
+  <div class="log-filters" id="filters">
+    <button class="filter-chip active" data-cat="">Semua</button>
+    <button class="filter-chip" data-cat="auth">Auth</button>
+    <button class="filter-chip" data-cat="booking">Booking</button>
+    <button class="filter-chip" data-cat="admin">Admin</button>
+    <button class="filter-chip" data-cat="barber">Barber</button>
+    <button class="filter-chip" data-cat="system">System</button>
+  </div>
+
+  <div class="log-list" id="log-list">
+    <div class="log-empty"><i class="fa-solid fa-spinner fa-spin"></i><p>Memuat...</p></div>
+  </div>
+
+  <script>
+    let currentPage = 1;
+    let currentCat = '';
+    let allLogs = [];
+
+    const ICON_MAP = {
+      auth: 'fa-solid fa-right-to-bracket',
+      booking: 'fa-solid fa-calendar-check',
+      admin: 'fa-solid fa-shield-halved',
+      barber: 'fa-solid fa-scissors',
+      system: 'fa-solid fa-gear'
+    };
+
+    const ACTION_LABEL = {
+      login: 'Login',
+      logout: 'Logout',
+      booking_create: 'Booking Baru',
+      booking_status: 'Status Diubah',
+      service_create: 'Layanan Ditambah',
+      service_update: 'Layanan Diubah',
+      barber_create: 'Barber Ditambah',
+      schedule_update: 'Jadwal Diubah',
+      reset_bookings: 'Reset Booking',
+      system_setup: 'System Setup'
+    };
+
+    async function checkAuth() {
+      try {
+        const res = await fetch('/api/auth/me', { credentials: 'include' });
+        const data = await res.json();
+        if (!data.success || data.user.role !== 'superadmin') {
+          window.location.href = '/login';
+        }
+      } catch { window.location.href = '/login'; }
+    }
+
+    function timeAgo(dateStr) {
+      const diff = Date.now() - new Date(dateStr).getTime();
+      const m = Math.floor(diff / 60000);
+      if (m < 1) return 'baru saja';
+      if (m < 60) return m + ' menit lalu';
+      const h = Math.floor(m / 60);
+      if (h < 24) return h + ' jam lalu';
+      const d = Math.floor(h / 24);
+      if (d < 7) return d + ' hari lalu';
+      return new Date(dateStr).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+
+    function esc(str) {
+      const d = document.createElement('div');
+      d.textContent = str || '';
+      return d.innerHTML;
+    }
+
+    function renderLogs() {
+      const list = document.getElementById('log-list');
+      if (allLogs.length === 0) {
+        list.innerHTML = '<div class="log-empty"><i class="fa-regular fa-folder-open"></i><p>Tidak ada log</p></div>';
+        return;
+      }
+
+      list.innerHTML = allLogs.map(function(log) {
+        var icon = ICON_MAP[log.category] || ICON_MAP.system;
+        var label = ACTION_LABEL[log.action] || log.action;
+        return '<div class="log-item">' +
+          '<div class="log-icon ' + esc(log.category) + '"><i class="' + icon + '"></i></div>' +
+          '<div class="log-body">' +
+            '<div class="log-action">' + esc(label) + '</div>' +
+            '<div class="log-detail">' + esc(log.actor || '-') + (log.detail ? ' — ' + esc(log.detail) : '') + '</div>' +
+            '<div class="log-meta">' + timeAgo(log.created_at) + (log.ip ? ' · ' + esc(log.ip) : '') + '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    async function loadLogs(append) {
+      try {
+        var url = '/api/superadmin/logs?page=' + currentPage;
+        if (currentCat) url += '&category=' + currentCat;
+        var res = await fetch(url, { credentials: 'include' });
+        var data = await res.json();
+        if (!data.success) return;
+
+        if (append) {
+          allLogs = allLogs.concat(data.data);
+        } else {
+          allLogs = data.data;
+        }
+        renderLogs();
+
+        var existing = document.getElementById('btn-more');
+        if (existing) existing.remove();
+        if (allLogs.length < data.total) {
+          var btn = document.createElement('button');
+          btn.className = 'log-more';
+          btn.id = 'btn-more';
+          btn.textContent = 'Muat Lagi (' + allLogs.length + '/' + data.total + ')';
+          btn.addEventListener('click', function() { currentPage++; loadLogs(true); });
+          document.getElementById('log-list').after(btn);
+        }
+      } catch {}
+    }
+
+    document.getElementById('filters').addEventListener('click', function(e) {
+      var chip = e.target.closest('.filter-chip');
+      if (!chip) return;
+      document.querySelectorAll('.filter-chip').forEach(function(c) { c.classList.remove('active'); });
+      chip.classList.add('active');
+      currentCat = chip.dataset.cat;
+      currentPage = 1;
+      loadLogs(false);
+    });
+
+    document.getElementById('btn-refresh').addEventListener('click', function() {
+      currentPage = 1;
+      loadLogs(false);
+    });
+
+    document.getElementById('btn-logout').addEventListener('click', async function() {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+      window.location.href = '/login';
+    });
+
+    (async function() {
+      await checkAuth();
+      await loadLogs(false);
+    })();
+  </script>
+</body>
+</html>

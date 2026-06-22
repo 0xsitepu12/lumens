@@ -27,6 +27,7 @@ router.post('/login', async (req, res) => {
       { expiresIn: '7d' }
     );
     res.cookie('session_token', token, COOKIE_OPTIONS);
+    db.logActivity({ action: 'login', category: 'auth', actor: user.username, detail: `Role: ${user.role}`, ip: req.ip });
     res.json({ success: true, user: { username: user.username, role: user.role, fullName: user.full_name } });
   } catch (err) {
     console.error('[auth/login]', err.message);
@@ -40,6 +41,8 @@ router.post('/logout', (req, res) => {
     sameSite: 'strict',
     secure: process.env.NODE_ENV === 'production'
   });
+  const token = req.cookies.session_token;
+  if (token) { try { const u = jwt.verify(token, process.env.JWT_SECRET); db.logActivity({ action: 'logout', category: 'auth', actor: u.username, ip: req.ip }); } catch {} }
   res.json({ success: true });
 });
 

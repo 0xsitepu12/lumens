@@ -121,6 +121,7 @@ router.put('/schedule', async (req, res) => {
         is_off: s.is_off
       });
     }
+    db.logActivity({ action: 'schedule_update', category: 'barber', actor: req.user.username, detail: barber.name, ip: req.ip });
     res.json({ success: true, message: 'Jadwal disimpan' });
   } catch (err) {
     console.error('[barber/schedule]', err.message);

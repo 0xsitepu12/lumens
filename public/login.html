@@ -75,7 +75,7 @@
     });
 
     async function goToDashboard(user) {
-      if (user.role === 'admin') {
+      if (user.role === 'admin' || user.role === 'superadmin') {
         window.location.href = '/admin';
       } else if (user.role === 'barber') {
         // Verifikasi apakah punya profil barber — kalau tidak, arahkan ke kasir

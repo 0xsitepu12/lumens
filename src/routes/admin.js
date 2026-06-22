@@ -227,6 +227,7 @@ router.get('/services', async (req, res) => {
 router.post('/services', async (req, res) => {
   try {
     const service = await db.createService(req.body);
+    db.logActivity({ action: 'service_create', category: 'admin', actor: req.user.username, detail: req.body.name, ip: req.ip });
     res.json({ success: true, data: service });
   } catch (err) {
     console.error('[admin/services/create]', err.message);
@@ -237,6 +238,7 @@ router.post('/services', async (req, res) => {
 router.put('/services/:id', async (req, res) => {
   try {
     const service = await db.updateService(req.params.id, req.body);
+    db.logActivity({ action: 'service_update', category: 'admin', actor: req.user.username, detail: service.name, ip: req.ip });
     res.json({ success: true, data: service });
   } catch (err) {
     console.error('[admin/services/update]', err.message);
@@ -260,6 +262,7 @@ router.get('/barbers', async (req, res) => {
 router.post('/barbers', async (req, res) => {
   try {
     const barber = await db.createBarber(req.body);
+    db.logActivity({ action: 'barber_create', category: 'admin', actor: req.user.username, detail: req.body.name, ip: req.ip });
     res.json({ success: true, data: barber });
   } catch (err) {
     console.error('[admin/barbers/create]', err.message);
@@ -648,6 +651,7 @@ router.post('/reset', async (req, res) => {
       return res.json({ success: false, message: 'Password salah' });
 
     await db.resetAllBookings();
+    db.logActivity({ action: 'reset_bookings', category: 'admin', actor: req.user.username, detail: 'All bookings deleted', ip: req.ip });
     res.json({ success: true, message: 'Semua data booking berhasil dihapus' });
   } catch (err) {
     console.error('[admin/reset]', err.message);

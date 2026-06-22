@@ -151,6 +151,7 @@ router.post('/create', bookingLimiter, async (req, res) => {
       notes: notes?.trim() || null
     });
 
+    db.logActivity({ action: 'booking_create', category: 'booking', actor: customer_name, detail: `${service.name} - ${booking_date} ${booking_time}`, ip: req.ip });
     res.json({ success: true, data: booking });
   } catch (err) {
     if (err.code === '23505') {
@@ -192,6 +193,7 @@ router.put('/kasir/status/:id', requireAuth, async (req, res) => {
     if (!['pending', 'confirmed', 'completed', 'cancelled', 'no_show'].includes(status))
       return res.json({ success: false, message: 'Status tidak valid' });
     const booking = await db.updateBookingStatus(req.params.id, status);
+    db.logActivity({ action: 'booking_status', category: 'booking', actor: req.user.username, detail: `${req.params.id.slice(0,8)} → ${status}`, ip: req.ip });
     res.json({ success: true, data: booking });
   } catch (err) {
     console.error('[kasir/status]', err.message);
