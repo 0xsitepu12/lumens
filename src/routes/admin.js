@@ -536,7 +536,7 @@ router.put('/staff/:username/role', async (req, res) => {
     // Pastikan bukan admin sebelum update
     const target = await db.getUserByUsername(req.params.username);
     if (!target) return res.json({ success: false, message: 'User tidak ditemukan' });
-    if (target.role === 'admin') return res.json({ success: false, message: 'Tidak bisa mengubah role admin' });
+    if (target.role === 'admin' || target.role === 'superadmin') return res.json({ success: false, message: 'Tidak bisa mengubah role ini' });
 
     const { error } = await db.supabase.from('users').update({ role }).eq('username', req.params.username);
     if (error) throw error;
