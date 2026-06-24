@@ -189,8 +189,8 @@ function renderChart(bookings) {
 
   const displayLabels = labels.map(fmtLabel);
 
-  const CHART_TITLES = { week: 'Pendapatan 7 Hari', month: 'Pendapatan Bulan Ini', all: 'Pendapatan per Bulan' };
-  if (title) title.textContent = CHART_TITLES[currentPeriod] || 'Grafik Pendapatan';
+  const CHART_TITLES = { week: 'Total & Pendapatan 7 Hari', month: 'Total & Pendapatan Bulan Ini', all: 'Total & Pendapatan per Bulan' };
+  if (title) title.textContent = CHART_TITLES[currentPeriod] || 'Grafik';
 
   if (perfChart) { perfChart.destroy(); perfChart = null; }
 
@@ -199,17 +199,6 @@ function renderChart(bookings) {
     data: {
       labels: displayLabels,
       datasets: [
-        {
-          label: 'Omset',
-          data: omset,
-          borderColor: '#94a3b8',
-          backgroundColor: 'rgba(148,163,184,0.08)',
-          borderWidth: 2,
-          pointRadius: 3,
-          tension: 0.3,
-          fill: true,
-          yAxisID: 'y',
-        },
         {
           label: 'Pendapatan Bersih',
           data: net,
@@ -222,7 +211,7 @@ function renderChart(bookings) {
           yAxisID: 'y',
         },
         {
-          label: 'Booking',
+          label: 'Total',
           data: counts,
           borderColor: '#2563eb',
           backgroundColor: 'transparent',
@@ -256,7 +245,7 @@ function renderChart(bookings) {
         tooltip: {
           callbacks: {
             label: ctx => {
-              if (ctx.datasetIndex === 2) return ctx.dataset.label + ': ' + ctx.parsed.y + ' booking';
+              if (ctx.datasetIndex === 1) return ctx.dataset.label + ': ' + ctx.parsed.y + ' booking';
               return ctx.dataset.label + ': Rp ' + ctx.parsed.y.toLocaleString('id-ID');
             }
           }
