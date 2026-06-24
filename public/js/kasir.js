@@ -352,8 +352,8 @@ async function submitWalkIn() {
 
   const [th, tm] = time.split(':').map(Number);
   const timeMin = th * 60 + tm;
-  if (timeMin >= 30 && timeMin <= 510) {
-    errEl.textContent = 'Jam walk-in tidak bisa antara 00:30 - 08:30.';
+  if (timeMin < 540) {
+    errEl.textContent = 'Jam walk-in minimal 09:00. Toko buka jam 9 pagi.';
     errEl.style.display = '';
     return;
   }
