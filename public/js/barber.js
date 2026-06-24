@@ -189,8 +189,8 @@ function renderChart(bookings) {
 
   const displayLabels = labels.map(fmtLabel);
 
-  const CHART_TITLES = { week: 'Total & Pendapatan 7 Hari', month: 'Total & Pendapatan Bulan Ini', all: 'Total & Pendapatan per Bulan' };
-  if (title) title.textContent = CHART_TITLES[currentPeriod] || 'Grafik';
+  const CHART_TITLES = { week: 'Pendapatan Bersih 7 Hari', month: 'Pendapatan Bersih Bulan Ini', all: 'Pendapatan Bersih per Bulan' };
+  if (title) title.textContent = CHART_TITLES[currentPeriod] || 'Pendapatan Bersih';
 
   if (perfChart) { perfChart.destroy(); perfChart = null; }
 
@@ -205,21 +205,9 @@ function renderChart(bookings) {
           borderColor: '#16a34a',
           backgroundColor: 'rgba(22,163,74,0.1)',
           borderWidth: 2,
-          pointRadius: 3,
+          pointRadius: 4,
           tension: 0.3,
           fill: true,
-          yAxisID: 'y',
-        },
-        {
-          label: 'Total',
-          data: counts,
-          borderColor: '#2563eb',
-          backgroundColor: 'transparent',
-          borderWidth: 2,
-          pointRadius: 3,
-          tension: 0.3,
-          fill: false,
-          yAxisID: 'y2',
         }
       ]
     },
@@ -228,26 +216,10 @@ function renderChart(bookings) {
       maintainAspectRatio: false,
       interaction: { mode: 'index', intersect: false },
       plugins: {
-        legend: {
-          display: true,
-          position: 'top',
-          align: 'end',
-          labels: { font: { size: 10 }, boxWidth: 10, boxHeight: 10, padding: 10,
-            generateLabels: chart => chart.data.datasets.map((ds, i) => ({
-              text: ds.label,
-              fillStyle: ds.borderColor,
-              strokeStyle: ds.borderColor,
-              hidden: false,
-              index: i
-            }))
-          }
-        },
+        legend: { display: false },
         tooltip: {
           callbacks: {
-            label: ctx => {
-              if (ctx.datasetIndex === 1) return ctx.dataset.label + ': ' + ctx.parsed.y + ' booking';
-              return ctx.dataset.label + ': Rp ' + ctx.parsed.y.toLocaleString('id-ID');
-            }
+            label: ctx => 'Rp ' + ctx.parsed.y.toLocaleString('id-ID')
           }
         }
       },
@@ -257,18 +229,11 @@ function renderChart(bookings) {
           ticks: { font: { size: 10 }, color: '#999', maxRotation: 0 }
         },
         y: {
-          position: 'left',
           grid: { color: '#f0f0f0' },
           ticks: {
             font: { size: 10 }, color: '#555',
             callback: v => v >= 1000 ? (v/1000).toFixed(0) + 'k' : v
           }
-        },
-        y2: {
-          position: 'right',
-          grid: { display: false },
-          ticks: { font: { size: 10 }, color: '#2563eb', stepSize: 1 },
-          min: 0
         }
       }
     }
