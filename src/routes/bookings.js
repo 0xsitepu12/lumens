@@ -187,6 +187,24 @@ router.get('/kasir/today', requireAuth, async (req, res) => {
   }
 });
 
+router.get('/kasir/week-counts', requireAuth, async (req, res) => {
+  try {
+    const { start, end } = req.query;
+    if (!start || !end) return res.json({ success: false, message: 'start dan end wajib' });
+    const bookings = await db.getBookingsByDateRange(start, end);
+    const counts = {};
+    bookings.forEach(b => {
+      if (b.status !== 'cancelled') {
+        counts[b.booking_date] = (counts[b.booking_date] || 0) + 1;
+      }
+    });
+    res.json({ success: true, data: counts });
+  } catch (err) {
+    console.error('[kasir/week-counts]', err.message);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 router.put('/kasir/status/:id', requireAuth, async (req, res) => {
   try {
     const { status } = req.body;

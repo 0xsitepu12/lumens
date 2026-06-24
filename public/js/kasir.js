@@ -3,6 +3,7 @@ let bookings = [];
 let refreshTimer = null;
 let lastBookingCount = -1;
 let kcalWeekStart = null;
+let weekBookingCounts = {};
 
 const KDAYS = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
 const KMONTHS = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
@@ -41,9 +42,11 @@ function renderKCalendar() {
     const ds = fmtDateStr(d);
     const isToday = ds === today ? ' today' : '';
     const isSel = ds === currentDate ? ' selected' : '';
+    const hasDot = weekBookingCounts[ds] ? '<span class="kasir-cal-dot"></span>' : '';
     html += '<button class="kasir-cal-cell' + isToday + isSel + '" data-date="' + ds + '">'
       + '<span class="kasir-cal-day">' + KDAYS[d.getDay()] + '</span>'
       + '<span class="kasir-cal-num">' + d.getDate() + '</span>'
+      + hasDot
       + '</button>';
   }
   grid.innerHTML = html;
@@ -206,14 +209,31 @@ async function updateStatus(id, status) {
   } catch {}
 }
 
+async function loadWeekCounts() {
+  try {
+    const start = fmtDateStr(kcalWeekStart);
+    const end = new Date(kcalWeekStart);
+    end.setDate(end.getDate() + 6);
+    const endStr = fmtDateStr(end);
+    const res = await fetch(`/api/booking/kasir/week-counts?start=${start}&end=${endStr}`, { credentials: 'include' });
+    const data = await res.json();
+    if (data.success) {
+      weekBookingCounts = data.data;
+      renderKCalendar();
+    }
+  } catch {}
+}
+
 function kcalPrev() {
   kcalWeekStart.setDate(kcalWeekStart.getDate() - 7);
   renderKCalendar();
+  loadWeekCounts();
 }
 
 function kcalNext() {
   kcalWeekStart.setDate(kcalWeekStart.getDate() + 7);
   renderKCalendar();
+  loadWeekCounts();
 }
 
 function updateDateDisplay() {
@@ -330,6 +350,14 @@ async function submitWalkIn() {
     return;
   }
 
+  const [th, tm] = time.split(':').map(Number);
+  const timeMin = th * 60 + tm;
+  if (timeMin >= 30 && timeMin <= 510) {
+    errEl.textContent = 'Jam walk-in tidak bisa antara 00:30 - 08:30.';
+    errEl.style.display = '';
+    return;
+  }
+
   btn.disabled = true;
   btn.textContent = 'Menyimpan...';
   try {
@@ -351,6 +379,7 @@ async function submitWalkIn() {
     if (data.success) {
       closeWalkInModal();
       await loadBookings();
+      loadWeekCounts();
     } else {
       errEl.textContent = data.message || 'Gagal membuat booking.';
       errEl.style.display = '';
@@ -372,10 +401,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   kcalWeekStart = getKWeekStart(currentDate);
   renderKCalendar();
+  loadWeekCounts();
   document.getElementById('kcal-prev')?.addEventListener('click', kcalPrev);
   document.getElementById('kcal-next')?.addEventListener('click', kcalNext);
 
-  document.getElementById('btn-refresh')?.addEventListener('click', loadBookings);
+  document.getElementById('btn-refresh')?.addEventListener('click', () => { loadBookings(); loadWeekCounts(); });
   document.getElementById('btn-walkin')?.addEventListener('click', openWalkInModal);
   document.getElementById('wi-submit')?.addEventListener('click', submitWalkIn);
   document.getElementById('walkin-overlay')?.addEventListener('click', e => {
