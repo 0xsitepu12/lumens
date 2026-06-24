@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lumens-v7';
+const CACHE_NAME = 'lumens-v8';
 const PRECACHE = ['/', '/css/style.css', '/js/core.js', '/js/booking.js', '/js/barber.js', '/js/kasir.js', '/manifest.json'];
 
 self.addEventListener('install', (e) => {

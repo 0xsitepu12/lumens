@@ -141,56 +141,40 @@ function renderStats(data) {
   updateRateCircle(data.rate);
 }
 
-function renderChart(bookings) {
+async function loadMonthlyChart() {
   const card  = document.getElementById('chart-card');
   const title = document.getElementById('chart-title');
   const canvas = document.getElementById('perf-chart');
   if (!canvas) return;
 
-  // Hari Ini: sembunyikan chart (sedikit data)
-  if (currentPeriod === 'today') { card.style.display = 'none'; return; }
-  card.style.display = '';
+  try {
+    const res = await fetch('/api/barber/stats?period=all', { credentials: 'include' });
+    const data = await res.json();
+    if (!data.success) return;
+    const bookings = data.data.bookings || [];
 
-  // Group data
-  const groups = {};
-  bookings.forEach(b => {
-    let key;
-    if (currentPeriod === 'all') {
-      key = b.booking_date?.slice(0, 7);
-    } else {
-      key = b.booking_date;
-    }
-    if (!key) return;
-    if (!groups[key]) groups[key] = { omset: 0, net: 0, count: 0 };
-    groups[key].count++;
-    if (b.status === 'completed') {
-      const modal = b.services?.modal_price || 0;
-      groups[key].omset += b.total_price || 0;
-      groups[key].net   += (b.total_price || 0) - modal;
-    }
-  });
+    card.style.display = '';
 
-  const labels  = Object.keys(groups).sort();
-  const omset   = labels.map(k => groups[k].omset);
-  const net     = labels.map(k => groups[k].net);
-  const counts  = labels.map(k => groups[k].count);
+    const groups = {};
+    bookings.forEach(b => {
+      const key = b.booking_date?.slice(0, 7);
+      if (!key) return;
+      if (!groups[key]) groups[key] = { net: 0 };
+      if (b.status === 'completed') {
+        const modal = b.services?.modal_price || 0;
+        groups[key].net += (b.total_price || 0) - modal;
+      }
+    });
 
-  // Format label
-  const fmtLabel = lbl => {
-    if (currentPeriod === 'all') {
+    const labels = Object.keys(groups).sort();
+    const net = labels.map(k => groups[k].net);
+
+    const displayLabels = labels.map(lbl => {
       const [y, m] = lbl.split('-');
       return new Date(y, m - 1).toLocaleDateString('id-ID', { month: 'short', year: '2-digit' });
-    }
-    const d = new Date(lbl + 'T00:00:00');
-    return currentPeriod === 'month'
-      ? d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
-      : d.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric' });
-  };
+    });
 
-  const displayLabels = labels.map(fmtLabel);
-
-  const CHART_TITLES = { week: 'Pendapatan Bersih 7 Hari', month: 'Pendapatan Bersih Bulan Ini', all: 'Pendapatan Bersih per Bulan' };
-  if (title) title.textContent = CHART_TITLES[currentPeriod] || 'Pendapatan Bersih';
+    if (title) title.textContent = 'Pendapatan Bersih per Bulan';
 
   if (perfChart) { perfChart.destroy(); perfChart = null; }
 
@@ -238,6 +222,7 @@ function renderChart(bookings) {
       }
     }
   });
+  } catch {}
 }
 
 function renderList(bookings) {
@@ -322,7 +307,6 @@ async function loadDashboard() {
     renderCalendar();
 
     renderStats(data.data);
-    renderChart(data.data.bookings);
     renderList(data.data.bookings);
 
   } catch {
@@ -533,4 +517,5 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   await loadDashboard();
+  loadMonthlyChart();
 });
