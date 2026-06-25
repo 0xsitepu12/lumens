@@ -62,6 +62,7 @@ app.use('/api/booking', require('./src/routes/bookings'));
 app.use('/api/admin', require('./src/routes/admin'));
 app.use('/api/barber', require('./src/routes/barber'));
 app.use('/api/superadmin', require('./src/routes/superadmin'));
+app.use('/api/pos', require('./src/routes/pos'));
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -84,6 +85,7 @@ app.get('/admin', sendPage('admin.html'));
 app.get('/barber', sendPage('barber.html'));
 app.get('/login', sendPage('login.html'));
 app.get('/log', sendPage('log.html'));
+app.get('/pos', sendPage('pos.html'));
 
 app.listen(PORT, () => {
   console.log(`LUMENS HAIR STUDIO running on port ${PORT}`);
