@@ -1,5 +1,4 @@
 let currentPeriod = 'today';
-let perfChart = null;
 let calWeekStart;
 let calSelectedDate;
 let bookingDates = {};
@@ -139,90 +138,6 @@ function renderStats(data) {
   document.getElementById('stat-confirmed').textContent = data.confirmed;
   document.getElementById('stat-pending').textContent   = data.pending;
   updateRateCircle(data.rate);
-}
-
-async function loadMonthlyChart() {
-  const card  = document.getElementById('chart-card');
-  const title = document.getElementById('chart-title');
-  const canvas = document.getElementById('perf-chart');
-  if (!canvas) return;
-
-  try {
-    const res = await fetch('/api/barber/stats?period=all', { credentials: 'include' });
-    const data = await res.json();
-    if (!data.success) return;
-    const bookings = data.data.bookings || [];
-
-    card.style.display = '';
-
-    const groups = {};
-    bookings.forEach(b => {
-      const key = b.booking_date?.slice(0, 7);
-      if (!key) return;
-      if (!groups[key]) groups[key] = { net: 0 };
-      if (b.status === 'completed') {
-        const modal = b.services?.modal_price || 0;
-        groups[key].net += (b.total_price || 0) - modal;
-      }
-    });
-
-    const labels = Object.keys(groups).sort();
-    const net = labels.map(k => groups[k].net);
-
-    const displayLabels = labels.map(lbl => {
-      const [y, m] = lbl.split('-');
-      return new Date(y, m - 1).toLocaleDateString('id-ID', { month: 'short', year: '2-digit' });
-    });
-
-    if (title) title.textContent = 'Pendapatan Bersih per Bulan';
-
-  if (perfChart) { perfChart.destroy(); perfChart = null; }
-
-  perfChart = new Chart(canvas, {
-    type: 'line',
-    data: {
-      labels: displayLabels,
-      datasets: [
-        {
-          label: 'Pendapatan Bersih',
-          data: net,
-          borderColor: '#16a34a',
-          backgroundColor: 'rgba(22,163,74,0.1)',
-          borderWidth: 2,
-          pointRadius: 4,
-          tension: 0.3,
-          fill: true,
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: ctx => 'Rp ' + ctx.parsed.y.toLocaleString('id-ID')
-          }
-        }
-      },
-      scales: {
-        x: {
-          grid: { display: false },
-          ticks: { font: { size: 10 }, color: '#999', maxRotation: 0 }
-        },
-        y: {
-          grid: { color: '#f0f0f0' },
-          ticks: {
-            font: { size: 10 }, color: '#555',
-            callback: v => v >= 1000 ? (v/1000).toFixed(0) + 'k' : v
-          }
-        }
-      }
-    }
-  });
-  } catch {}
 }
 
 function renderList(bookings) {
@@ -517,5 +432,4 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   await loadDashboard();
-  loadMonthlyChart();
 });
