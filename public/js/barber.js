@@ -166,6 +166,7 @@ function renderList(bookings) {
     const price   = b.total_price || b.services?.price || 0;
     const isDone  = b.status === 'completed';
     const isCancelled = ['cancelled', 'no_show'].includes(b.status);
+    const orderedAt = b.created_at ? new Date(b.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }) : '';
 
     let dateStr = '';
     if (showDate) {
@@ -180,6 +181,7 @@ function renderList(bookings) {
           ${dateStr}
           <div class="bk-name">${name}</div>
           <div class="bk-svc">${svc}</div>
+          ${orderedAt ? '<div style="font-size:0.6rem;color:#bbb;margin-top:2px">Dipesan ' + orderedAt + '</div>' : ''}
         </div>
         <div class="bk-right">
           <span class="bk-badge ${s.cls}">${s.label}</span>

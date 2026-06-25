@@ -146,6 +146,7 @@ function renderList() {
     const service = esc(b.services?.name || '-');
     const stylist = esc(b.barbers?.name || '-');
     const phone = esc(b.customer_phone || '');
+    const orderedAt = b.created_at ? new Date(b.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }) : '';
 
     return `
       <div class="booking-card" data-booking-id="${b.id}">
@@ -153,6 +154,7 @@ function renderList() {
         <div class="booking-info">
           <div class="booking-name">${name}</div>
           <div class="booking-detail">${service} &middot; ${stylist}</div>
+          ${orderedAt ? '<div class="booking-phone">Dipesan ' + orderedAt + '</div>' : ''}
         </div>
         <button class="status-btn ${s.cls}" data-open-sheet="${b.id}">${s.label}</button>
       </div>
