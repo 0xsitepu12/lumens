@@ -146,7 +146,11 @@ function renderList() {
     const service = esc(b.services?.name || '-');
     const stylist = esc(b.barbers?.name || '-');
     const phone = esc(b.customer_phone || '');
-    const orderedAt = b.created_at ? new Date(b.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }) : '';
+    let orderedAt = '';
+    if (b.created_at) {
+      const ca = new Date(b.created_at);
+      orderedAt = String(ca.getDate()).padStart(2,'0') + '/' + String(ca.getMonth()+1).padStart(2,'0') + '/' + String(ca.getFullYear()).slice(-2) + ' ' + ca.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false });
+    }
 
     return `
       <div class="booking-card" data-booking-id="${b.id}">

@@ -166,7 +166,11 @@ function renderList(bookings) {
     const price   = b.total_price || b.services?.price || 0;
     const isDone  = b.status === 'completed';
     const isCancelled = ['cancelled', 'no_show'].includes(b.status);
-    const orderedAt = b.created_at ? new Date(b.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }) : '';
+    let orderedAt = '';
+    if (b.created_at) {
+      const ca = new Date(b.created_at);
+      orderedAt = String(ca.getDate()).padStart(2,'0') + '/' + String(ca.getMonth()+1).padStart(2,'0') + '/' + String(ca.getFullYear()).slice(-2) + ' ' + ca.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false });
+    }
 
     let dateStr = '';
     if (showDate) {
