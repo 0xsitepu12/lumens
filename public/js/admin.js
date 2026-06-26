@@ -57,6 +57,7 @@ async function loadDashboard() {
     setText('stat-completed', d.completed || 0);
 
     loadCharts();
+    renderPnlCalendar();
   } catch {
     showToast('Gagal memuat dashboard', 'error');
   }
@@ -929,6 +930,89 @@ function exportData(type) {
 }
 
 // ============================================
+// PNL CALENDAR
+// ============================================
+let pnlMonth = new Date();
+const PNL_MONTHS = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const PNL_DAYS = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
+
+async function renderPnlCalendar() {
+  var grid = document.getElementById('pnl-grid');
+  var label = document.getElementById('pnl-month-label');
+  if (!grid) return;
+
+  var year = pnlMonth.getFullYear();
+  var month = pnlMonth.getMonth();
+  label.textContent = PNL_MONTHS[month] + ' ' + year;
+
+  var startDate = year + '-' + String(month + 1).padStart(2, '0') + '-01';
+  var daysInMonth = new Date(year, month + 1, 0).getDate();
+  var endDate = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(daysInMonth).padStart(2, '0');
+
+  var bookings = [];
+  try {
+    var res = await apiGet('/api/admin/analytics/revenue?start=' + startDate + '&end=' + endDate);
+    bookings = res.data || [];
+  } catch {}
+
+  var allBookings = [];
+  try {
+    var res2 = await apiGet('/api/admin/bookings?start=' + startDate + '&end=' + endDate + '&page=1');
+    allBookings = res2.data || [];
+  } catch {}
+
+  var dailyData = {};
+  bookings.forEach(function(d) {
+    dailyData[d.date] = { revenue: d.amount || 0, net: d.net || 0 };
+  });
+
+  var dailyCounts = {};
+  allBookings.forEach(function(b) {
+    if (!dailyCounts[b.booking_date]) dailyCounts[b.booking_date] = { total: 0, completed: 0, cancelled: 0 };
+    dailyCounts[b.booking_date].total++;
+    if (b.status === 'completed') dailyCounts[b.booking_date].completed++;
+    if (b.status === 'cancelled' || b.status === 'no_show') dailyCounts[b.booking_date].cancelled++;
+  });
+
+  var todayStr = new Date().toISOString().slice(0, 10);
+  var firstDay = new Date(year, month, 1).getDay();
+  var startPad = firstDay === 0 ? 6 : firstDay - 1;
+
+  var html = PNL_DAYS.map(function(d) { return '<div class="pnl-header">' + d + '</div>'; }).join('');
+
+  for (var i = 0; i < startPad; i++) html += '<div class="pnl-cell empty"></div>';
+
+  for (var d = 1; d <= daysInMonth; d++) {
+    var ds = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+    var data = dailyData[ds];
+    var counts = dailyCounts[ds];
+    var isToday = ds === todayStr;
+
+    var cls = 'pnl-cell';
+    if (isToday) cls += ' today';
+    if (data && data.revenue > 0) cls += ' has-revenue';
+    else if (counts && counts.total > 0) cls += ' has-booking';
+    if (counts && counts.cancelled > 0) cls += ' has-cancel';
+
+    html += '<div class="' + cls + '">';
+    html += '<div class="pnl-day">' + d + '</div>';
+
+    if (data && data.revenue > 0) {
+      html += '<div class="pnl-revenue">' + formatRupiah(data.revenue) + '</div>';
+    }
+    if (counts && counts.total > 0) {
+      html += '<div class="pnl-count">' + counts.total + ' booking';
+      if (counts.cancelled > 0) html += ' · ' + counts.cancelled + ' batal';
+      html += '</div>';
+    }
+
+    html += '</div>';
+  }
+
+  grid.innerHTML = html;
+}
+
+// ============================================
 // PRODUCTS MANAGEMENT
 // ============================================
 let editingProductId = null;
@@ -1086,6 +1170,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('booking-custom-range').style.display = e.target.value === 'custom' ? '' : 'none';
     if (e.target.value !== 'custom') { bookingsPage = 1; loadBookings(); }
   });
+
+  document.getElementById('pnl-prev')?.addEventListener('click', () => { pnlMonth.setMonth(pnlMonth.getMonth() - 1); renderPnlCalendar(); });
+  document.getElementById('pnl-next')?.addEventListener('click', () => { pnlMonth.setMonth(pnlMonth.getMonth() + 1); renderPnlCalendar(); });
 
   document.getElementById('btn-add-service')?.addEventListener('click', () => showServiceModal());
   document.getElementById('btn-save-service')?.addEventListener('click', saveService);
