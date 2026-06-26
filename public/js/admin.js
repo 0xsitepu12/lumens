@@ -812,7 +812,7 @@ async function loadKasirList() {
     sel.disabled = false;
     if (noAccEl) noAccEl.style.display = 'none';
     sel.innerHTML = data.data.map(u =>
-      `<option value="${u.username}">${u.full_name || u.username} (${u.username})</option>`
+      `<option value="${esc(u.username)}">${esc(u.full_name || u.username)} (${esc(u.username)})</option>`
     ).join('');
   } catch { /* ignore */ }
 }
@@ -1237,6 +1237,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('admin-pw-step1').style.display = '';
     document.getElementById('admin-otp-input').value = '';
     document.getElementById('admin-otp-error').style.display = 'none';
+  });
+
+  document.querySelectorAll('.toggle-pw-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const input = document.getElementById(this.dataset.target);
+      const icon = this.querySelector('i');
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'fa-solid fa-eye-slash';
+      } else {
+        input.type = 'password';
+        icon.className = 'fa-solid fa-eye';
+      }
+    });
   });
 
   document.getElementById('toggle-pos')?.addEventListener('change', async (e) => {

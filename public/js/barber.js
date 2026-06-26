@@ -437,5 +437,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (e.target === document.getElementById('pw-overlay')) closePwModal();
   });
 
+  document.querySelectorAll('.toggle-pw-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const input = document.getElementById(this.dataset.target);
+      const icon = this.querySelector('i');
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'fa-solid fa-eye-slash';
+      } else {
+        input.type = 'password';
+        icon.className = 'fa-solid fa-eye';
+      }
+    });
+  });
+
   await loadDashboard();
 });

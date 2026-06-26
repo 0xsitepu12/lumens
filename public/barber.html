@@ -483,15 +483,30 @@
       <div class="pw-title"><i class="fa-solid fa-key"></i> Ubah Password</div>
       <div class="pw-field">
         <label>Password Lama</label>
-        <input type="password" id="pw-old" placeholder="Password saat ini">
+        <div style="position:relative">
+          <input type="password" id="pw-old" placeholder="Password saat ini" style="padding-right:44px">
+          <button type="button" class="toggle-pw-btn" data-target="pw-old" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:#999;font-size:1rem;cursor:pointer;padding:4px" title="Tampilkan password">
+            <i class="fa-solid fa-eye"></i>
+          </button>
+        </div>
       </div>
       <div class="pw-field">
         <label>Password Baru</label>
-        <input type="password" id="pw-new" placeholder="Minimal 6 karakter">
+        <div style="position:relative">
+          <input type="password" id="pw-new" placeholder="Minimal 6 karakter" style="padding-right:44px">
+          <button type="button" class="toggle-pw-btn" data-target="pw-new" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:#999;font-size:1rem;cursor:pointer;padding:4px" title="Tampilkan password">
+            <i class="fa-solid fa-eye"></i>
+          </button>
+        </div>
       </div>
       <div class="pw-field">
         <label>Konfirmasi Password Baru</label>
-        <input type="password" id="pw-confirm" placeholder="Ulangi password baru">
+        <div style="position:relative">
+          <input type="password" id="pw-confirm" placeholder="Ulangi password baru" style="padding-right:44px">
+          <button type="button" class="toggle-pw-btn" data-target="pw-confirm" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:#999;font-size:1rem;cursor:pointer;padding:4px" title="Tampilkan password">
+            <i class="fa-solid fa-eye"></i>
+          </button>
+        </div>
       </div>
       <p class="pw-error" id="pw-error"></p>
       <button class="pw-submit" id="pw-submit">

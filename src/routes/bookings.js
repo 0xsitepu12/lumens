@@ -115,6 +115,15 @@ router.post('/create', bookingLimiter, async (req, res) => {
     if (!customer_name || !customer_phone || !service_id || !barber_id || !booking_date || !booking_time)
       return res.json({ success: false, message: 'Semua field wajib diisi' });
 
+    if (customer_name.trim().length > 100)
+      return res.json({ success: false, message: 'Nama terlalu panjang (maks 100 karakter)' });
+    if (customer_phone.trim().length > 20)
+      return res.json({ success: false, message: 'Nomor telepon tidak valid (maks 20 karakter)' });
+    if (customer_email && customer_email.trim().length > 100)
+      return res.json({ success: false, message: 'Email terlalu panjang (maks 100 karakter)' });
+    if (notes && notes.trim().length > 500)
+      return res.json({ success: false, message: 'Catatan terlalu panjang (maks 500 karakter)' });
+
     const service = await db.getServiceById(service_id);
     if (!service) return res.json({ success: false, message: 'Layanan tidak ditemukan' });
 
