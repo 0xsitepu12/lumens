@@ -98,7 +98,10 @@ function getDateRange(period) {
   if (period === 'today') {
     start = end;
   } else if (period === 'week') {
-    const d = new Date(today); d.setDate(d.getDate() - 7);
+    const d = new Date(today);
+    const day = d.getDay();
+    const diff = day === 0 ? 6 : day - 1;
+    d.setDate(d.getDate() - diff);
     start = d.toISOString().split('T')[0];
   } else if (period === 'month') {
     start = end.slice(0, 7) + '-01';
