@@ -1085,6 +1085,10 @@
                 <i class="fa-solid fa-user-tie"></i>
                 <span>Barber</span>
             </li>
+            <li class="admin-sidebar__item" data-tab="products">
+                <i class="fa-solid fa-mug-hot"></i>
+                <span>Produk</span>
+            </li>
             <li class="admin-sidebar__item" data-tab="settings">
                 <i class="fa-solid fa-cog"></i>
                 <span>Pengaturan</span>
@@ -1109,6 +1113,10 @@
         <button class="admin-tabs__item" data-tab="barbers">
             <i class="fa-solid fa-user-tie"></i>
             <span>Barber</span>
+        </button>
+        <button class="admin-tabs__item" data-tab="products">
+            <i class="fa-solid fa-mug-hot"></i>
+            <span>Produk</span>
         </button>
         <button class="admin-tabs__item" data-tab="settings">
             <i class="fa-solid fa-cog"></i>
@@ -1341,6 +1349,23 @@
                 <div class="empty-state">
                     <i class="fa-solid fa-user-tie"></i>
                     <p>Belum ada barber terdaftar</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== TAB: PRODUK ==================== -->
+        <section class="admin-tab-content" id="tab-products">
+            <div class="cards-header">
+                <h2 class="section-title" style="margin-bottom: 0;">Kelola Produk</h2>
+                <button class="btn btn--primary" id="btn-add-product">
+                    <i class="fa-solid fa-plus"></i> Tambah Produk
+                </button>
+            </div>
+
+            <div class="item-cards" id="products-list">
+                <div class="empty-state">
+                    <i class="fa-solid fa-mug-hot"></i>
+                    <p>Belum ada produk</p>
                 </div>
             </div>
         </section>
@@ -1759,6 +1784,57 @@
                 <button class="btn btn--outline" data-close-modal="modal-reset">Batal</button>
                 <button class="btn btn--danger" id="btn-confirm-reset">
                     <i class="fa-solid fa-rotate-left"></i> Ya, Reset Sekarang
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL: PRODUK FORM ==================== -->
+    <div class="modal-overlay" id="modal-product">
+        <div class="modal">
+            <div class="modal__header">
+                <h3 class="modal__title" id="modal-product-title">Tambah Produk</h3>
+                <button class="modal__close" data-close-modal="modal-product" aria-label="Tutup">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal__body">
+                <form id="form-product">
+                    <div class="form-group">
+                        <label for="product-name">Nama Produk</label>
+                        <input type="text" id="product-name" placeholder="Contoh: Kopi Susu" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="product-price">Harga (Rp)</label>
+                            <input type="number" id="product-price" placeholder="15000" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="product-stock">Stok</label>
+                            <input type="number" id="product-stock" placeholder="20" min="0" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="product-category">Kategori</label>
+                            <select id="product-category">
+                                <option value="minuman">Minuman</option>
+                                <option value="makanan">Makanan</option>
+                                <option value="produk">Produk Rambut</option>
+                                <option value="lainnya">Lainnya</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="product-icon">Icon</label>
+                            <input type="text" id="product-icon" placeholder="☕" maxlength="4" style="text-align:center;font-size:1.5rem;">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal__footer">
+                <button class="btn btn--outline" data-close-modal="modal-product">Batal</button>
+                <button class="btn btn--primary" id="btn-save-product">
+                    <i class="fa-solid fa-save"></i> Simpan
                 </button>
             </div>
         </div>

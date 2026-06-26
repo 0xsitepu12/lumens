@@ -35,6 +35,7 @@ function switchTab(tabName) {
   if (tabName === 'bookings') loadBookings();
   if (tabName === 'services') loadAdminServices();
   if (tabName === 'barbers') loadAdminBarbers();
+  if (tabName === 'products') loadAdminProducts();
   if (tabName === 'settings') loadSettings();
 }
 
@@ -842,6 +843,91 @@ function exportData(type) {
 }
 
 // ============================================
+// PRODUCTS MANAGEMENT
+// ============================================
+let editingProductId = null;
+
+async function loadAdminProducts() {
+  try {
+    const res = await apiGet('/api/pos/products');
+    const container = document.getElementById('products-list');
+    if (!container) return;
+    const products = res.data || [];
+
+    if (!products.length) {
+      container.innerHTML = '<div class="empty-state"><i class="fa-solid fa-mug-hot"></i><p>Belum ada produk</p></div>';
+      return;
+    }
+
+    container.innerHTML = products.map(p => {
+      const stockClass = p.stock <= 0 ? 'badge-inactive' : p.stock <= 5 ? 'badge-warning' : 'badge-active';
+      const stockLabel = p.stock <= 0 ? 'Habis' : 'Stok: ' + p.stock;
+      return '<div class="item-card ' + (p.is_active === false ? 'inactive' : '') + '">' +
+        '<div class="item-card__info">' +
+        '<h4>' + (p.icon || '🥤') + ' ' + esc(p.name) + '</h4>' +
+        '<div class="item-meta">' +
+        '<span><i class="fa-solid fa-tag"></i> ' + formatRupiah(p.price) + '</span>' +
+        '<span class="badge ' + stockClass + '">' + stockLabel + '</span>' +
+        '<span><i class="fa-solid fa-folder"></i> ' + esc(p.category || 'minuman') + '</span>' +
+        '</div></div>' +
+        '<div class="item-card__actions">' +
+        '<button class="btn btn--outline btn--sm" data-edit-product="' + p.id + '"><i class="fa-solid fa-pen"></i></button>' +
+        '</div></div>';
+    }).join('');
+
+    container.querySelectorAll('[data-edit-product]').forEach(function(btn) {
+      btn.addEventListener('click', function() { editProduct(btn.dataset.editProduct); });
+    });
+  } catch { showToast('Gagal memuat produk', 'error'); }
+}
+
+function showProductModal(id) {
+  editingProductId = id || null;
+  document.getElementById('modal-product-title').textContent = id ? 'Edit Produk' : 'Tambah Produk';
+  document.getElementById('product-name').value = '';
+  document.getElementById('product-price').value = '';
+  document.getElementById('product-stock').value = '0';
+  document.getElementById('product-category').value = 'minuman';
+  document.getElementById('product-icon').value = '☕';
+  openModal('modal-product');
+}
+
+async function editProduct(id) {
+  try {
+    const res = await apiGet('/api/pos/products');
+    const p = (res.data || []).find(function(x) { return x.id === id; });
+    if (!p) return;
+    editingProductId = id;
+    document.getElementById('modal-product-title').textContent = 'Edit Produk';
+    document.getElementById('product-name').value = p.name;
+    document.getElementById('product-price').value = p.price;
+    document.getElementById('product-stock').value = p.stock;
+    document.getElementById('product-category').value = p.category || 'minuman';
+    document.getElementById('product-icon').value = p.icon || '🥤';
+    openModal('modal-product');
+  } catch {}
+}
+
+async function saveProduct() {
+  var data = {
+    name: document.getElementById('product-name').value.trim(),
+    price: parseInt(document.getElementById('product-price').value),
+    stock: parseInt(document.getElementById('product-stock').value) || 0,
+    category: document.getElementById('product-category').value,
+    icon: document.getElementById('product-icon').value.trim() || '🥤'
+  };
+  if (!data.name || !data.price) { showToast('Nama dan harga wajib diisi', 'error'); return; }
+
+  try {
+    var res = editingProductId
+      ? await apiPut('/api/pos/products/' + editingProductId, data)
+      : await apiPost('/api/pos/products', data);
+    if (res.success) { showToast('Produk disimpan'); closeModal('modal-product'); loadAdminProducts(); }
+    else showToast(res.message || 'Gagal', 'error');
+  } catch { showToast('Gagal menyimpan', 'error'); }
+}
+
+// ============================================
 // INIT
 // ============================================
 document.addEventListener('DOMContentLoaded', async () => {
@@ -867,6 +953,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   document.getElementById('btn-add-service')?.addEventListener('click', () => showServiceModal());
   document.getElementById('btn-save-service')?.addEventListener('click', saveService);
+  document.getElementById('btn-add-product')?.addEventListener('click', () => showProductModal());
+  document.getElementById('btn-save-product')?.addEventListener('click', saveProduct);
   document.getElementById('btn-add-barber')?.addEventListener('click', () => showBarberModal());
   document.getElementById('btn-save-barber')?.addEventListener('click', saveBarber);
   document.getElementById('btn-save-hours')?.addEventListener('click', saveHours);
