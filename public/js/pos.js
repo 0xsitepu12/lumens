@@ -18,6 +18,28 @@
   function fmt(n) { return 'Rp ' + (n || 0).toLocaleString('id-ID'); }
   function esc(str) { const d = document.createElement('div'); d.textContent = str ?? ''; return d.innerHTML; }
 
+  function showPosAlert(msg, type) {
+    var ov = document.getElementById('pos-alert-overlay');
+    var icon = document.getElementById('pos-alert-icon');
+    var msgEl = document.getElementById('pos-alert-msg');
+    var btn = document.getElementById('pos-alert-ok');
+    if (!ov) { alert(msg); return; }
+    msgEl.textContent = msg;
+    if (type === 'error') {
+      icon.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i>';
+      icon.style.background = '#fef2f2'; icon.style.color = '#dc2626';
+    } else if (type === 'success') {
+      icon.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+      icon.style.background = '#f0fdf4'; icon.style.color = '#16a34a';
+    } else {
+      icon.innerHTML = '<i class="fa-solid fa-circle-info"></i>';
+      icon.style.background = '#eff6ff'; icon.style.color = '#2563eb';
+    }
+    ov.classList.add('show');
+    btn.onclick = function() { ov.classList.remove('show'); };
+    ov.onclick = function(e) { if (e.target === ov) ov.classList.remove('show'); };
+  }
+
   // ============================================
   // LOAD DATA
   // ============================================
@@ -243,9 +265,16 @@
   // ============================================
   // PAYMENT
   // ============================================
+  function cartHasService() {
+    return cart.some(function(c) { return c.type === 'service'; });
+  }
+
   function openPay() {
-    if (!selectedBarber) return;
     if (!cart.length) return;
+    if (cartHasService() && !selectedBarber) {
+      showPosAlert('Pilih stylist dulu untuk layanan.', 'error');
+      return;
+    }
     document.getElementById('pay-total').textContent = fmt(getTotal());
     document.getElementById('cash-input').value = '';
     document.getElementById('change-val').textContent = 'Rp 0';
@@ -280,7 +309,7 @@
     const amountPaid = payMethod === 'cash' ? (parseInt(cashRaw) || total) : total;
 
     if (payMethod === 'cash' && amountPaid < total) {
-      alert('Uang yang diterima kurang dari total.');
+      showPosAlert('Uang yang diterima kurang dari total.', 'error');
       return;
     }
 
@@ -294,8 +323,8 @@
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          barber_id: selectedBarber.id,
-          barber_name: selectedBarber.name,
+          barber_id: selectedBarber ? selectedBarber.id : null,
+          barber_name: selectedBarber ? selectedBarber.name : '',
           items: cart.map(c => ({ name: c.name, price: c.price, qty: c.qty, type: c.type, service_id: c.service_id, product_id: c.product_id })),
           payment_method: payMethod,
           amount_paid: amountPaid
@@ -306,10 +335,10 @@
         document.getElementById('pay-overlay').classList.remove('show');
         showReceipt(data.data);
       } else {
-        alert(data.message || 'Gagal menyimpan transaksi.');
+        showPosAlert(data.message || 'Gagal menyimpan transaksi.', 'error');
       }
     } catch {
-      alert('Terjadi kesalahan.');
+      showPosAlert('Terjadi kesalahan.', 'error');
     } finally {
       btn.disabled = false;
       btn.innerHTML = '<i class="fa-solid fa-check"></i> Konfirmasi Pembayaran';
@@ -493,10 +522,10 @@
         document.getElementById('refund-overlay').classList.remove('show');
         loadRiwayat();
       } else {
-        alert(data.message || 'Gagal refund.');
+        showPosAlert(data.message || 'Gagal refund.', 'error');
       }
     } catch {
-      alert('Terjadi kesalahan.');
+      showPosAlert('Terjadi kesalahan.', 'error');
     } finally {
       btn.disabled = false;
       btn.innerHTML = '<i class="fa-solid fa-rotate-left"></i> Proses Refund';
@@ -519,6 +548,12 @@
     renderBarbers();
     renderGrid();
     updateCartUI();
+
+    // Show grid immediately (barber optional for product-only)
+    var locked = document.getElementById('pos-locked');
+    var main = document.getElementById('pos-main');
+    if (locked) locked.style.display = 'none';
+    if (main) { main.classList.remove('pos-main-hidden'); main.classList.add('pos-main-show'); }
 
     document.getElementById('btn-bayar')?.addEventListener('click', openPay);
     document.getElementById('btn-bayar-mobile')?.addEventListener('click', openPay);

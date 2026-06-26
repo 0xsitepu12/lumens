@@ -69,8 +69,12 @@ router.delete('/products/:id', requireAdmin, async (req, res) => {
 router.post('/transactions', requireKasir, async (req, res) => {
   try {
     const { barber_id, barber_name, customer_name, items, payment_method, amount_paid } = req.body;
-    if (!barber_id || !items?.length || !payment_method)
+    if (!items?.length || !payment_method)
       return res.json({ success: false, message: 'Data tidak lengkap' });
+
+    const hasService = items.some(i => i.service_id);
+    if (hasService && !barber_id)
+      return res.json({ success: false, message: 'Pilih stylist untuk layanan' });
 
     const VALID_METHODS = ['cash', 'transfer', 'qris'];
     if (!VALID_METHODS.includes(payment_method))
