@@ -310,13 +310,22 @@ async function loadBookings() {
       return;
     }
 
-    tbody.innerHTML = res.data.map(b => {
+    const BULAN = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    let lastMonth = '';
+    let html = '';
+    res.data.forEach(b => {
+      const monthKey = b.booking_date?.slice(0, 7) || '';
+      if (monthKey && monthKey !== lastMonth) {
+        const [y, m] = monthKey.split('-');
+        html += '<tr><td colspan="6" style="background:var(--bg-input);padding:10px 16px;font-weight:700;font-size:0.85rem;color:var(--text-primary);border-bottom:2px solid var(--border)"><i class="fa-regular fa-calendar" style="margin-right:6px;color:var(--text-muted)"></i>' + BULAN[parseInt(m)-1] + ' ' + y + '</td></tr>';
+        lastMonth = monthKey;
+      }
       let orderedAt = '';
       if (b.created_at) {
         const ca = new Date(b.created_at);
         orderedAt = String(ca.getDate()).padStart(2,'0') + '/' + String(ca.getMonth()+1).padStart(2,'0') + '/' + String(ca.getFullYear()).slice(-2) + ' ' + ca.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false });
       }
-      return `
+      html += `
       <tr>
         <td>
           <div>${b.booking_time?.slice(0, 5)}</div>
@@ -331,8 +340,9 @@ async function loadBookings() {
         <td>${esc(b.barbers?.name || '-')}</td>
         <td>${getStatusBadge(b.status)}</td>
         <td><div class="btn-group">${getBookingActions(b)}</div></td>
-      </tr>
-    `}).join('');
+      </tr>`;
+    });
+    tbody.innerHTML = html;
 
     tbody.querySelectorAll('[data-status-action]').forEach(btn => {
       btn.addEventListener('click', () => {
