@@ -310,7 +310,13 @@ async function loadBookings() {
       return;
     }
 
-    tbody.innerHTML = res.data.map(b => `
+    tbody.innerHTML = res.data.map(b => {
+      let orderedAt = '';
+      if (b.created_at) {
+        const ca = new Date(b.created_at);
+        orderedAt = String(ca.getDate()).padStart(2,'0') + '/' + String(ca.getMonth()+1).padStart(2,'0') + '/' + String(ca.getFullYear()).slice(-2) + ' ' + ca.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false });
+      }
+      return `
       <tr>
         <td>
           <div>${b.booking_time?.slice(0, 5)}</div>
@@ -319,13 +325,14 @@ async function loadBookings() {
         <td>
           <div>${esc(b.customer_name)}</div>
           <small style="color: var(--text-muted)">${esc(b.customer_phone)}</small>
+          ${orderedAt ? '<div style="font-size:0.65rem;color:#bbb;margin-top:2px">Dipesan ' + orderedAt + '</div>' : ''}
         </td>
         <td>${esc(b.services?.name || '-')}</td>
         <td>${esc(b.barbers?.name || '-')}</td>
         <td>${getStatusBadge(b.status)}</td>
         <td><div class="btn-group">${getBookingActions(b)}</div></td>
       </tr>
-    `).join('');
+    `}).join('');
 
     tbody.querySelectorAll('[data-status-action]').forEach(btn => {
       btn.addEventListener('click', () => {
