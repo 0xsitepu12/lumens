@@ -51,10 +51,10 @@ async function loadDashboard() {
     if (!res.success) return;
     const d = res.data;
 
-    setText('stat-bookings', d.total);
-    setText('stat-revenue', formatRupiah(d.revenue));
-    setText('stat-pending', d.pending);
-    setText('stat-completed', d.completed);
+    setText('stat-bookings', d.total || 0);
+    setText('stat-revenue', formatRupiah(d.revenue || 0));
+    setText('stat-pending', d.pending || 0);
+    setText('stat-completed', d.completed || 0);
 
     loadCharts();
   } catch {
