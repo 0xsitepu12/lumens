@@ -732,6 +732,118 @@
             color: #d97706;
         }
 
+        .icon-picker {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .icon-pick {
+            width: 42px;
+            height: 42px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg-card);
+            font-size: 1.3rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+        .icon-pick:hover {
+            border-color: var(--primary-light);
+            background: #fff;
+        }
+        .icon-pick.active {
+            border-color: var(--primary);
+            background: var(--primary);
+            box-shadow: 0 0 0 2px rgba(42,42,42,0.2);
+        }
+
+        .product-card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 12px;
+        }
+        .product-card-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            position: relative;
+            transition: var(--transition);
+        }
+        .product-card-item:hover {
+            border-color: var(--primary-light);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+        .product-card-top {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .product-card-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+        }
+        .product-card-name {
+            font-size: 0.92rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+        .product-card-cat {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: capitalize;
+        }
+        .product-card-prices {
+            display: flex;
+            gap: 12px;
+            align-items: baseline;
+        }
+        .product-card-sell {
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--success);
+        }
+        .product-card-modal {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        .product-card-profit {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--info);
+        }
+        .product-card-bottom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .product-card-stock {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 20px;
+        }
+        .product-card-edit {
+            opacity: 0.5;
+            transition: opacity 0.15s;
+        }
+        .product-card-item:hover .product-card-edit {
+            opacity: 1;
+        }
+
         /* ========== OPERATING HOURS ========== */
         .hours-table {
             width: 100%;
@@ -1367,8 +1479,8 @@
                 </button>
             </div>
 
-            <div class="item-cards" id="products-list">
-                <div class="empty-state">
+            <div id="products-list">
+                <div class="empty-state" style="text-align:center;padding:60px 20px;">
                     <i class="fa-solid fa-mug-hot"></i>
                     <p>Belum ada produk</p>
                 </div>
@@ -1805,15 +1917,27 @@
             </div>
             <div class="modal__body">
                 <form id="form-product">
-                    <div class="form-row">
-                        <div class="form-group" style="flex:1">
-                            <label for="product-name">Nama Produk</label>
-                            <input type="text" id="product-name" placeholder="Contoh: Kopi Susu" required>
+                    <div class="form-group">
+                        <label for="product-name">Nama Produk</label>
+                        <input type="text" id="product-name" placeholder="Contoh: Kopi Susu" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Icon</label>
+                        <div class="icon-picker" id="icon-picker">
+                            <button type="button" class="icon-pick" data-icon="☕">☕</button>
+                            <button type="button" class="icon-pick" data-icon="🍵">🍵</button>
+                            <button type="button" class="icon-pick" data-icon="🧃">🧃</button>
+                            <button type="button" class="icon-pick" data-icon="🥤">🥤</button>
+                            <button type="button" class="icon-pick" data-icon="🍊">🍊</button>
+                            <button type="button" class="icon-pick" data-icon="💧">💧</button>
+                            <button type="button" class="icon-pick" data-icon="🥛">🥛</button>
+                            <button type="button" class="icon-pick" data-icon="🍫">🍫</button>
+                            <button type="button" class="icon-pick" data-icon="🍪">🍪</button>
+                            <button type="button" class="icon-pick" data-icon="🧴">🧴</button>
+                            <button type="button" class="icon-pick" data-icon="💈">💈</button>
+                            <button type="button" class="icon-pick" data-icon="🪮">🪮</button>
                         </div>
-                        <div class="form-group" style="flex:0 0 80px">
-                            <label for="product-icon">Icon</label>
-                            <input type="text" id="product-icon" placeholder="☕" maxlength="4" style="text-align:center;font-size:1.5rem;">
-                        </div>
+                        <input type="hidden" id="product-icon" value="☕">
                     </div>
                     <div class="form-row">
                         <div class="form-group">

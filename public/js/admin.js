@@ -859,27 +859,30 @@ async function loadAdminProducts() {
     const products = res.data || [];
 
     if (!products.length) {
-      container.innerHTML = '<div class="empty-state"><i class="fa-solid fa-mug-hot"></i><p>Belum ada produk</p></div>';
+      container.innerHTML = '<div class="empty-state" style="text-align:center;padding:60px 20px;"><i class="fa-solid fa-mug-hot"></i><p>Belum ada produk</p></div>';
       return;
     }
 
+    container.className = 'product-card-grid';
     container.innerHTML = products.map(p => {
       const stockClass = p.stock <= 0 ? 'badge-inactive' : p.stock <= 5 ? 'badge-warning' : 'badge-active';
       const stockLabel = p.stock <= 0 ? 'Habis' : 'Stok: ' + p.stock;
       const modal = p.modal_price || 0;
       const profit = p.price - modal;
-      return '<div class="item-card ' + (p.is_active === false ? 'inactive' : '') + '">' +
-        '<div class="item-card__info">' +
-        '<h4>' + (p.icon || '🥤') + ' ' + esc(p.name) + '</h4>' +
-        '<p>' + esc(p.category || 'minuman') + '</p>' +
-        '<div class="item-meta">' +
-        '<span><i class="fa-solid fa-tag"></i> ' + formatRupiah(p.price) + '</span>' +
-        (modal ? '<span><i class="fa-solid fa-coins"></i> Modal ' + formatRupiah(modal) + '</span>' : '') +
-        (modal ? '<span style="color:var(--success)"><i class="fa-solid fa-arrow-trend-up"></i> Profit ' + formatRupiah(profit) + '</span>' : '') +
-        '<span class="badge ' + stockClass + '">' + stockLabel + '</span>' +
-        '</div></div>' +
-        '<div class="item-card__actions">' +
-        '<button class="btn btn--outline btn--sm" data-edit-product="' + p.id + '"><i class="fa-solid fa-pen"></i></button>' +
+      return '<div class="product-card-item">' +
+        '<div class="product-card-top">' +
+        '<div class="product-card-icon">' + (p.icon || '🥤') + '</div>' +
+        '<div><div class="product-card-name">' + esc(p.name) + '</div>' +
+        '<div class="product-card-cat">' + esc(p.category || 'minuman') + '</div></div>' +
+        '</div>' +
+        '<div class="product-card-prices">' +
+        '<span class="product-card-sell">' + formatRupiah(p.price) + '</span>' +
+        (modal ? '<span class="product-card-modal">Modal ' + formatRupiah(modal) + '</span>' : '') +
+        '</div>' +
+        (modal ? '<div class="product-card-profit"><i class="fa-solid fa-arrow-trend-up"></i> Profit ' + formatRupiah(profit) + '</div>' : '') +
+        '<div class="product-card-bottom">' +
+        '<span class="badge product-card-stock ' + stockClass + '">' + stockLabel + '</span>' +
+        '<button class="btn btn--outline btn--sm product-card-edit" data-edit-product="' + p.id + '"><i class="fa-solid fa-pen"></i> Edit</button>' +
         '</div></div>';
     }).join('');
 
@@ -898,7 +901,14 @@ function showProductModal(id) {
   document.getElementById('product-stock').value = '0';
   document.getElementById('product-category').value = 'minuman';
   document.getElementById('product-icon').value = '☕';
+  selectIconPicker('☕');
   openModal('modal-product');
+}
+
+function selectIconPicker(icon) {
+  document.querySelectorAll('.icon-pick').forEach(b => {
+    b.classList.toggle('active', b.dataset.icon === icon);
+  });
 }
 
 async function editProduct(id) {
@@ -913,7 +923,9 @@ async function editProduct(id) {
     document.getElementById('product-modal-price').value = p.modal_price || 0;
     document.getElementById('product-stock').value = p.stock;
     document.getElementById('product-category').value = p.category || 'minuman';
-    document.getElementById('product-icon').value = p.icon || '🥤';
+    var icon = p.icon || '🥤';
+    document.getElementById('product-icon').value = icon;
+    selectIconPicker(icon);
     openModal('modal-product');
   } catch {}
 }
@@ -966,6 +978,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('btn-save-service')?.addEventListener('click', saveService);
   document.getElementById('btn-add-product')?.addEventListener('click', () => showProductModal());
   document.getElementById('btn-save-product')?.addEventListener('click', saveProduct);
+  document.querySelectorAll('.icon-pick').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.icon-pick').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('product-icon').value = btn.dataset.icon;
+    });
+  });
   document.getElementById('btn-add-barber')?.addEventListener('click', () => showBarberModal());
   document.getElementById('btn-save-barber')?.addEventListener('click', saveBarber);
   document.getElementById('btn-save-hours')?.addEventListener('click', saveHours);
