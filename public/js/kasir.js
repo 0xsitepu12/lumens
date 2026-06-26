@@ -109,11 +109,11 @@ function playNotifSound() {
 }
 
 const STATUS_MAP = {
-  pending: { label: 'Pending', cls: 'pending' },
-  confirmed: { label: 'Confirmed', cls: 'confirmed' },
+  pending: { label: 'Menunggu', cls: 'pending' },
+  confirmed: { label: 'Dikonfirmasi', cls: 'confirmed' },
   completed: { label: 'Selesai', cls: 'completed' },
   cancelled: { label: 'Batal', cls: 'cancelled' },
-  no_show: { label: 'No Show', cls: 'cancelled' }
+  no_show: { label: 'Tidak Hadir', cls: 'cancelled' }
 };
 
 async function checkAuth() {
@@ -367,6 +367,20 @@ function updateDateDisplay() {
   document.getElementById('kasir-date').textContent = formatted;
 }
 
+function startClock() {
+  var el = document.getElementById('kasir-clock');
+  if (!el) return;
+  function tick() {
+    var now = new Date();
+    var h = String(now.getHours()).padStart(2, '0');
+    var m = String(now.getMinutes()).padStart(2, '0');
+    var s = String(now.getSeconds()).padStart(2, '0');
+    el.textContent = h + ':' + m + ':' + s;
+  }
+  tick();
+  setInterval(tick, 1000);
+}
+
 function esc(str) {
   const d = document.createElement('div');
   d.textContent = str ?? '';
@@ -523,6 +537,7 @@ document.getElementById('status-overlay')?.addEventListener('click', closeStatus
 document.addEventListener('DOMContentLoaded', async () => {
   await checkAuth();
   updateDateDisplay();
+  startClock();
 
   // Check POS enabled
   try {
