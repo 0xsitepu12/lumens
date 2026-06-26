@@ -1187,6 +1187,57 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('btn-save-product')?.addEventListener('click', saveProduct);
   document.getElementById('btn-confirm-delete-product')?.addEventListener('click', confirmDeleteProduct);
 
+  // Admin password change with OTP
+  document.getElementById('btn-request-otp')?.addEventListener('click', async () => {
+    const pw = document.getElementById('admin-new-pw').value;
+    const cpw = document.getElementById('admin-confirm-pw').value;
+    const errEl = document.getElementById('admin-pw-error');
+    errEl.style.display = 'none';
+    if (!pw || pw.length < 6) { errEl.textContent = 'Password minimal 6 karakter'; errEl.style.display = ''; return; }
+    if (pw !== cpw) { errEl.textContent = 'Konfirmasi password tidak cocok'; errEl.style.display = ''; return; }
+    const btn = document.getElementById('btn-request-otp');
+    btn.disabled = true; btn.textContent = 'Mengirim...';
+    try {
+      const res = await apiPost('/api/admin/change-password/request-otp', {});
+      if (res.success) {
+        document.getElementById('admin-pw-step1').style.display = 'none';
+        document.getElementById('admin-pw-step2').style.display = '';
+        document.getElementById('admin-otp-sent-to').textContent = res.message;
+        showToast('Kode verifikasi dikirim');
+      } else { errEl.textContent = res.message; errEl.style.display = ''; }
+    } catch { errEl.textContent = 'Gagal mengirim kode'; errEl.style.display = ''; }
+    finally { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kirim Kode Verifikasi'; }
+  });
+
+  document.getElementById('btn-verify-otp')?.addEventListener('click', async () => {
+    const otp = document.getElementById('admin-otp-input').value.trim();
+    const pw = document.getElementById('admin-new-pw').value;
+    const cpw = document.getElementById('admin-confirm-pw').value;
+    const errEl = document.getElementById('admin-otp-error');
+    errEl.style.display = 'none';
+    if (!otp || otp.length !== 6) { errEl.textContent = 'Masukkan 6 digit kode'; errEl.style.display = ''; return; }
+    const btn = document.getElementById('btn-verify-otp');
+    btn.disabled = true; btn.textContent = 'Memproses...';
+    try {
+      const res = await apiPost('/api/admin/change-password/verify', { otp, newPassword: pw, confirmPassword: cpw });
+      if (res.success) {
+        showToast('Password admin berhasil diubah!');
+        document.getElementById('admin-pw-step2').style.display = 'none';
+        document.getElementById('admin-pw-step1').style.display = '';
+        document.getElementById('admin-new-pw').value = '';
+        document.getElementById('admin-confirm-pw').value = '';
+        document.getElementById('admin-otp-input').value = '';
+      } else { errEl.textContent = res.message; errEl.style.display = ''; }
+    } catch { errEl.textContent = 'Terjadi kesalahan'; errEl.style.display = ''; }
+    finally { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check"></i> Verifikasi & Ubah Password'; }
+  });
+
+  document.getElementById('btn-cancel-otp')?.addEventListener('click', () => {
+    document.getElementById('admin-pw-step2').style.display = 'none';
+    document.getElementById('admin-pw-step1').style.display = '';
+    document.getElementById('admin-otp-input').value = '';
+  });
+
   document.getElementById('toggle-pos')?.addEventListener('change', async (e) => {
     const res = await apiPut('/api/admin/app-config', { posEnabled: e.target.checked });
     if (res.success) showToast(e.target.checked ? 'POS diaktifkan' : 'POS dinonaktifkan');

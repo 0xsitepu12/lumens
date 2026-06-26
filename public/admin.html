@@ -1958,6 +1958,57 @@
 
             <!-- Sub-tab: Keamanan -->
             <div class="settings-content" id="stab-keamanan">
+                <!-- Ubah Password Admin -->
+                <div class="chart-card" style="margin-bottom:24px;">
+                    <div class="chart-card__title">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        Ubah Password Admin
+                    </div>
+                    <p style="color:var(--text-secondary);font-size:.875rem;margin-bottom:16px;">
+                        Kode verifikasi akan dikirim ke email admin untuk konfirmasi.
+                    </p>
+
+                    <!-- Step 1: Input password baru -->
+                    <div id="admin-pw-step1">
+                        <div class="form-group">
+                            <label>Password Baru</label>
+                            <input type="password" id="admin-new-pw" placeholder="Minimal 6 karakter">
+                        </div>
+                        <div class="form-group">
+                            <label>Konfirmasi Password Baru</label>
+                            <input type="password" id="admin-confirm-pw" placeholder="Ulangi password baru">
+                        </div>
+                        <p id="admin-pw-error" style="color:var(--danger);font-size:.85rem;display:none;margin-bottom:10px;"></p>
+                        <div class="settings-actions">
+                            <button class="btn btn--primary" id="btn-request-otp">
+                                <i class="fa-solid fa-paper-plane"></i> Kirim Kode Verifikasi
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Input OTP -->
+                    <div id="admin-pw-step2" style="display:none;">
+                        <div style="background:var(--bg-card);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
+                            <i class="fa-solid fa-envelope" style="color:var(--info);font-size:1.1rem;"></i>
+                            <div>
+                                <div style="font-size:.85rem;font-weight:600;">Kode verifikasi dikirim</div>
+                                <div style="font-size:.75rem;color:var(--text-muted);" id="admin-otp-sent-to">Cek email admin</div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Kode Verifikasi (6 digit)</label>
+                            <input type="text" id="admin-otp-input" placeholder="000000" maxlength="6" inputmode="numeric" style="text-align:center;font-size:1.5rem;font-weight:700;letter-spacing:8px;">
+                        </div>
+                        <p id="admin-otp-error" style="color:var(--danger);font-size:.85rem;display:none;margin-bottom:10px;"></p>
+                        <div class="settings-actions" style="gap:8px;display:flex;">
+                            <button class="btn btn--outline" id="btn-cancel-otp">Batal</button>
+                            <button class="btn btn--primary" id="btn-verify-otp">
+                                <i class="fa-solid fa-check"></i> Verifikasi & Ubah Password
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Reset Password Setting -->
                 <div class="chart-card" style="margin-bottom:24px;">
                     <div class="chart-card__title">

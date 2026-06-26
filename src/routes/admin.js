@@ -1,10 +1,14 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
+const nodemailer = require('nodemailer');
 const fs = require('fs');
 const path = require('path');
 const db = require('../db');
 const { requireAdmin } = require('../middleware/auth');
 const { DAYS_ID, todayWIB } = require('../config');
+
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'lumnstudio@gmail.com';
+let otpStore = {};
 
 const RESET_CONFIG_PATH = path.join(__dirname, '../config/reset-config.json');
 const APP_CONFIG_PATH = path.join(__dirname, '../config/app-config.json');
@@ -693,6 +697,81 @@ router.put('/app-config', (req, res) => {
     res.json({ success: true, data: config });
   } catch (err) {
     console.error('[admin/app-config]', err.message);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// ============================================
+// ADMIN PASSWORD CHANGE (with email OTP)
+// ============================================
+function generateOTP() {
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+
+async function sendOTPEmail(otp) {
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.SMTP_USER || ADMIN_EMAIL,
+      pass: process.env.SMTP_PASS
+    }
+  });
+
+  await transporter.sendMail({
+    from: '"LUMEN\'S STUDIO" <' + (process.env.SMTP_USER || ADMIN_EMAIL) + '>',
+    to: ADMIN_EMAIL,
+    subject: 'Kode Verifikasi - Ubah Password Admin',
+    html: '<div style="font-family:Inter,sans-serif;max-width:400px;margin:0 auto;padding:24px;">' +
+      '<h2 style="font-size:1.2rem;font-weight:800;margin-bottom:8px;">LUMEN\'S STUDIO</h2>' +
+      '<p style="color:#555;font-size:0.9rem;margin-bottom:20px;">Kode verifikasi untuk mengubah password admin:</p>' +
+      '<div style="background:#f5f5f5;border-radius:12px;padding:20px;text-align:center;margin-bottom:20px;">' +
+      '<span style="font-size:2rem;font-weight:800;letter-spacing:8px;color:#1a1a1a;">' + otp + '</span>' +
+      '</div>' +
+      '<p style="color:#999;font-size:0.75rem;">Kode berlaku 5 menit. Jika tidak merasa meminta, abaikan email ini.</p>' +
+      '</div>'
+  });
+}
+
+router.post('/change-password/request-otp', async (req, res) => {
+  try {
+    if (!process.env.SMTP_PASS) {
+      return res.json({ success: false, message: 'SMTP belum dikonfigurasi. Tambahkan SMTP_USER dan SMTP_PASS di environment.' });
+    }
+
+    const otp = generateOTP();
+    otpStore[req.user.username] = { otp, expires: Date.now() + 5 * 60 * 1000 };
+
+    await sendOTPEmail(otp);
+    res.json({ success: true, message: 'Kode verifikasi dikirim ke ' + ADMIN_EMAIL.replace(/(.{2}).*(@.*)/, '$1***$2') });
+  } catch (err) {
+    console.error('[admin/change-password/request-otp]', err.message);
+    res.status(500).json({ success: false, message: 'Gagal mengirim email. Periksa konfigurasi SMTP.' });
+  }
+});
+
+router.post('/change-password/verify', async (req, res) => {
+  try {
+    const { otp, newPassword, confirmPassword } = req.body;
+    if (!otp || !newPassword) return res.json({ success: false, message: 'OTP dan password baru wajib diisi' });
+    if (newPassword.length < 6) return res.json({ success: false, message: 'Password minimal 6 karakter' });
+    if (newPassword !== confirmPassword) return res.json({ success: false, message: 'Konfirmasi password tidak cocok' });
+
+    const stored = otpStore[req.user.username];
+    if (!stored) return res.json({ success: false, message: 'Kode verifikasi belum diminta' });
+    if (Date.now() > stored.expires) {
+      delete otpStore[req.user.username];
+      return res.json({ success: false, message: 'Kode verifikasi sudah kedaluwarsa' });
+    }
+    if (stored.otp !== otp) return res.json({ success: false, message: 'Kode verifikasi salah' });
+
+    const hash = await bcrypt.hash(newPassword, 10);
+    await db.updateUserPassword(req.user.username, hash);
+    delete otpStore[req.user.username];
+
+    db.logActivity({ action: 'admin_password_change', category: 'admin', actor: req.user.username, detail: 'Password changed via OTP', ip: req.ip });
+    res.json({ success: true, message: 'Password admin berhasil diubah' });
+  } catch (err) {
+    console.error('[admin/change-password/verify]', err.message);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
