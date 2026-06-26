@@ -183,15 +183,15 @@ async function getBookingsForAnalytics(startDate, endDate) {
   return data || [];
 }
 
-async function getAllBookings({ page = 1, limit = 50, status, date } = {}) {
+async function getAllBookings({ page = 1, limit = 30, status, date } = {}) {
   const from = (page - 1) * limit;
   let q = supabase.from('bookings')
-    .select('*, services(name, price), barbers(name)', { count: 'exact' })
-    .order('booking_date', { ascending: false })
-    .order('booking_time', { ascending: true })
-    .range(from, from + limit - 1);
+    .select('*, services(name, price), barbers(name)', { count: 'exact' });
   if (status) q = q.eq('status', status);
   if (date) q = q.eq('booking_date', date);
+  q = q.order('booking_date', { ascending: false })
+    .order('booking_time', { ascending: true })
+    .range(from, from + limit - 1);
   const { data, count } = await q;
   return { data: data || [], total: count || 0 };
 }
