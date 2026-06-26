@@ -156,12 +156,10 @@ function renderSummary() {
   const total = bookings.length;
   const pending = bookings.filter(b => b.status === 'pending').length;
   const completed = bookings.filter(b => b.status === 'completed').length;
-  const omset = bookings.filter(b => b.status === 'completed').reduce((s, b) => s + (b.total_price || 0), 0);
 
   document.getElementById('sum-total').textContent = total;
   document.getElementById('sum-pending').textContent = pending;
   document.getElementById('sum-completed').textContent = completed;
-  document.getElementById('sum-omset').textContent = 'Rp ' + omset.toLocaleString('id-ID');
 }
 
 function renderList() {
