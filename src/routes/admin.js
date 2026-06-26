@@ -815,10 +815,11 @@ router.post('/change-password/verify', async (req, res) => {
 
     const hash = await bcrypt.hash(newPassword, 10);
     await db.updateUserPassword(req.user.username, hash);
+    await db.incrementTokenVersion(req.user.username);
     delete otpStore[req.user.username];
 
     db.logActivity({ action: 'admin_password_change', category: 'admin', actor: req.user.username, detail: 'Password changed via OTP', ip: req.ip });
-    res.json({ success: true, message: 'Password admin berhasil diubah' });
+    res.json({ success: true, message: 'Password admin berhasil diubah. Silakan login ulang.' });
   } catch (err) {
     console.error('[admin/change-password/verify]', err.message);
     res.status(500).json({ success: false, message: 'Server error' });

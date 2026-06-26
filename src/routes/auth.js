@@ -22,7 +22,7 @@ router.post('/login', async (req, res) => {
       return res.json({ success: false, message: 'Username atau password salah' });
 
     // Build JWT payload; include barberId for barber role (VULN-006)
-    const payload = { username: user.username, role: user.role, fullName: user.full_name };
+    const payload = { username: user.username, role: user.role, fullName: user.full_name, tokenVersion: user.token_version ?? 0 };
     if (user.role === 'barber') {
       const barber = await db.getBarberByName(user.full_name);
       if (barber) payload.barberId = barber.id;

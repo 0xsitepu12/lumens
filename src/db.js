@@ -38,6 +38,16 @@ async function updateUserPassword(username, password_hash) {
   if (error) throw error;
 }
 
+async function incrementTokenVersion(username) {
+  const { error } = await supabase.rpc('increment_token_version', { uname: username });
+  if (error) {
+    // Fallback jika RPC belum ada: update langsung
+    const { data: user } = await supabase.from('users').select('token_version').eq('username', username).single();
+    const next = (user?.token_version ?? 0) + 1;
+    await supabase.from('users').update({ token_version: next }).eq('username', username);
+  }
+}
+
 async function getNonAdminUsers() {
   const { data, error } = await supabase.from('users')
     .select('id, username, full_name, role, is_active')
@@ -336,7 +346,7 @@ async function resetAllBookings() {
 
 module.exports = {
   supabase,
-  getUserByUsername, createUser, updateUserPassword, getNonAdminUsers,
+  getUserByUsername, createUser, updateUserPassword, incrementTokenVersion, getNonAdminUsers,
   getServices, getServiceById, createService, updateService, deleteService,
   getBarbers, getBarberById, createBarber, updateBarber,
   createBooking, getBookingById, updateBookingStatus,
