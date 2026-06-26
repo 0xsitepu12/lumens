@@ -949,30 +949,37 @@ async function renderPnlCalendar() {
   var daysInMonth = new Date(year, month + 1, 0).getDate();
   var endDate = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(daysInMonth).padStart(2, '0');
 
-  var bookings = [];
-  try {
-    var res = await apiGet('/api/admin/analytics/revenue?start=' + startDate + '&end=' + endDate);
-    bookings = res.data || [];
-  } catch {}
-
-  var allBookings = [];
-  try {
-    var res2 = await apiGet('/api/admin/bookings?start=' + startDate + '&end=' + endDate + '&page=1');
-    allBookings = res2.data || [];
-  } catch {}
-
   var dailyData = {};
-  bookings.forEach(function(d) {
-    dailyData[d.date] = { revenue: d.amount || 0, net: d.net || 0 };
-  });
-
   var dailyCounts = {};
-  allBookings.forEach(function(b) {
-    if (!dailyCounts[b.booking_date]) dailyCounts[b.booking_date] = { total: 0, completed: 0, cancelled: 0 };
-    dailyCounts[b.booking_date].total++;
-    if (b.status === 'completed') dailyCounts[b.booking_date].completed++;
-    if (b.status === 'cancelled' || b.status === 'no_show') dailyCounts[b.booking_date].cancelled++;
-  });
+  try {
+    var [revRes, bkRes] = await Promise.all([
+      apiGet('/api/admin/analytics/revenue?start=' + startDate + '&end=' + endDate),
+      apiGet('/api/admin/analytics/peak-days?start=' + startDate + '&end=' + endDate)
+    ]);
+
+    (revRes.data || []).forEach(function(d) {
+      dailyData[d.date] = { revenue: d.amount || 0, net: d.net || 0 };
+    });
+
+    // Fetch all bookings for counting (no pagination)
+    var bkAll = await apiGet('/api/admin/bookings?start=' + startDate + '&end=' + endDate + '&page=1');
+    var totalBookings = bkAll.total || 0;
+    var allBookings = bkAll.data || [];
+
+    // Fetch remaining pages if needed
+    var pages = Math.ceil(totalBookings / 30);
+    for (var p = 2; p <= pages; p++) {
+      var more = await apiGet('/api/admin/bookings?start=' + startDate + '&end=' + endDate + '&page=' + p);
+      allBookings = allBookings.concat(more.data || []);
+    }
+
+    allBookings.forEach(function(b) {
+      if (!dailyCounts[b.booking_date]) dailyCounts[b.booking_date] = { total: 0, completed: 0, cancelled: 0 };
+      dailyCounts[b.booking_date].total++;
+      if (b.status === 'completed') dailyCounts[b.booking_date].completed++;
+      if (b.status === 'cancelled' || b.status === 'no_show') dailyCounts[b.booking_date].cancelled++;
+    });
+  } catch {}
 
   var todayStr = new Date().toISOString().slice(0, 10);
   var firstDay = new Date(year, month, 1).getDay();
