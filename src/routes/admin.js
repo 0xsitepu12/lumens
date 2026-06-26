@@ -10,6 +10,7 @@ const { DAYS_ID, todayWIB } = require('../config');
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'lumnstudio@gmail.com';
 let otpStore = {};
+let resetAttemptStore = {}; // { ip: { count, lockedUntil } }
 
 const RESET_CONFIG_PATH = path.join(__dirname, '../config/reset-config.json');
 const APP_CONFIG_PATH = path.join(__dirname, '../config/app-config.json');
@@ -642,9 +643,25 @@ router.post('/settings/reset-password', async (req, res) => {
     if (config.passwordHash) {
       if (!currentPassword)
         return res.json({ success: false, message: 'Masukkan password reset saat ini' });
+
+      const ip = req.ip;
+      const attempt = resetAttemptStore[ip] || { count: 0, lockedUntil: 0 };
+      if (Date.now() < attempt.lockedUntil) {
+        const menit = Math.ceil((attempt.lockedUntil - Date.now()) / 60000);
+        return res.status(429).json({ success: false, message: `Terlalu banyak percobaan. Coba lagi dalam ${menit} menit.` });
+      }
+
       const valid = await bcrypt.compare(currentPassword, config.passwordHash);
-      if (!valid)
+      if (!valid) {
+        attempt.count = (attempt.count || 0) + 1;
+        if (attempt.count >= 5) {
+          attempt.lockedUntil = Date.now() + 15 * 60 * 1000;
+          attempt.count = 0;
+        }
+        resetAttemptStore[ip] = attempt;
         return res.json({ success: false, message: 'Password saat ini salah' });
+      }
+      delete resetAttemptStore[ip];
     }
 
     saveResetConfig({ passwordHash: await bcrypt.hash(newPassword, 10) });
@@ -665,15 +682,31 @@ router.get('/settings/reset-config', (req, res) => {
 // ============================================
 router.post('/reset', async (req, res) => {
   try {
+    const ip = req.ip;
+    const attempt = resetAttemptStore[ip] || { count: 0, lockedUntil: 0 };
+
+    if (Date.now() < attempt.lockedUntil) {
+      const menit = Math.ceil((attempt.lockedUntil - Date.now()) / 60000);
+      return res.status(429).json({ success: false, message: `Terlalu banyak percobaan. Coba lagi dalam ${menit} menit.` });
+    }
+
     const { password } = req.body;
     const config = getResetConfig();
     if (!config.passwordHash)
       return res.json({ success: false, message: 'Password reset belum diatur di Pengaturan' });
 
     const valid = await bcrypt.compare(password, config.passwordHash);
-    if (!valid)
+    if (!valid) {
+      attempt.count = (attempt.count || 0) + 1;
+      if (attempt.count >= 5) {
+        attempt.lockedUntil = Date.now() + 15 * 60 * 1000;
+        attempt.count = 0;
+      }
+      resetAttemptStore[ip] = attempt;
       return res.json({ success: false, message: 'Password salah' });
+    }
 
+    delete resetAttemptStore[ip];
     await db.resetAllBookings();
     db.logActivity({ action: 'reset_bookings', category: 'admin', actor: req.user.username, detail: 'All bookings deleted', ip: req.ip });
     res.json({ success: true, message: 'Semua data booking berhasil dihapus' });
