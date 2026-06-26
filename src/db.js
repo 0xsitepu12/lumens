@@ -187,7 +187,8 @@ async function getAllBookings({ page = 1, limit = 50, status, date } = {}) {
   const from = (page - 1) * limit;
   let q = supabase.from('bookings')
     .select('*, services(name, price), barbers(name)', { count: 'exact' })
-    .order('created_at', { ascending: false })
+    .order('booking_date', { ascending: false })
+    .order('booking_time', { ascending: true })
     .range(from, from + limit - 1);
   if (status) q = q.eq('status', status);
   if (date) q = q.eq('booking_date', date);
