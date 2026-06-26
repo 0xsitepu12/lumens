@@ -7,6 +7,17 @@ const { requireAdmin } = require('../middleware/auth');
 const { DAYS_ID, todayWIB } = require('../config');
 
 const RESET_CONFIG_PATH = path.join(__dirname, '../config/reset-config.json');
+const APP_CONFIG_PATH = path.join(__dirname, '../config/app-config.json');
+
+function getAppConfig() {
+  try { return JSON.parse(fs.readFileSync(APP_CONFIG_PATH, 'utf8')); }
+  catch { return { posEnabled: true }; }
+}
+
+function saveAppConfig(config) {
+  fs.mkdirSync(path.dirname(APP_CONFIG_PATH), { recursive: true });
+  fs.writeFileSync(APP_CONFIG_PATH, JSON.stringify(config, null, 2));
+}
 
 function getResetConfig() {
   try { return JSON.parse(fs.readFileSync(RESET_CONFIG_PATH, 'utf8')); }
@@ -663,6 +674,25 @@ router.post('/reset', async (req, res) => {
     res.json({ success: true, message: 'Semua data booking berhasil dihapus' });
   } catch (err) {
     console.error('[admin/reset]', err.message);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// ============================================
+// APP CONFIG (POS toggle, etc)
+// ============================================
+router.get('/app-config', (req, res) => {
+  res.json({ success: true, data: getAppConfig() });
+});
+
+router.put('/app-config', (req, res) => {
+  try {
+    const config = getAppConfig();
+    if (req.body.posEnabled !== undefined) config.posEnabled = !!req.body.posEnabled;
+    saveAppConfig(config);
+    res.json({ success: true, data: config });
+  } catch (err) {
+    console.error('[admin/app-config]', err.message);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });

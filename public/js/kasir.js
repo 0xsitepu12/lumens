@@ -437,6 +437,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   await checkAuth();
   updateDateDisplay();
 
+  // Check POS enabled
+  try {
+    var posConf = await fetch('/api/app-config').then(r => r.json());
+    if (!posConf.posEnabled) {
+      document.querySelectorAll('.k-tab[data-tab="pos"], .k-tab[data-tab="riwayat"]').forEach(t => t.style.display = 'none');
+    }
+  } catch {}
+
   document.querySelectorAll('.k-tab').forEach(btn => {
     btn.addEventListener('click', () => switchKTab(btn.dataset.tab));
   });

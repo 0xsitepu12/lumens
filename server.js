@@ -68,6 +68,14 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+app.get('/api/app-config', (req, res) => {
+  try {
+    const fs = require('fs');
+    const config = JSON.parse(fs.readFileSync(require('path').join(__dirname, 'src/config/app-config.json'), 'utf8'));
+    res.json({ posEnabled: !!config.posEnabled });
+  } catch { res.json({ posEnabled: true }); }
+});
+
 const { requireAuth: requireAuthConfig } = require('./src/middleware/auth');
 app.get('/api/config', requireAuthConfig, (req, res) => {
   res.json({

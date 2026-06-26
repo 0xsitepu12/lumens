@@ -666,6 +666,13 @@ async function loadSettings() {
   loadResetPasswordStatus();
   loadKasirList();
   loadStaffList();
+
+  // Load POS toggle
+  try {
+    const posConfig = await apiGet('/api/admin/app-config');
+    const toggle = document.getElementById('toggle-pos');
+    if (toggle && posConfig.data) toggle.checked = !!posConfig.data.posEnabled;
+  } catch {}
   try {
     const res = await apiGet('/api/admin/hours');
     if (!res.data) return;
@@ -1085,6 +1092,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('btn-add-product')?.addEventListener('click', () => showProductModal());
   document.getElementById('btn-save-product')?.addEventListener('click', saveProduct);
   document.getElementById('btn-confirm-delete-product')?.addEventListener('click', confirmDeleteProduct);
+
+  document.getElementById('toggle-pos')?.addEventListener('change', async (e) => {
+    const res = await apiPut('/api/admin/app-config', { posEnabled: e.target.checked });
+    if (res.success) showToast(e.target.checked ? 'POS diaktifkan' : 'POS dinonaktifkan');
+    else { e.target.checked = !e.target.checked; showToast('Gagal mengubah pengaturan', 'error'); }
+  });
   document.querySelectorAll('.icon-pick').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.icon-pick').forEach(b => b.classList.remove('active'));
