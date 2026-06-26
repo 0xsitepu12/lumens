@@ -727,6 +727,11 @@
             color: #ef4444;
         }
 
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.15);
+            color: #d97706;
+        }
+
         /* ========== OPERATING HOURS ========== */
         .hours-table {
             width: 100%;
@@ -1800,21 +1805,31 @@
             </div>
             <div class="modal__body">
                 <form id="form-product">
-                    <div class="form-group">
-                        <label for="product-name">Nama Produk</label>
-                        <input type="text" id="product-name" placeholder="Contoh: Kopi Susu" required>
+                    <div class="form-row">
+                        <div class="form-group" style="flex:1">
+                            <label for="product-name">Nama Produk</label>
+                            <input type="text" id="product-name" placeholder="Contoh: Kopi Susu" required>
+                        </div>
+                        <div class="form-group" style="flex:0 0 80px">
+                            <label for="product-icon">Icon</label>
+                            <input type="text" id="product-icon" placeholder="☕" maxlength="4" style="text-align:center;font-size:1.5rem;">
+                        </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="product-price">Harga (Rp)</label>
+                            <label for="product-price">Harga Jual (Rp)</label>
                             <input type="number" id="product-price" placeholder="15000" min="0" required>
                         </div>
+                        <div class="form-group">
+                            <label for="product-modal-price">Harga Modal (Rp)</label>
+                            <input type="number" id="product-modal-price" placeholder="0" min="0">
+                        </div>
+                    </div>
+                    <div class="form-row">
                         <div class="form-group">
                             <label for="product-stock">Stok</label>
                             <input type="number" id="product-stock" placeholder="20" min="0" required>
                         </div>
-                    </div>
-                    <div class="form-row">
                         <div class="form-group">
                             <label for="product-category">Kategori</label>
                             <select id="product-category">
@@ -1823,10 +1838,6 @@
                                 <option value="produk">Produk Rambut</option>
                                 <option value="lainnya">Lainnya</option>
                             </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="product-icon">Icon</label>
-                            <input type="text" id="product-icon" placeholder="☕" maxlength="4" style="text-align:center;font-size:1.5rem;">
                         </div>
                     </div>
                 </form>

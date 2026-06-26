@@ -24,10 +24,10 @@ router.get('/products', async (req, res) => {
 
 router.post('/products', async (req, res) => {
   try {
-    const { name, price, category, stock, icon } = req.body;
+    const { name, price, modal_price, category, stock, icon } = req.body;
     if (!name || !price) return res.json({ success: false, message: 'Nama dan harga wajib' });
     const { data, error } = await db.supabase.from('products')
-      .insert({ name, price, category: category || 'minuman', stock: stock || 0, icon: icon || '🥤', is_active: true })
+      .insert({ name, price, modal_price: modal_price || 0, category: category || 'minuman', stock: stock || 0, icon: icon || '🥤', is_active: true })
       .select().single();
     if (error) throw error;
     res.json({ success: true, data });
@@ -39,9 +39,9 @@ router.post('/products', async (req, res) => {
 
 router.put('/products/:id', async (req, res) => {
   try {
-    const { name, price, category, stock, icon, is_active } = req.body;
+    const { name, price, modal_price, category, stock, icon, is_active } = req.body;
     const { data, error } = await db.supabase.from('products')
-      .update({ name, price, category, stock, icon, is_active })
+      .update({ name, price, modal_price, category, stock, icon, is_active })
       .eq('id', req.params.id)
       .select().single();
     if (error) throw error;

@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS products (
   price INTEGER NOT NULL DEFAULT 0,
   category TEXT DEFAULT 'minuman',
   stock INTEGER DEFAULT 0,
+  modal_price INTEGER DEFAULT 0,
   icon TEXT DEFAULT '🥤',
   is_active BOOLEAN DEFAULT true,
   created_at TIMESTAMPTZ DEFAULT now()
@@ -57,6 +58,13 @@ $$ LANGUAGE plpgsql;
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE pos_transactions ENABLE ROW LEVEL SECURITY;
 
--- Allow service role full access
-CREATE POLICY "Service role full access products" ON products FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Service role full access pos_transactions" ON pos_transactions FOR ALL USING (true) WITH CHECK (true);
+-- Allow service role full access (skip if already exists)
+DO $$ BEGIN
+  CREATE POLICY "service_role_all" ON products FOR ALL USING (true) WITH CHECK (true);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "service_role_all" ON pos_transactions FOR ALL USING (true) WITH CHECK (true);
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;

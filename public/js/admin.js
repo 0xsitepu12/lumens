@@ -862,13 +862,17 @@ async function loadAdminProducts() {
     container.innerHTML = products.map(p => {
       const stockClass = p.stock <= 0 ? 'badge-inactive' : p.stock <= 5 ? 'badge-warning' : 'badge-active';
       const stockLabel = p.stock <= 0 ? 'Habis' : 'Stok: ' + p.stock;
+      const modal = p.modal_price || 0;
+      const profit = p.price - modal;
       return '<div class="item-card ' + (p.is_active === false ? 'inactive' : '') + '">' +
         '<div class="item-card__info">' +
         '<h4>' + (p.icon || '🥤') + ' ' + esc(p.name) + '</h4>' +
+        '<p>' + esc(p.category || 'minuman') + '</p>' +
         '<div class="item-meta">' +
         '<span><i class="fa-solid fa-tag"></i> ' + formatRupiah(p.price) + '</span>' +
+        (modal ? '<span><i class="fa-solid fa-coins"></i> Modal ' + formatRupiah(modal) + '</span>' : '') +
+        (modal ? '<span style="color:var(--success)"><i class="fa-solid fa-arrow-trend-up"></i> Profit ' + formatRupiah(profit) + '</span>' : '') +
         '<span class="badge ' + stockClass + '">' + stockLabel + '</span>' +
-        '<span><i class="fa-solid fa-folder"></i> ' + esc(p.category || 'minuman') + '</span>' +
         '</div></div>' +
         '<div class="item-card__actions">' +
         '<button class="btn btn--outline btn--sm" data-edit-product="' + p.id + '"><i class="fa-solid fa-pen"></i></button>' +
@@ -886,6 +890,7 @@ function showProductModal(id) {
   document.getElementById('modal-product-title').textContent = id ? 'Edit Produk' : 'Tambah Produk';
   document.getElementById('product-name').value = '';
   document.getElementById('product-price').value = '';
+  document.getElementById('product-modal-price').value = '0';
   document.getElementById('product-stock').value = '0';
   document.getElementById('product-category').value = 'minuman';
   document.getElementById('product-icon').value = '☕';
@@ -901,6 +906,7 @@ async function editProduct(id) {
     document.getElementById('modal-product-title').textContent = 'Edit Produk';
     document.getElementById('product-name').value = p.name;
     document.getElementById('product-price').value = p.price;
+    document.getElementById('product-modal-price').value = p.modal_price || 0;
     document.getElementById('product-stock').value = p.stock;
     document.getElementById('product-category').value = p.category || 'minuman';
     document.getElementById('product-icon').value = p.icon || '🥤';
@@ -912,6 +918,7 @@ async function saveProduct() {
   var data = {
     name: document.getElementById('product-name').value.trim(),
     price: parseInt(document.getElementById('product-price').value),
+    modal_price: parseInt(document.getElementById('product-modal-price').value) || 0,
     stock: parseInt(document.getElementById('product-stock').value) || 0,
     category: document.getElementById('product-category').value,
     icon: document.getElementById('product-icon').value.trim() || '🥤'
