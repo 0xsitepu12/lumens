@@ -1753,6 +1753,7 @@
                 <button class="settings-tab active" data-stab="umum">Umum</button>
                 <button class="settings-tab" data-stab="akun">Akun</button>
                 <button class="settings-tab" data-stab="keamanan">Keamanan</button>
+                <button class="settings-tab" data-stab="backup">Backup</button>
             </div>
 
             <!-- Sub-tab: Umum -->
@@ -2083,6 +2084,38 @@
                     </button>
                 </div>
             </div>
+
+            <!-- Sub-tab: Backup -->
+            <div class="settings-content" id="stab-backup">
+                <div class="chart-card" style="margin-bottom:16px">
+                    <div class="chart-card__title">
+                        <i class="fa-solid fa-database"></i> Backup Database
+                    </div>
+                    <p style="color:var(--text-secondary);font-size:.875rem;margin-bottom:20px">
+                        Export seluruh data (booking, transaksi POS, layanan, produk, barber) ke file JSON.
+                        Simpan ke OneDrive atau lokasi aman lainnya.
+                    </p>
+                    <div style="display:flex;gap:12px;flex-wrap:wrap">
+                        <button class="btn btn--primary" id="btn-backup-download" onclick="downloadBackup()">
+                            <i class="fa-solid fa-download"></i> Download Backup
+                        </button>
+                        <button class="btn btn--secondary" id="btn-backup-email" onclick="sendBackupEmail()">
+                            <i class="fa-solid fa-envelope"></i> Kirim ke Email
+                        </button>
+                    </div>
+                    <div id="backup-status" style="margin-top:14px;font-size:.85rem;display:none"></div>
+                </div>
+
+                <div class="chart-card" style="background:#fffbeb;border:1px solid #fde68a">
+                    <div class="chart-card__title" style="color:#92400e">
+                        <i class="fa-solid fa-clock"></i> Backup Otomatis
+                    </div>
+                    <p style="color:#92400e;font-size:.875rem;margin:0">
+                        Backup otomatis dikirim ke email setiap <strong>Senin jam 02:00 WIB</strong>
+                        selama SMTP sudah dikonfigurasi di server.
+                    </p>
+                </div>
+            </div>
         </section>
 
     </main>
@@ -2391,5 +2424,62 @@
     <!-- ========== SCRIPTS ========== -->
     <script src="/js/core.js"></script>
     <script src="/js/admin.js"></script>
+    <script>
+      async function downloadBackup() {
+        const btn = document.getElementById('btn-backup-download');
+        const status = document.getElementById('backup-status');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Membuat backup...';
+        status.style.display = 'none';
+        try {
+          const res = await fetch('/api/admin/backup/download', { credentials: 'include' });
+          if (!res.ok) throw new Error('Gagal');
+          const blob = await res.blob();
+          const cd = res.headers.get('Content-Disposition') || '';
+          const filename = cd.match(/filename="(.+?)"/)?.[1] || 'lumens-backup.json';
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
+          URL.revokeObjectURL(url);
+          status.style.display = 'block';
+          status.style.color = '#16a34a';
+          status.innerHTML = '<i class="fa-solid fa-check"></i> Download berhasil — simpan file ke OneDrive kamu.';
+        } catch {
+          status.style.display = 'block';
+          status.style.color = '#dc2626';
+          status.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Gagal download backup.';
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-download"></i> Download Backup';
+        }
+      }
+
+      async function sendBackupEmail() {
+        const btn = document.getElementById('btn-backup-email');
+        const status = document.getElementById('backup-status');
+        if (!confirm('Kirim backup ke email sekarang?')) return;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengirim...';
+        status.style.display = 'none';
+        try {
+          const res = await fetch('/api/admin/backup/send-email', { method: 'POST', credentials: 'include' });
+          const data = await res.json();
+          status.style.display = 'block';
+          if (data.success) {
+            status.style.color = '#16a34a';
+            status.innerHTML = '<i class="fa-solid fa-check"></i> ' + data.message;
+          } else {
+            status.style.color = '#dc2626';
+            status.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> ' + data.message;
+          }
+        } catch {
+          status.style.display = 'block';
+          status.style.color = '#dc2626';
+          status.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Gagal mengirim email.';
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-envelope"></i> Kirim ke Email';
+        }
+      }
+    </script>
 </body>
 </html>

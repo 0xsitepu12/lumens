@@ -826,4 +826,34 @@ router.post('/change-password/verify', async (req, res) => {
   }
 });
 
+// ============================================
+// BACKUP
+// ============================================
+const { generateBackup, sendBackupEmail } = require('../backup');
+
+router.get('/backup/download', requireAdmin, async (req, res) => {
+  try {
+    const { json, totalRows, generatedAt } = await generateBackup();
+    const filename = `lumens-backup-${generatedAt.slice(0, 10)}.json`;
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    db.logActivity({ action: 'backup_download', category: 'admin', actor: req.user.username, detail: `${totalRows} rows`, ip: req.ip });
+    res.send(json);
+  } catch (err) {
+    console.error('[backup/download]', err.message);
+    res.status(500).json({ success: false, message: 'Gagal generate backup' });
+  }
+});
+
+router.post('/backup/send-email', requireAdmin, async (req, res) => {
+  try {
+    const { totalRows, filename, recipient } = await sendBackupEmail();
+    db.logActivity({ action: 'backup_email', category: 'admin', actor: req.user.username, detail: `${totalRows} rows → ${recipient}`, ip: req.ip });
+    res.json({ success: true, message: `Backup dikirim ke ${recipient} (${totalRows.toLocaleString('id-ID')} baris)` });
+  } catch (err) {
+    console.error('[backup/send-email]', err.message);
+    res.status(500).json({ success: false, message: err.message || 'Gagal kirim backup' });
+  }
+});
+
 module.exports = router;

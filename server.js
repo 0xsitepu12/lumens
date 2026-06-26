@@ -101,6 +101,22 @@ app.listen(PORT, () => {
   console.log(`LUMENS HAIR STUDIO running on port ${PORT}`);
 });
 
+// Backup otomatis setiap Senin jam 02:00 WIB
+if (process.env.NODE_ENV === 'production' && process.env.SMTP_PASS) {
+  const cron = require('node-cron');
+  const { sendBackupEmail } = require('./src/backup');
+  cron.schedule('0 2 * * 1', async () => {
+    console.log('[backup] Menjalankan backup mingguan...');
+    try {
+      const result = await sendBackupEmail();
+      console.log(`[backup] Selesai — ${result.totalRows} rows → ${result.recipient}`);
+    } catch (err) {
+      console.error('[backup] Gagal:', err.message);
+    }
+  }, { timezone: 'Asia/Jakarta' });
+  console.log('[backup] Cron aktif — setiap Senin 02:00 WIB');
+}
+
 process.on('uncaughtException', (err) => {
   console.error('[uncaughtException]', err.message);
 });
