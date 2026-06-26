@@ -15,253 +15,244 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Inter', sans-serif; background: #f8f8f8; color: #1a1a1a; min-height: 100vh; }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body { font-family: 'Inter', sans-serif; background: #f5f5f5; color: #1a1a1a; min-height: 100vh; }
 
+    /* ========== HEADER — single row: logo + tabs + date/logout ========== */
     .kasir-header {
       background: #fff;
       border-bottom: 1px solid #e5e5e5;
-      padding: 14px 20px 0;
+      padding: 0 16px;
       position: sticky;
       top: 0;
       z-index: 10;
-    }
-    .kasir-header-top {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      margin-bottom: 10px;
+      gap: 12px;
     }
-    .kasir-logo { height: 70px; }
+    .kasir-logo { height: 40px; flex-shrink: 0; }
+    .kasir-header-top { display: flex; align-items: center; gap: 8px; flex-shrink: 0; margin-left: auto; }
     .btn-logout-kasir {
       font-size: 0.75rem;
       font-weight: 600;
       color: #dc2626;
       border: 1px solid #fecaca;
       background: #fff;
-      padding: 6px 12px;
-      border-radius: 6px;
+      padding: 8px 14px;
+      border-radius: 8px;
       cursor: pointer;
       font-family: inherit;
+      min-height: 36px;
     }
-    .kasir-date { font-size: 0.78rem; color: #888; }
+    .kasir-date { font-size: 0.75rem; color: #888; white-space: nowrap; }
 
-    /* ========== MAIN TABS (Booking | POS | Riwayat) ========== */
-    .k-tabs {
-      display: flex;
-      gap: 0;
-    }
+    /* ========== MAIN TABS ========== */
+    .k-tabs { display: flex; flex: 1; }
     .k-tab {
-      flex: 1;
-      padding: 10px 8px;
+      padding: 14px 20px;
       text-align: center;
-      font-size: 0.78rem;
+      font-size: 0.82rem;
       font-weight: 700;
       color: #999;
       cursor: pointer;
       border-bottom: 2px solid transparent;
       background: none;
-      border-top: none;
-      border-left: none;
-      border-right: none;
+      border-top: none; border-left: none; border-right: none;
       font-family: inherit;
       transition: all 0.15s;
+      white-space: nowrap;
     }
     .k-tab:hover { color: #555; }
-    .k-tab.active {
-      color: #1a1a1a;
-      border-bottom-color: #1a1a1a;
-    }
+    .k-tab.active { color: #1a1a1a; border-bottom-color: #1a1a1a; }
     .k-tab i { margin-right: 5px; }
 
     /* ========== TAB CONTENT ========== */
     .k-content { display: none; }
     .k-content.active { display: block; }
 
-    /* ========== WEEK STRIP ========== */
-    .kasir-cal {
-      padding: 8px 20px 8px;
+    /* ========== TOOLBAR: week + summary + filter ========== */
+    .kasir-toolbar {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 16px;
+      background: #fff; border-bottom: 1px solid #eee;
+      flex-wrap: wrap;
     }
-    .kasir-cal-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 6px;
-    }
-    .kasir-cal-title {
-      font-size: 0.72rem;
-      font-weight: 700;
-      color: #1a1a1a;
-    }
-    .kasir-cal-nav {
-      display: flex;
-      gap: 4px;
-    }
+    .kasir-toolbar-divider { width: 1px; background: #eee; align-self: stretch; min-height: 32px; }
+
+    /* ========== WEEK STRIP (inside toolbar) ========== */
+    .kasir-cal { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
     .kasir-cal-nav button {
-      width: 24px; height: 24px;
+      width: 36px; height: 36px;
       border: 1px solid #e0e0e0;
-      border-radius: 6px;
+      border-radius: 8px;
       background: #fff;
       color: #555;
-      font-size: 0.6rem;
+      font-size: 0.65rem;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       font-family: inherit;
     }
+    .kasir-cal-nav button:active { background: #f0f0f0; }
+    .kasir-cal-title { display: none; }
     .kasir-cal-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 4px;
+      display: flex;
+      gap: 2px;
     }
     .kasir-cal-cell {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 1px;
-      padding: 6px 2px;
+      gap: 0;
+      padding: 6px 10px;
+      min-height: 44px;
       border-radius: 8px;
       cursor: pointer;
       border: none;
       background: none;
       font-family: inherit;
+      justify-content: center;
     }
-    .kasir-cal-cell:active { transform: scale(0.95); }
-    .kasir-cal-day { font-size: 0.5rem; font-weight: 600; color: #bbb; text-transform: uppercase; }
-    .kasir-cal-num { font-size: 0.88rem; font-weight: 700; color: #555; }
+    .kasir-cal-cell:active { transform: scale(0.95); background: #f5f5f5; }
+    .kasir-cal-day { font-size: 0.48rem; font-weight: 600; color: #bbb; text-transform: uppercase; }
+    .kasir-cal-num { font-size: 0.85rem; font-weight: 700; color: #555; }
     .kasir-cal-cell.today .kasir-cal-num { color: #1a1a1a; }
-    .kasir-cal-cell.selected { background: #1a1a1a; border-radius: 8px; }
+    .kasir-cal-cell.selected { background: #1a1a1a; }
+    .kasir-cal-cell.selected:active { background: #333; }
     .kasir-cal-cell.selected .kasir-cal-day { color: rgba(255,255,255,0.5); }
     .kasir-cal-cell.selected .kasir-cal-num { color: #fff; }
-    .kasir-cal-dot {
-      width: 5px; height: 5px;
-      border-radius: 50%;
-      background: #16a34a;
-      margin-top: 2px;
-    }
+    .kasir-cal-dot { width: 4px; height: 4px; border-radius: 50%; background: #16a34a; margin-top: 1px; }
     .kasir-cal-cell.selected .kasir-cal-dot { background: #86efac; }
+    .kasir-cal-header { display: none; }
 
-    /* ========== SUMMARY INLINE ========== */
+    /* ========== SUMMARY (inside toolbar) ========== */
     .kasir-summary {
-      display: flex;
-      gap: 0;
-      margin: 0 20px 8px;
-      background: #fff;
-      border: 1px solid #e5e5e5;
-      border-radius: 10px;
-      overflow: hidden;
+      display: flex; gap: 4px; align-items: center; flex-shrink: 0;
     }
     .summary-card {
-      flex: 1;
-      padding: 8px 4px;
-      text-align: center;
-      border-right: 1px solid #f0f0f0;
+      background: #f9f9f9; border: 1px solid #eee;
+      border-radius: 8px; padding: 4px 14px; text-align: center;
     }
-    .summary-card:last-child { border-right: none; }
-    .summary-num {
-      font-size: 1rem;
-      font-weight: 800;
-    }
-    .summary-label {
-      font-size: 0.5rem;
-      color: #999;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-      margin-top: 1px;
-    }
+    .summary-num { font-size: 0.95rem; font-weight: 800; }
+    .summary-label { font-size: 0.45rem; font-weight: 600; color: #aaa; text-transform: uppercase; letter-spacing: 0.3px; }
     .summary-num.pending { color: #d97706; }
     .summary-num.confirmed { color: #2563eb; }
     .summary-num.completed { color: #16a34a; }
 
-    .kasir-omset-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin: 0 20px 10px;
-      padding: 10px 14px;
-      background: #1a1a1a;
-      border-radius: 10px;
+    /* ========== BARBER FILTER (inside toolbar) ========== */
+    .kasir-filter {
+      display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;
     }
-    .kasir-omset-label {
-      font-size: 0.65rem;
-      font-weight: 600;
-      color: #999;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
+    .kasir-search {
+      width: 180px; flex-shrink: 0; position: relative;
     }
-    .kasir-omset-value {
-      font-size: 1rem;
-      font-weight: 800;
-      color: #fff;
+    .kasir-search input {
+      width: 100%; padding: 10px 14px 10px 34px;
+      border: 1px solid #e5e5e5; border-radius: 10px;
+      font-size: 0.82rem; font-family: inherit; background: #fff; outline: none;
+      min-height: 40px;
     }
+    .kasir-search input:focus { border-color: #1a1a1a; }
+    .kasir-search i {
+      position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+      color: #ccc; font-size: 0.75rem;
+    }
+    .barber-chips { display: flex; gap: 5px; overflow-x: auto; scrollbar-width: none; }
+    .barber-chips::-webkit-scrollbar { display: none; }
+    .b-chip {
+      flex-shrink: 0; padding: 8px 16px; border-radius: 22px;
+      font-size: 0.75rem; font-weight: 600; border: 1px solid #e0e0e0;
+      background: #fff; color: #888; cursor: pointer; font-family: inherit;
+      white-space: nowrap; min-height: 36px;
+      display: flex; align-items: center;
+    }
+    .b-chip:active { background: #f0f0f0; }
+    .b-chip.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+    .b-chip.active:active { background: #333; }
 
-    /* ========== BOOKING LIST ========== */
+    /* ========== TIMELINE BOOKING LIST ========== */
     .kasir-list {
       padding: 0 16px 100px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
     }
+
+    .time-group { margin-bottom: 4px; }
+    .time-header {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 0 6px;
+    }
+    .time-line { flex: 1; height: 1px; background: #e0e0e0; }
+    .time-label { font-size: 0.75rem; font-weight: 800; color: #1a1a1a; padding: 0 4px; }
+    .time-count { font-size: 0.62rem; font-weight: 600; color: #bbb; padding: 0 4px; }
+
+    .time-cards { display: flex; flex-direction: column; gap: 5px; }
 
     .booking-card {
       background: #fff;
-      border: 1px solid #e5e5e5;
-      border-radius: 10px;
-      padding: 10px 12px;
+      border: 1px solid #eee;
+      border-radius: 12px;
+      padding: 14px 16px;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 14px;
+      min-height: 64px;
+      transition: background 0.1s, transform 0.1s;
     }
+    .booking-card:active { transform: scale(0.98); background: #f8f8f8; }
+    .booking-card.status-completed { border-left: 3px solid #16a34a; }
+    .booking-card.status-confirmed { border-left: 3px solid #2563eb; }
+    .booking-card.status-pending { border-left: 3px solid #f59e0b; }
+    .booking-card.status-no_show { border-left: 3px solid #999; opacity: 0.6; }
+    .booking-card.status-cancelled { border-left: 3px solid #dc2626; opacity: 0.5; }
+
+    .bk-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.72rem; font-weight: 800; flex-shrink: 0;
+    }
+
     .booking-info { flex: 1; min-width: 0; }
     .booking-name {
-      font-size: 0.82rem;
-      font-weight: 700;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      font-size: 0.88rem; font-weight: 700;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .booking-detail {
-      font-size: 0.68rem;
-      color: #888;
-      margin-top: 1px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      font-size: 0.72rem; color: #888; margin-top: 1px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .booking-phone {
-      font-size: 0.62rem;
-      color: #bbb;
-      margin-top: 2px;
-    }
-    .booking-time-badge {
-      font-size: 0.65rem;
-      font-weight: 700;
-      color: #555;
-      background: #f0f0f0;
-      padding: 4px 8px;
-      border-radius: 6px;
-      flex-shrink: 0;
-      min-width: 42px;
-      text-align: center;
+      font-size: 0.62rem; color: #ccc; margin-top: 1px;
     }
 
     .status-btn {
       flex-shrink: 0;
-      padding: 6px 10px;
-      border-radius: 6px;
-      font-size: 0.62rem;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 0.68rem;
       font-weight: 700;
       border: none;
       cursor: pointer;
       font-family: inherit;
       text-transform: uppercase;
       letter-spacing: 0.3px;
+      min-height: 36px;
     }
+    .status-btn:active { opacity: 0.8; }
     .status-btn.pending { background: #fef3c7; color: #92400e; }
     .status-btn.confirmed { background: #dbeafe; color: #1e40af; }
     .status-btn.completed { background: #dcfce7; color: #166534; }
     .status-btn.cancelled { background: #fee2e2; color: #991b1b; }
+
+    /* ========== NOW INDICATOR ========== */
+    .now-indicator {
+      display: flex; align-items: center; gap: 6px;
+      padding: 6px 0; margin: 2px 0;
+    }
+    .now-dot { width: 8px; height: 8px; border-radius: 50%; background: #dc2626; flex-shrink: 0; }
+    .now-line { flex: 1; height: 1.5px; background: #dc2626; }
+    .now-text { font-size: 0.65rem; font-weight: 700; color: #dc2626; white-space: nowrap; }
+
+    .booking-time-badge { display: none; }
 
     .status-wrap { position: relative; flex-shrink: 0; }
 
@@ -707,6 +698,60 @@
     /* ========================================================== */
     /* ==================== RESPONSIVE ========================== */
     /* ========================================================== */
+    /* ========== BOOKING: PC/iPad grid ========== */
+    @media (min-width: 768px) {
+      .kasir-header { padding: 0 24px; }
+      .kasir-toolbar { padding: 8px 24px; }
+      .kasir-list { padding: 0 24px 80px; }
+      .time-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+      .fab-walkin, .auto-refresh { bottom: 24px; }
+    }
+    @media (min-width: 1200px) {
+      .kasir-header { padding: 0 32px; }
+      .kasir-toolbar { padding: 8px 32px; }
+      .kasir-list { padding: 0 32px 80px; }
+      .time-cards { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (min-width: 1600px) {
+      .time-cards { grid-template-columns: repeat(4, 1fr); }
+    }
+    @media (max-width: 1023px) {
+      .kasir-toolbar-divider { display: none; }
+    }
+    @media (max-width: 767px) {
+      .kasir-header {
+        flex-wrap: wrap; padding: 8px 14px 0; gap: 0;
+      }
+      .kasir-logo { height: 32px; margin-right: 8px; }
+      .kasir-header-top { margin-left: auto; gap: 6px; }
+      .kasir-date { font-size: 0.68rem; }
+      .btn-logout-kasir { padding: 6px 10px; font-size: 0.68rem; min-height: 32px; }
+      .k-tabs { width: 100%; order: 3; }
+      .k-tab { flex: 1; padding: 10px 6px; font-size: 0.72rem; }
+
+      .kasir-toolbar {
+        flex-direction: column; gap: 8px; padding: 8px 14px;
+      }
+      .kasir-toolbar-divider { display: none; }
+      .kasir-cal { width: 100%; justify-content: center; }
+      .kasir-cal-cell { padding: 5px 6px; min-height: 40px; }
+      .kasir-cal-nav button { width: 32px; height: 32px; }
+      .kasir-summary { width: 100%; justify-content: center; }
+      .summary-card { flex: 1; padding: 6px 8px; }
+      .kasir-filter { width: 100%; }
+      .kasir-search { width: 100%; flex: 1; }
+      .barber-chips { flex: none; width: 100%; overflow-x: auto; }
+
+      .kasir-list { padding: 0 14px 110px; }
+      .time-cards { gap: 4px; }
+      .booking-card { padding: 12px 14px; gap: 12px; border-radius: 10px; }
+      .bk-avatar { width: 32px; height: 32px; font-size: 0.65rem; }
+      .booking-name { font-size: 0.82rem; }
+      .booking-detail { font-size: 0.68rem; }
+      .status-btn { padding: 7px 12px; font-size: 0.62rem; }
+    }
+
+    /* ========== POS responsive ========== */
     @media (max-width: 768px) {
       .pos-section { flex-direction: column; height: auto; min-height: calc(100vh - 140px); }
       .pos-right { display: none; }
@@ -714,7 +759,6 @@
       .mobile-cart-bar.has-items { display: block; }
       .pos-scroll { padding-bottom: 130px; }
     }
-
     @media (min-width: 769px) {
       .pos-grid { grid-template-columns: repeat(4, 1fr); }
       .mobile-cart-bar { display: none !important; }
@@ -726,49 +770,57 @@
 <body>
 
   <header class="kasir-header">
-    <div class="kasir-header-top">
-      <img src="/Assets/logo1.png" alt="LUMEN'S STUDIO" class="kasir-logo">
-      <div style="display:flex;align-items:center;gap:8px">
-        <span class="kasir-date" id="kasir-date"></span>
-        <button class="btn-logout-kasir" id="btn-test-sound" style="color:#1a1a1a;border-color:#e0e0e0" title="Test notif"><i class="fa-solid fa-volume-high"></i></button>
-        <button class="btn-logout-kasir" id="btn-logout-kasir">Logout</button>
-      </div>
-    </div>
-
+    <img src="/Assets/logo1.png" alt="" class="kasir-logo">
     <div class="k-tabs">
       <button class="k-tab active" data-tab="booking"><i class="fa-solid fa-calendar-check"></i> Booking</button>
       <button class="k-tab" data-tab="pos"><i class="fa-solid fa-cash-register"></i> POS <span style="font-size:0.5rem;background:#f59e0b;color:#fff;padding:1px 5px;border-radius:3px;margin-left:3px;vertical-align:middle;font-weight:700">BETA</span></button>
       <button class="k-tab" data-tab="riwayat"><i class="fa-solid fa-clock-rotate-left"></i> Riwayat</button>
     </div>
+    <div class="kasir-header-top">
+      <span class="kasir-date" id="kasir-date"></span>
+      <button class="btn-logout-kasir" id="btn-test-sound" style="color:#1a1a1a;border-color:#e0e0e0" title="Test notif"><i class="fa-solid fa-volume-high"></i></button>
+      <button class="btn-logout-kasir" id="btn-logout-kasir">Logout</button>
+    </div>
   </header>
 
   <!-- ==================== TAB: BOOKING ==================== -->
   <div class="k-content active" id="tab-booking">
-    <div class="kasir-cal">
-      <div class="kasir-cal-header">
-        <div class="kasir-cal-nav">
-          <button id="kcal-prev"><i class="fa-solid fa-chevron-left"></i></button>
-        </div>
-        <div class="kasir-cal-title" id="kcal-title"></div>
-        <div class="kasir-cal-nav">
-          <button id="kcal-next"><i class="fa-solid fa-chevron-right"></i></button>
-        </div>
+    <div class="kasir-toolbar">
+      <div class="kasir-cal">
+        <div class="kasir-cal-nav"><button id="kcal-prev"><i class="fa-solid fa-chevron-left"></i></button></div>
+        <div class="kasir-cal-grid" id="kcal-grid"></div>
+        <div class="kasir-cal-nav"><button id="kcal-next"><i class="fa-solid fa-chevron-right"></i></button></div>
       </div>
-      <div class="kasir-cal-grid" id="kcal-grid"></div>
-    </div>
 
-    <div class="kasir-summary">
-      <div class="summary-card">
-        <div class="summary-num" id="sum-total">0</div>
-        <div class="summary-label">Total</div>
+      <div class="kasir-toolbar-divider"></div>
+
+      <div class="kasir-summary">
+        <div class="summary-card">
+          <div class="summary-num" id="sum-total">0</div>
+          <div class="summary-label">Total</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-num pending" id="sum-pending">0</div>
+          <div class="summary-label">Pending</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-num confirmed" id="sum-confirmed">0</div>
+          <div class="summary-label">Konfirmasi</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-num completed" id="sum-completed">0</div>
+          <div class="summary-label">Selesai</div>
+        </div>
       </div>
-      <div class="summary-card">
-        <div class="summary-num pending" id="sum-pending">0</div>
-        <div class="summary-label">Pending</div>
-      </div>
-      <div class="summary-card">
-        <div class="summary-num completed" id="sum-completed">0</div>
-        <div class="summary-label">Selesai</div>
+
+      <div class="kasir-toolbar-divider"></div>
+
+      <div class="kasir-filter">
+        <div class="kasir-search">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" placeholder="Cari nama..." id="kasir-search-input">
+        </div>
+        <div class="barber-chips" id="barber-chips"></div>
       </div>
     </div>
 
