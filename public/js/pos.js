@@ -202,15 +202,22 @@ function updateCartUI() {
     }
   });
 
-  document.getElementById('cart-list').innerHTML = cart.map((c, i) =>
+  var cartListEl = document.getElementById('cart-list');
+  cartListEl.innerHTML = cart.map((c, i) =>
     '<div class="cart-row"><div class="cart-row-info"><div class="cart-row-name">' + esc(c.name) + '</div>' +
     '<div class="cart-row-price">' + fmt(c.price) + '</div></div>' +
-    '<div class="cart-qty-ctrl"><button class="cart-qty-btn minus" onclick="changeQty(' + i + ',-1)">' +
+    '<div class="cart-qty-ctrl"><button class="cart-qty-btn minus" data-idx="' + i + '" data-delta="-1">' +
     (c.qty === 1 ? '<i class="fa-solid fa-trash-can" style="font-size:0.65rem"></i>' : '−') +
     '</button><span class="cart-qty-val">' + c.qty + '</span>' +
-    '<button class="cart-qty-btn" onclick="changeQty(' + i + ',1)">+</button></div>' +
+    '<button class="cart-qty-btn" data-idx="' + i + '" data-delta="1">+</button></div>' +
     '<div class="cart-row-total">' + fmt(c.price * c.qty) + '</div></div>'
   ).join('');
+
+  cartListEl.querySelectorAll('.cart-qty-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      changeQty(parseInt(btn.dataset.idx), parseInt(btn.dataset.delta));
+    });
+  });
 }
 
 // ============================================
