@@ -190,7 +190,19 @@ router.get('/check/:id', async (req, res) => {
   try {
     const booking = await db.getBookingById(req.params.id);
     if (!booking) return res.json({ success: false, message: 'Booking tidak ditemukan' });
-    res.json({ success: true, data: booking });
+    // Hanya kembalikan info non-PII untuk cek publik
+    res.json({
+      success: true,
+      data: {
+        id: booking.id,
+        status: booking.status,
+        booking_date: booking.booking_date,
+        booking_time: booking.booking_time,
+        end_time: booking.end_time,
+        services: booking.services ? { name: booking.services.name, duration_minutes: booking.services.duration_minutes } : null,
+        barbers: booking.barbers ? { name: booking.barbers.name } : null
+      }
+    });
   } catch (err) {
     console.error('[bookings/check]', err.message);
     res.status(500).json({ success: false, message: 'Server error' });

@@ -77,8 +77,8 @@ app.get('/api/app-config', (req, res) => {
   } catch { res.json({ posEnabled: true }); }
 });
 
-const { requireAuth: requireAuthConfig } = require('./src/middleware/auth');
-app.get('/api/config', requireAuthConfig, (req, res) => {
+const { requireSuperAdmin: requireConfigAccess } = require('./src/middleware/auth');
+app.get('/api/config', requireConfigAccess, (req, res) => {
   res.json({
     supabaseUrl: process.env.SUPABASE_URL,
     supabaseAnonKey: process.env.SUPABASE_ANON_KEY

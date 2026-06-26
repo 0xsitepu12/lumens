@@ -25,6 +25,9 @@ router.post('/products', requireAdmin, async (req, res) => {
   try {
     const { name, price, modal_price, category, stock, icon } = req.body;
     if (!name || !price) return res.json({ success: false, message: 'Nama dan harga wajib' });
+    if (name.length > 100) return res.json({ success: false, message: 'Nama terlalu panjang' });
+    if (icon && (icon.length > 10 || /<|>|&/.test(icon)))
+      return res.json({ success: false, message: 'Icon tidak valid' });
     const { data, error } = await db.supabase.from('products')
       .insert({ name, price, modal_price: modal_price || 0, category: category || 'minuman', stock: stock || 0, icon: icon || '🥤', is_active: true })
       .select().single();
@@ -39,6 +42,8 @@ router.post('/products', requireAdmin, async (req, res) => {
 router.put('/products/:id', requireAdmin, async (req, res) => {
   try {
     const { name, price, modal_price, category, stock, icon, is_active } = req.body;
+    if (icon && (icon.length > 10 || /<|>|&/.test(icon)))
+      return res.json({ success: false, message: 'Icon tidak valid' });
     const { data, error } = await db.supabase.from('products')
       .update({ name, price, modal_price, category, stock, icon, is_active })
       .eq('id', req.params.id)

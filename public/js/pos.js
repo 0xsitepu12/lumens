@@ -115,7 +115,7 @@
       const stockClass = p.stock <= 0 ? ' out' : p.stock <= 3 ? ' low' : '';
       const stockLabel = p.stock <= 0 ? 'Habis' : 'Stok: ' + p.stock;
       html += '<div class="pos-item' + disabled + '" data-cat="minuman" data-name="' + esc(p.name) + '" data-price="' + p.price + '" data-type="product" data-pid="' + p.id + '" data-stock="' + p.stock + '">' +
-        '<span class="pos-item-icon">' + (p.icon || '🥤') + '</span>' +
+        '<span class="pos-item-icon">' + esc(p.icon || '🥤') + '</span>' +
         '<div class="pos-item-name">' + esc(p.name) + '</div>' +
         '<div class="pos-item-price">' + fmt(p.price) + '</div>' +
         '<div class="pos-item-stock' + stockClass + '">' + stockLabel + '</div></div>';
