@@ -1490,8 +1490,34 @@
             <!-- Filters -->
             <div class="filter-row">
                 <div class="filter-group">
-                    <label for="booking-filter-date">Tanggal</label>
-                    <input type="date" id="booking-filter-date">
+                    <label>Periode</label>
+                    <select id="booking-filter-period">
+                        <option value="all">Semua</option>
+                        <option value="today">Hari Ini</option>
+                        <option value="week">Minggu Ini</option>
+                        <option value="month" selected>Bulan Ini</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                </div>
+                <div class="filter-group" id="booking-custom-range" style="display:none;position:relative">
+                    <label>Rentang</label>
+                    <div class="daterange-trigger" id="bk-daterange-trigger">
+                        <i class="fa-regular fa-calendar"></i>
+                        <span id="bk-daterange-label">Pilih tanggal...</span>
+                        <i class="fa-solid fa-chevron-down" style="font-size:0.6rem;color:var(--text-muted)"></i>
+                    </div>
+                    <div class="daterange-dropdown" id="bk-daterange-dropdown">
+                        <div class="daterange-nav">
+                            <button type="button" id="bk-daterange-prev"><i class="fa-solid fa-chevron-left"></i></button>
+                            <span class="daterange-month" id="bk-daterange-month"></span>
+                            <button type="button" id="bk-daterange-next"><i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+                        <div class="daterange-grid" id="bk-daterange-grid"></div>
+                        <div class="daterange-footer">
+                            <button type="button" class="btn btn--outline btn--sm" id="bk-daterange-clear">Reset</button>
+                            <button type="button" class="btn btn--primary btn--sm" id="bk-daterange-apply">Terapkan</button>
+                        </div>
+                    </div>
                 </div>
                 <div class="filter-group">
                     <label for="booking-filter-status">Status</label>

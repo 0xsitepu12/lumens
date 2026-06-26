@@ -194,8 +194,8 @@ router.get('/analytics/revenue', async (req, res) => {
 // ============================================
 router.get('/bookings', async (req, res) => {
   try {
-    const { page, status, date } = req.query;
-    const result = await db.getAllBookings({ page: parseInt(page) || 1, status, date });
+    const { page, status, date, start, end } = req.query;
+    const result = await db.getAllBookings({ page: parseInt(page) || 1, status, date, startDate: start, endDate: end });
     res.json({ success: true, ...result });
   } catch (err) {
     console.error('[admin/bookings]', err.message);

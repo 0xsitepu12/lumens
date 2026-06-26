@@ -294,12 +294,24 @@ function renderBarberTable(data) {
 // ============================================
 let bookingsPage = 1;
 
+function getBookingDateRange() {
+  const period = document.getElementById('booking-filter-period')?.value || 'month';
+  if (period === 'all') return { start: '', end: '' };
+  if (period === 'custom') {
+    return {
+      start: document.getElementById('bk-filter-start')?.value || '',
+      end: document.getElementById('bk-filter-end')?.value || ''
+    };
+  }
+  return getDateRange(period);
+}
+
 async function loadBookings() {
   const status = document.getElementById('booking-filter-status')?.value || '';
-  const date = document.getElementById('booking-filter-date')?.value || '';
+  const { start, end } = getBookingDateRange();
 
   try {
-    const res = await apiGet(`/api/admin/bookings?page=${bookingsPage}&status=${status}&date=${date}`);
+    const res = await apiGet(`/api/admin/bookings?page=${bookingsPage}&status=${status}&start=${start}&end=${end}`);
     if (!res.success) return;
 
     const tbody = document.getElementById('bookings-table-body');
@@ -1063,7 +1075,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   document.getElementById('booking-filter-status')?.addEventListener('change', () => { bookingsPage = 1; loadBookings(); });
-  document.getElementById('booking-filter-date')?.addEventListener('change', () => { bookingsPage = 1; loadBookings(); });
+  document.getElementById('booking-filter-period')?.addEventListener('change', (e) => {
+    document.getElementById('booking-custom-range').style.display = e.target.value === 'custom' ? '' : 'none';
+    if (e.target.value !== 'custom') { bookingsPage = 1; loadBookings(); }
+  });
 
   document.getElementById('btn-add-service')?.addEventListener('click', () => showServiceModal());
   document.getElementById('btn-save-service')?.addEventListener('click', saveService);
@@ -1212,6 +1227,82 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     renderDR();
+  })();
+
+  // ============================================
+  // BOOKING DATE RANGE PICKER
+  // ============================================
+  (function() {
+    var drMonth = new Date();
+    var drStart = null;
+    var drEnd = null;
+    var drClickCount = 0;
+    var MONTHS_ID = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    var DAYS_HDR = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
+
+    var trigger = document.getElementById('bk-daterange-trigger');
+    var dropdown = document.getElementById('bk-daterange-dropdown');
+    var label = document.getElementById('bk-daterange-label');
+
+    function fmtD(d) { return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+    function fmtShort(d) { return d.getDate()+' '+MONTHS_ID[d.getMonth()].slice(0,3); }
+
+    function renderBkDR() {
+      var grid = document.getElementById('bk-daterange-grid');
+      var monthEl = document.getElementById('bk-daterange-month');
+      monthEl.textContent = MONTHS_ID[drMonth.getMonth()] + ' ' + drMonth.getFullYear();
+      var html = DAYS_HDR.map(function(d) { return '<div class="dr-header">'+d+'</div>'; }).join('');
+      var first = new Date(drMonth.getFullYear(), drMonth.getMonth(), 1);
+      var startDay = first.getDay() === 0 ? 6 : first.getDay() - 1;
+      var daysInMonth = new Date(drMonth.getFullYear(), drMonth.getMonth()+1, 0).getDate();
+      var todayStr = fmtD(new Date());
+      for (var i = 0; i < startDay; i++) html += '<div class="dr-day empty"></div>';
+      for (var d = 1; d <= daysInMonth; d++) {
+        var date = new Date(drMonth.getFullYear(), drMonth.getMonth(), d);
+        var ds = fmtD(date);
+        var cls = 'dr-day';
+        if (ds === todayStr) cls += ' today';
+        if (drStart && ds === fmtD(drStart)) cls += ' start';
+        if (drEnd && ds === fmtD(drEnd)) cls += ' end';
+        if (drStart && drEnd && date > drStart && date < drEnd) cls += ' in-range';
+        html += '<div class="'+cls+'" data-date="'+ds+'">'+d+'</div>';
+      }
+      grid.innerHTML = html;
+      grid.querySelectorAll('.dr-day:not(.empty)').forEach(function(el) {
+        el.addEventListener('click', function() {
+          var picked = new Date(el.dataset.date + 'T12:00:00');
+          if (drClickCount === 0) { drStart = picked; drEnd = null; drClickCount = 1; }
+          else { if (picked < drStart) { drEnd = drStart; drStart = picked; } else { drEnd = picked; } drClickCount = 0; }
+          renderBkDR(); updateBkLabel();
+        });
+      });
+    }
+
+    function updateBkLabel() {
+      if (drStart && drEnd) { label.textContent = fmtShort(drStart) + '  →  ' + fmtShort(drEnd); label.style.color = 'var(--text-primary)'; }
+      else if (drStart) { label.textContent = fmtShort(drStart) + '  →  ...'; label.style.color = 'var(--text-secondary)'; }
+      else { label.textContent = 'Pilih tanggal...'; label.style.color = 'var(--text-muted)'; }
+    }
+
+    if (trigger) trigger.addEventListener('click', function() { dropdown.classList.toggle('open'); });
+    if (dropdown) dropdown.addEventListener('click', function(e) { e.stopPropagation(); });
+    document.getElementById('bk-daterange-prev')?.addEventListener('click', function() { drMonth.setMonth(drMonth.getMonth() - 1); renderBkDR(); });
+    document.getElementById('bk-daterange-next')?.addEventListener('click', function() { drMonth.setMonth(drMonth.getMonth() + 1); renderBkDR(); });
+    document.getElementById('bk-daterange-clear')?.addEventListener('click', function() { drStart = null; drEnd = null; drClickCount = 0; updateBkLabel(); renderBkDR(); });
+    document.getElementById('bk-daterange-apply')?.addEventListener('click', function() {
+      if (!drStart || !drEnd) { showToast('Pilih tanggal awal dan akhir', 'error'); return; }
+      var startEl = document.getElementById('bk-filter-start');
+      var endEl = document.getElementById('bk-filter-end');
+      if (!startEl) { startEl = document.createElement('input'); startEl.type = 'hidden'; startEl.id = 'bk-filter-start'; document.body.appendChild(startEl); }
+      if (!endEl) { endEl = document.createElement('input'); endEl.type = 'hidden'; endEl.id = 'bk-filter-end'; document.body.appendChild(endEl); }
+      startEl.value = fmtD(drStart); endEl.value = fmtD(drEnd);
+      dropdown.classList.remove('open');
+      bookingsPage = 1; loadBookings();
+    });
+    document.addEventListener('click', function(e) {
+      if (dropdown && e.target !== trigger && !trigger?.contains(e.target)) dropdown.classList.remove('open');
+    });
+    renderBkDR();
   })();
 
   switchTab('dashboard');
