@@ -72,17 +72,32 @@ router.post('/transactions', requireKasir, async (req, res) => {
     if (!barber_id || !items?.length || !payment_method)
       return res.json({ success: false, message: 'Data tidak lengkap' });
 
-    // Server-side price lookup — never trust client-sent prices
+    const VALID_METHODS = ['cash', 'transfer', 'qris'];
+    if (!VALID_METHODS.includes(payment_method))
+      return res.json({ success: false, message: 'Metode pembayaran tidak valid' });
+
+    // Batch lookup — fetch all services and products in 2 queries
+    const serviceIds = items.filter(i => i.service_id).map(i => i.service_id);
+    const productIds = items.filter(i => i.product_id).map(i => i.product_id);
+
+    const [svcResult, prodResult] = await Promise.all([
+      serviceIds.length ? db.supabase.from('services').select('*').in('id', serviceIds) : { data: [] },
+      productIds.length ? db.supabase.from('products').select('*').in('id', productIds) : { data: [] }
+    ]);
+    const svcMap = Object.fromEntries((svcResult.data || []).map(s => [s.id, s]));
+    const prodMap = Object.fromEntries((prodResult.data || []).map(p => [p.id, p]));
+
     const verifiedItems = [];
     for (const item of items) {
       if (item.service_id) {
-        const service = await db.getServiceById(item.service_id);
-        if (!service) return res.json({ success: false, message: `Layanan tidak ditemukan: ${item.service_id}` });
-        verifiedItems.push({ ...item, price: service.price });
+        const svc = svcMap[item.service_id];
+        if (!svc) return res.json({ success: false, message: 'Layanan tidak ditemukan' });
+        verifiedItems.push({ ...item, name: svc.name, price: svc.price });
       } else if (item.product_id) {
-        const { data: product, error } = await db.supabase.from('products').select('*').eq('id', item.product_id).single();
-        if (error || !product) return res.json({ success: false, message: `Produk tidak ditemukan: ${item.product_id}` });
-        verifiedItems.push({ ...item, price: product.price });
+        const prod = prodMap[item.product_id];
+        if (!prod) return res.json({ success: false, message: 'Produk tidak ditemukan' });
+        if (item.qty > prod.stock) return res.json({ success: false, message: 'Stok tidak cukup: ' + prod.name });
+        verifiedItems.push({ ...item, name: prod.name, price: prod.price });
       } else {
         return res.json({ success: false, message: 'Item harus memiliki service_id atau product_id' });
       }
