@@ -115,8 +115,8 @@ router.post('/create', bookingLimiter, async (req, res) => {
     if (!customer_name || !customer_phone || !service_id || !barber_id || !booking_date || !booking_time)
       return res.json({ success: false, message: 'Semua field wajib diisi' });
 
-    if (customer_name.trim().length > 100)
-      return res.json({ success: false, message: 'Nama terlalu panjang (maks 100 karakter)' });
+    if (customer_name.trim().length > 25)
+      return res.json({ success: false, message: 'Nama terlalu panjang (maks 25 karakter)' });
     if (customer_phone.trim().length > 20)
       return res.json({ success: false, message: 'Nomor telepon tidak valid (maks 20 karakter)' });
     if (customer_email && customer_email.trim().length > 100)
