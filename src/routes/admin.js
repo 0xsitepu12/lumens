@@ -155,6 +155,22 @@ router.get('/analytics/revenue', async (req, res) => {
     const endDate = end || todayWIB();
 
     const data = await db.getRevenueByDateRange(startDate, endDate);
+
+    if (startDate === endDate) {
+      const hourly = {};
+      for (let h = 9; h <= 21; h++) hourly[h] = { omset: 0, net: 0 };
+      data.forEach(b => {
+        const hour = parseInt((b.booking_time || '0').split(':')[0]);
+        if (!hourly[hour]) hourly[hour] = { omset: 0, net: 0 };
+        hourly[hour].omset += b.total_price || 0;
+        hourly[hour].net += (b.total_price || 0) - (b.services?.modal_price || 0);
+      });
+      const result = Object.entries(hourly)
+        .map(([h, v]) => ({ hour: parseInt(h), label: String(h).padStart(2, '0') + ':00', amount: v.omset, net: v.net }))
+        .sort((a, b) => a.hour - b.hour);
+      return res.json({ success: true, data: result, mode: 'hourly' });
+    }
+
     const daily = {};
     data.forEach(b => {
       if (!daily[b.booking_date]) daily[b.booking_date] = { omset: 0, net: 0 };
@@ -166,7 +182,7 @@ router.get('/analytics/revenue', async (req, res) => {
       .map(([date, v]) => ({ date, amount: v.omset, net: v.net }))
       .sort((a, b) => a.date.localeCompare(b.date));
 
-    res.json({ success: true, data: result });
+    res.json({ success: true, data: result, mode: 'daily' });
   } catch (err) {
     console.error('[admin/analytics/revenue]', err.message);
     res.status(500).json({ success: false, message: 'Server error' });

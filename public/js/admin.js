@@ -82,7 +82,7 @@ async function loadCharts() {
 
     renderPeakHoursChart(peakHours.data || []);
     renderPeakDaysChart(peakDays.data || []);
-    renderRevenueChart(revenue.data || []);
+    renderRevenueChart(revenue.data || [], revenue.mode);
     renderServicesChart(services.data || []);
     renderBarberTable(barberPerf.data || []);
   } catch {
@@ -161,11 +161,55 @@ function renderPeakDaysChart(data) {
   });
 }
 
-function renderRevenueChart(data) {
+function renderRevenueChart(data, mode) {
   const ctx = document.getElementById('chart-revenue');
   if (!ctx) return;
   if (charts.revenue) charts.revenue.destroy();
 
+  const titleEl = ctx.closest('.chart-card')?.querySelector('.chart-card__title');
+
+  if (mode === 'hourly') {
+    if (titleEl) titleEl.innerHTML = '<i class="fa-solid fa-chart-bar"></i> Pendapatan Per Jam';
+    charts.revenue = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: data.map(d => d.label),
+        datasets: [
+          {
+            label: 'Omset',
+            data: data.map(d => d.amount),
+            backgroundColor: 'rgba(148,163,184,0.3)',
+            borderColor: '#94a3b8',
+            borderWidth: 1,
+            borderRadius: 4
+          },
+          {
+            label: 'Pendapatan Bersih',
+            data: data.map(d => d.net ?? d.amount),
+            backgroundColor: 'rgba(74,222,128,0.4)',
+            borderColor: chartColors.green,
+            borderWidth: 1,
+            borderRadius: 4
+          }
+        ]
+      },
+      options: {
+        ...chartDefaults,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: true, position: 'top', align: 'end', labels: { font: { size: 11 }, boxWidth: 10, padding: 12 } },
+          tooltip: { callbacks: { label: c => c.dataset.label + ': ' + formatRupiah(c.parsed.y) } }
+        },
+        scales: {
+          x: { ticks: { color: '#555555', font: { size: 10 } }, grid: { display: false } },
+          y: { ticks: { color: '#555555', callback: v => formatRupiah(v) }, grid: { color: '#e0e0e0' }, beginAtZero: true }
+        }
+      }
+    });
+    return;
+  }
+
+  if (titleEl) titleEl.innerHTML = '<i class="fa-solid fa-chart-line"></i> Pendapatan Harian';
   charts.revenue = new Chart(ctx, {
     type: 'line',
     data: {
