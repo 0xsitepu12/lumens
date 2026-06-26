@@ -1,15 +1,14 @@
 const express = require('express');
 const db = require('../db');
-const { requireAuth } = require('../middleware/auth');
+const { requireKasir, requireAdmin } = require('../middleware/auth');
 const { todayWIB } = require('../config');
 
 const router = express.Router();
-router.use(requireAuth);
 
 // ============================================
 // PRODUCTS (minuman dll)
 // ============================================
-router.get('/products', async (req, res) => {
+router.get('/products', requireKasir, async (req, res) => {
   try {
     const { data } = await db.supabase.from('products')
       .select('*')
@@ -22,7 +21,7 @@ router.get('/products', async (req, res) => {
   }
 });
 
-router.post('/products', async (req, res) => {
+router.post('/products', requireAdmin, async (req, res) => {
   try {
     const { name, price, modal_price, category, stock, icon } = req.body;
     if (!name || !price) return res.json({ success: false, message: 'Nama dan harga wajib' });
@@ -37,7 +36,7 @@ router.post('/products', async (req, res) => {
   }
 });
 
-router.put('/products/:id', async (req, res) => {
+router.put('/products/:id', requireAdmin, async (req, res) => {
   try {
     const { name, price, modal_price, category, stock, icon, is_active } = req.body;
     const { data, error } = await db.supabase.from('products')
@@ -52,7 +51,7 @@ router.put('/products/:id', async (req, res) => {
   }
 });
 
-router.delete('/products/:id', async (req, res) => {
+router.delete('/products/:id', requireAdmin, async (req, res) => {
   try {
     const { error } = await db.supabase.from('products')
       .delete().eq('id', req.params.id);
@@ -67,13 +66,29 @@ router.delete('/products/:id', async (req, res) => {
 // ============================================
 // TRANSACTIONS
 // ============================================
-router.post('/transactions', async (req, res) => {
+router.post('/transactions', requireKasir, async (req, res) => {
   try {
     const { barber_id, barber_name, customer_name, items, payment_method, amount_paid } = req.body;
     if (!barber_id || !items?.length || !payment_method)
       return res.json({ success: false, message: 'Data tidak lengkap' });
 
-    const total = items.reduce((s, i) => s + i.price * i.qty, 0);
+    // Server-side price lookup — never trust client-sent prices
+    const verifiedItems = [];
+    for (const item of items) {
+      if (item.service_id) {
+        const service = await db.getServiceById(item.service_id);
+        if (!service) return res.json({ success: false, message: `Layanan tidak ditemukan: ${item.service_id}` });
+        verifiedItems.push({ ...item, price: service.price });
+      } else if (item.product_id) {
+        const { data: product, error } = await db.supabase.from('products').select('*').eq('id', item.product_id).single();
+        if (error || !product) return res.json({ success: false, message: `Produk tidak ditemukan: ${item.product_id}` });
+        verifiedItems.push({ ...item, price: product.price });
+      } else {
+        return res.json({ success: false, message: 'Item harus memiliki service_id atau product_id' });
+      }
+    }
+
+    const total = verifiedItems.reduce((s, i) => s + i.price * i.qty, 0);
     const change = payment_method === 'cash' ? Math.max(0, (amount_paid || total) - total) : 0;
 
     const { data: trx, error } = await db.supabase.from('pos_transactions')
@@ -81,7 +96,7 @@ router.post('/transactions', async (req, res) => {
         barber_id,
         barber_name: barber_name || '',
         customer_name: customer_name || 'Tamu',
-        items,
+        items: verifiedItems,
         total,
         payment_method,
         amount_paid: amount_paid || total,
@@ -94,7 +109,7 @@ router.post('/transactions', async (req, res) => {
     if (error) throw error;
 
     // Kurangi stok produk
-    for (const item of items) {
+    for (const item of verifiedItems) {
       if (item.product_id) {
         await db.supabase.rpc('decrement_stock', { p_id: item.product_id, qty: item.qty });
       }
@@ -108,7 +123,7 @@ router.post('/transactions', async (req, res) => {
   }
 });
 
-router.get('/transactions', async (req, res) => {
+router.get('/transactions', requireKasir, async (req, res) => {
   try {
     const date = req.query.date || todayWIB();
     const { data } = await db.supabase.from('pos_transactions')
@@ -122,7 +137,7 @@ router.get('/transactions', async (req, res) => {
   }
 });
 
-router.get('/summary', async (req, res) => {
+router.get('/summary', requireKasir, async (req, res) => {
   try {
     const date = req.query.date || todayWIB();
     const { data } = await db.supabase.from('pos_transactions')
@@ -157,9 +172,9 @@ router.get('/summary', async (req, res) => {
 });
 
 // ============================================
-// REFUND
+// REFUND (admin only)
 // ============================================
-router.put('/transactions/:id/refund', async (req, res) => {
+router.put('/transactions/:id/refund', requireAdmin, async (req, res) => {
   try {
     const { reason } = req.body;
     if (!reason) return res.json({ success: false, message: 'Alasan refund wajib diisi' });

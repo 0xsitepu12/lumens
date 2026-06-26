@@ -2,7 +2,8 @@ const express = require('express');
 const rateLimit = require('express-rate-limit');
 const db = require('../db');
 const { SLOT_INTERVAL_MINUTES, nowWIB, todayWIB } = require('../config');
-const { requireAuth } = require('../middleware/auth');
+const jwt = require('jsonwebtoken');
+const { requireKasir } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -117,12 +118,26 @@ router.post('/create', bookingLimiter, async (req, res) => {
     const service = await db.getServiceById(service_id);
     if (!service) return res.json({ success: false, message: 'Layanan tidak ditemukan' });
 
+    // Only allow price/duration override from authenticated kasir/admin
+    let isKasir = false;
+    const token = req.cookies.session_token;
+    if (token) {
+      try {
+        const user = jwt.verify(token, process.env.JWT_SECRET);
+        if (['kasir', 'admin', 'superadmin'].includes(user.role)) {
+          isKasir = true;
+        }
+      } catch { /* not authenticated — treat as public */ }
+    }
+
+    const actualDuration = (isKasir && duration_override) ? duration_override : service.duration_minutes;
+    const actualPrice = (isKasir && total_price_override) ? total_price_override : service.price;
+
     const dayOfWeek = new Date(booking_date + 'T12:00:00').getDay();
     const schedule = await db.getBarberSchedule(barber_id, dayOfWeek);
     if (!schedule || schedule.is_off)
       return res.json({ success: false, message: 'Stylist tidak tersedia di hari ini' });
 
-    const actualDuration = duration_override || service.duration_minutes;
     const [h, m] = booking_time.split(':').map(Number);
     const endMinutes = h * 60 + m + actualDuration;
     const end_time = `${String(Math.floor(endMinutes / 60)).padStart(2, '0')}:${String(endMinutes % 60).padStart(2, '0')}`;
@@ -147,7 +162,7 @@ router.post('/create', bookingLimiter, async (req, res) => {
       booking_time,
       end_time,
       duration_minutes: actualDuration,
-      total_price: total_price_override || service.price,
+      total_price: actualPrice,
       notes: notes?.trim() || null
     });
 
@@ -176,7 +191,7 @@ router.get('/check/:id', async (req, res) => {
 // ============================================
 // KASIR ENDPOINTS (requires login)
 // ============================================
-router.get('/kasir/today', requireAuth, async (req, res) => {
+router.get('/kasir/today', requireKasir, async (req, res) => {
   try {
     const date = req.query.date || todayWIB();
     const bookings = await db.getBookingsByDate(date);
@@ -187,7 +202,7 @@ router.get('/kasir/today', requireAuth, async (req, res) => {
   }
 });
 
-router.get('/kasir/week-counts', requireAuth, async (req, res) => {
+router.get('/kasir/week-counts', requireKasir, async (req, res) => {
   try {
     const { start, end } = req.query;
     if (!start || !end) return res.json({ success: false, message: 'start dan end wajib' });
@@ -205,7 +220,7 @@ router.get('/kasir/week-counts', requireAuth, async (req, res) => {
   }
 });
 
-router.put('/kasir/status/:id', requireAuth, async (req, res) => {
+router.put('/kasir/status/:id', requireKasir, async (req, res) => {
   try {
     const { status } = req.body;
     if (!['pending', 'confirmed', 'completed', 'cancelled', 'no_show'].includes(status))

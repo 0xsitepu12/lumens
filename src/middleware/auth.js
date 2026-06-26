@@ -13,6 +13,14 @@ function requireAuth(req, res, next) {
   }
 }
 
+function requireKasir(req, res, next) {
+  requireAuth(req, res, () => {
+    if (!['kasir', 'admin', 'superadmin'].includes(req.user.role))
+      return res.status(403).json({ success: false, message: 'Forbidden' });
+    next();
+  });
+}
+
 function requireAdmin(req, res, next) {
   requireAuth(req, res, () => {
     if (req.user.role !== 'admin' && req.user.role !== 'superadmin')
@@ -29,4 +37,4 @@ function requireSuperAdmin(req, res, next) {
   });
 }
 
-module.exports = { requireAuth, requireAdmin, requireSuperAdmin };
+module.exports = { requireAuth, requireKasir, requireAdmin, requireSuperAdmin };
