@@ -57,8 +57,9 @@
     .pos-cat.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
 
     .pos-scroll { flex: 1; overflow-y: auto; padding: 0 20px 20px; }
-    .pos-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding-top: 4px; }
-    .pos-item { background: #fff; border: 1.5px solid #e5e5e5; border-radius: 14px; padding: 16px 10px 12px; text-align: center; cursor: pointer; position: relative; }
+    .pos-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; padding: 8px 4px 4px; }
+    .pos-item { background: #fff; border: 1.5px solid #e5e5e5; border-radius: 14px; padding: 16px 10px 12px; text-align: center; cursor: pointer; position: relative; overflow: visible; z-index: 1; }
+    .pos-item.in-cart { z-index: 2; }
     .pos-item:hover { border-color: #ccc; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
     .pos-item:active { transform: scale(0.97); }
     .pos-item.in-cart { border-color: #1a1a1a; border-width: 2px; }
@@ -336,5 +337,27 @@
   </div>
 
   <script src="/js/pos.js"></script>
+  <script>
+    // Standalone /pos page bootstrap. The integrated kasir page calls
+    // initPOS()/loadRiwayat() itself via its tab switcher; here we wire
+    // up this page's own header nav + date and kick off init.
+    document.addEventListener('DOMContentLoaded', function () {
+      var now = new Date();
+      var dateEl = document.getElementById('pos-date');
+      if (dateEl) dateEl.textContent = now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+      function showPage(page) {
+        document.getElementById('pos-page').style.display = page === 'pos' ? 'flex' : 'none';
+        document.getElementById('riwayat-page').classList.toggle('show', page === 'riwayat');
+        document.getElementById('nav-pos').classList.toggle('active', page === 'pos');
+        document.getElementById('nav-riwayat').classList.toggle('active', page === 'riwayat');
+        if (page === 'riwayat' && typeof loadRiwayat === 'function') loadRiwayat();
+      }
+      document.getElementById('nav-pos')?.addEventListener('click', function () { showPage('pos'); });
+      document.getElementById('nav-riwayat')?.addEventListener('click', function () { showPage('riwayat'); });
+
+      if (typeof initPOS === 'function') initPOS();
+    });
+  </script>
 </body>
 </html>

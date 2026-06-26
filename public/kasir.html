@@ -21,7 +21,7 @@
     .kasir-header {
       background: #fff;
       border-bottom: 1px solid #e5e5e5;
-      padding: 14px 20px;
+      padding: 14px 20px 0;
       position: sticky;
       top: 0;
       z-index: 10;
@@ -30,6 +30,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      margin-bottom: 10px;
     }
     .kasir-logo { height: 70px; }
     .btn-logout-kasir {
@@ -44,33 +45,42 @@
       font-family: inherit;
     }
     .kasir-date { font-size: 0.78rem; color: #888; }
-    .kasir-tabs {
+
+    /* ========== MAIN TABS (Booking | POS | Riwayat) ========== */
+    .k-tabs {
       display: flex;
-      gap: 8px;
-      margin-top: 12px;
+      gap: 0;
     }
-    .kasir-tab {
+    .k-tab {
       flex: 1;
-      padding: 8px;
-      border: 1px solid #e0e0e0;
-      border-radius: 8px;
-      background: #fff;
+      padding: 10px 8px;
       text-align: center;
       font-size: 0.78rem;
-      font-weight: 600;
+      font-weight: 700;
+      color: #999;
       cursor: pointer;
-      color: #888;
+      border-bottom: 2px solid transparent;
+      background: none;
+      border-top: none;
+      border-left: none;
+      border-right: none;
       font-family: inherit;
+      transition: all 0.15s;
     }
-    .kasir-tab.active {
-      background: #1a1a1a;
-      color: #fff;
-      border-color: #1a1a1a;
+    .k-tab:hover { color: #555; }
+    .k-tab.active {
+      color: #1a1a1a;
+      border-bottom-color: #1a1a1a;
     }
+    .k-tab i { margin-right: 5px; }
+
+    /* ========== TAB CONTENT ========== */
+    .k-content { display: none; }
+    .k-content.active { display: block; }
 
     /* ========== WEEK STRIP ========== */
     .kasir-cal {
-      padding: 0 20px 8px;
+      padding: 8px 20px 8px;
     }
     .kasir-cal-header {
       display: flex;
@@ -338,6 +348,7 @@
       border: none;
       cursor: pointer;
       box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      z-index: 20;
     }
 
     .fab-walkin {
@@ -359,6 +370,7 @@
       gap: 7px;
       box-shadow: 0 3px 12px rgba(22,163,74,0.35);
       letter-spacing: 0.2px;
+      z-index: 20;
     }
     .fab-walkin:active { transform: scale(0.97); }
 
@@ -462,6 +474,253 @@
       margin-top: 8px;
       display: none;
     }
+
+    /* ========================================================== */
+    /* ==================== POS TAB ============================== */
+    /* ========================================================== */
+    .pos-section {
+      display: flex;
+      height: calc(100vh - 140px);
+      overflow: hidden;
+    }
+    .pos-left {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .pos-right {
+      width: 340px;
+      background: #fff;
+      border-left: 1px solid #e5e5e5;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Barber bar */
+    .barber-bar {
+      padding: 12px 20px;
+      background: #fff;
+      border-bottom: 1px solid #e5e5e5;
+    }
+    .barber-label { font-size: 0.65rem; font-weight: 700; color: #999; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .barber-list { display: flex; gap: 8px; flex-wrap: wrap; }
+    .barber-chip { display: flex; align-items: center; gap: 8px; padding: 8px 16px; border: 2px solid #e5e5e5; border-radius: 12px; background: #fff; cursor: pointer; font-family: inherit; }
+    .barber-chip:hover { border-color: #bbb; }
+    .barber-chip.active { border-color: #1a1a1a; background: #1a1a1a; }
+    .barber-chip.active .barber-avatar { background: #fff; color: #1a1a1a; }
+    .barber-chip.active .barber-cname { color: #fff; }
+    .barber-avatar { width: 34px; height: 34px; border-radius: 50%; background: #1a1a1a; color: #fff; font-size: 0.78rem; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+    .barber-cname { font-size: 0.82rem; font-weight: 700; }
+
+    .pos-main-hidden { display: none !important; }
+    .pos-main-show { display: flex; flex: 1; flex-direction: column; overflow: hidden; }
+    .pos-locked { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #ccc; min-height: 200px; }
+    .pos-locked i { font-size: 3rem; margin-bottom: 14px; }
+    .pos-locked p { font-size: 1rem; }
+
+    .pos-filter { padding: 12px 20px 0; background: #f8f8f8; }
+    .pos-search { position: relative; margin-bottom: 10px; }
+    .pos-search input { width: 100%; padding: 10px 14px 10px 38px; border: 1px solid #e0e0e0; border-radius: 10px; font-size: 0.88rem; font-family: inherit; background: #fff; outline: none; }
+    .pos-search input:focus { border-color: #1a1a1a; }
+    .pos-search i { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: #bbb; font-size: 0.85rem; }
+    .pos-cats { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
+    .pos-cats::-webkit-scrollbar { display: none; }
+    .pos-cat { flex-shrink: 0; padding: 7px 16px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; border: 1px solid #e0e0e0; background: #fff; color: #888; cursor: pointer; font-family: inherit; }
+    .pos-cat:hover { border-color: #bbb; }
+    .pos-cat.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+
+    .pos-scroll { flex: 1; overflow-y: auto; padding: 0 20px 20px; }
+    .pos-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; padding: 8px 4px 4px; }
+    .pos-item { background: #fff; border: 1.5px solid #e5e5e5; border-radius: 14px; padding: 16px 10px 12px; text-align: center; cursor: pointer; position: relative; overflow: visible; z-index: 1; }
+    .pos-item.in-cart { z-index: 2; }
+    .pos-item:hover { border-color: #ccc; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+    .pos-item:active { transform: scale(0.97); }
+    .pos-item.in-cart { border-color: #1a1a1a; border-width: 2px; }
+    .pos-item.disabled { opacity: 0.35; pointer-events: none; }
+    .pos-item-icon { font-size: 1.8rem; margin-bottom: 8px; display: block; }
+    .pos-item-name { font-size: 0.78rem; font-weight: 600; line-height: 1.25; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .pos-item-price { font-size: 0.75rem; font-weight: 700; color: #16a34a; }
+    .pos-item-stock { font-size: 0.6rem; color: #bbb; margin-top: 3px; }
+    .pos-item-stock.out { color: #dc2626; }
+    .pos-item-stock.low { color: #f59e0b; }
+    .pos-item-badge { position: absolute; top: -8px; right: -8px; background: #dc2626; color: #fff; font-size: 0.68rem; font-weight: 800; min-width: 22px; height: 22px; border-radius: 11px; display: flex; align-items: center; justify-content: center; padding: 0 5px; }
+
+    .cart-header { padding: 16px 18px 12px; border-bottom: 1px solid #f0f0f0; }
+    .cart-title { font-size: 0.88rem; font-weight: 800; }
+    .cart-barber-tag { display: inline-block; font-size: 0.65rem; color: #2563eb; font-weight: 600; background: #eff6ff; padding: 3px 10px; border-radius: 6px; margin-left: 6px; }
+    .cart-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #ddd; }
+    .cart-empty i { font-size: 2rem; margin-bottom: 8px; }
+    .cart-empty p { font-size: 0.82rem; }
+    .cart-list { flex: 1; overflow-y: auto; }
+    .cart-row { display: flex; align-items: center; padding: 12px 18px; border-bottom: 1px solid #f5f5f5; gap: 10px; }
+    .cart-row-info { flex: 1; min-width: 0; }
+    .cart-row-name { font-size: 0.82rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .cart-row-price { font-size: 0.7rem; color: #888; margin-top: 1px; }
+    .cart-qty-ctrl { display: flex; align-items: center; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; }
+    .cart-qty-btn { width: 32px; height: 32px; border: none; background: #f5f5f5; font-size: 0.85rem; font-weight: 700; cursor: pointer; font-family: inherit; color: #555; display: flex; align-items: center; justify-content: center; }
+    .cart-qty-btn:hover { background: #e8e8e8; }
+    .cart-qty-btn.minus { color: #dc2626; }
+    .cart-qty-val { width: 30px; text-align: center; font-size: 0.88rem; font-weight: 700; }
+    .cart-row-total { font-size: 0.88rem; font-weight: 700; min-width: 76px; text-align: right; }
+    .cart-footer { border-top: 2px solid #1a1a1a; padding: 14px 18px 18px; }
+    .cart-total-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .cart-total-label { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: #555; }
+    .cart-total-val { font-size: 1.3rem; font-weight: 800; }
+    .btn-bayar { width: 100%; padding: 14px; background: #16a34a; color: #fff; border: none; border-radius: 12px; font-size: 0.95rem; font-weight: 700; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-bayar:hover { background: #15803d; }
+    .btn-bayar:active { transform: scale(0.98); }
+
+    /* Mobile cart bar */
+    .mobile-cart-bar {
+      display: none;
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: #fff; border-top: 1px solid #e5e5e5;
+      padding: 10px 16px 14px; z-index: 25;
+      box-shadow: 0 -2px 12px rgba(0,0,0,0.06);
+    }
+    .mobile-cart-peek { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .mobile-cart-icon { position: relative; }
+    .mobile-cart-icon i { font-size: 1rem; color: #555; }
+    .mobile-cart-count {
+      position: absolute; top: -5px; right: -7px; background: #dc2626; color: #fff;
+      font-size: 0.5rem; font-weight: 800; min-width: 14px; height: 14px; border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .mobile-cart-text { flex: 1; }
+    .mobile-cart-items { font-size: 0.68rem; color: #888; }
+    .mobile-cart-total { font-size: 0.95rem; font-weight: 800; }
+
+    /* ========================================================== */
+    /* ==================== RIWAYAT TAB ========================= */
+    /* ========================================================== */
+    .riwayat-section { padding: 12px 16px 100px; }
+    .riwayat-omset {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px;
+    }
+    .omset-card { padding: 14px; border-radius: 12px; text-align: center; }
+    .omset-card.total { background: #1a1a1a; color: #fff; grid-column: 1/-1; }
+    .omset-card.cash { background: #f0fdf4; }
+    .omset-card.transfer { background: #eff6ff; }
+    .omset-card.qris { background: #f5f3ff; }
+    .omset-card.refund { background: #fef2f2; }
+    .omset-label { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; opacity: 0.7; }
+    .omset-card.total .omset-label { color: #999; }
+    .omset-val { font-size: 1.1rem; font-weight: 800; margin-top: 2px; }
+    .omset-card.cash .omset-val { color: #16a34a; }
+    .omset-card.transfer .omset-val { color: #2563eb; }
+    .omset-card.qris .omset-val { color: #7c3aed; }
+    .omset-card.refund .omset-val { color: #dc2626; }
+    .omset-count { font-size: 0.6rem; color: #aaa; margin-top: 2px; }
+    .omset-card.total .omset-count { color: #888; }
+
+    .riwayat-filter { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .riwayat-filter input[type="date"] { padding: 8px 12px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 0.82rem; font-family: inherit; background: #fff; outline: none; }
+    .riwayat-search { flex: 1; position: relative; }
+    .riwayat-search input { width: 100%; padding: 8px 12px 8px 32px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 0.82rem; font-family: inherit; background: #fff; outline: none; }
+    .riwayat-search i { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #bbb; font-size: 0.75rem; }
+    .riwayat-list { display: flex; flex-direction: column; }
+    .trx-card { background: #fff; border: 1px solid #e5e5e5; border-radius: 12px; padding: 14px 16px; margin-bottom: 8px; }
+    .trx-card.refunded { opacity: 0.6; }
+    .trx-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .trx-id { font-size: 0.72rem; font-weight: 700; color: #555; }
+    .trx-time { font-size: 0.68rem; color: #bbb; }
+    .trx-badge { font-size: 0.62rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+    .trx-badge.paid { background: #dcfce7; color: #166534; }
+    .trx-badge.refunded { background: #fee2e2; color: #991b1b; }
+    .trx-mid { display: flex; align-items: center; justify-content: space-between; }
+    .trx-info { flex: 1; }
+    .trx-stylist { font-size: 0.72rem; color: #2563eb; font-weight: 600; margin-bottom: 2px; }
+    .trx-items { font-size: 0.78rem; color: #555; }
+    .trx-total { font-size: 1.05rem; font-weight: 800; }
+    .trx-total.line-through { text-decoration: line-through; color: #999; }
+    .trx-bottom { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; padding-top: 8px; border-top: 1px solid #f0f0f0; }
+    .trx-method { font-size: 0.68rem; color: #888; display: flex; align-items: center; gap: 4px; }
+    .trx-actions { display: flex; gap: 6px; }
+    .trx-btn { font-size: 0.68rem; font-weight: 700; padding: 5px 12px; border-radius: 6px; border: none; cursor: pointer; font-family: inherit; display: flex; align-items: center; gap: 4px; }
+    .trx-btn.refund-btn { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+    .trx-btn.refund-btn:hover { background: #fee2e2; }
+
+    /* ========================================================== */
+    /* ==================== POS MODALS ========================== */
+    /* ========================================================== */
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 60; align-items: center; justify-content: center; padding: 16px; }
+    .overlay.show { display: flex; }
+    .modal { background: #fff; border-radius: 20px; width: 420px; max-width: 100%; max-height: 90vh; overflow-y: auto; padding: 28px; animation: fadeIn 0.2s ease; }
+    @keyframes fadeIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .modal-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 20px; }
+
+    .pay-total-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 14px; padding: 18px; text-align: center; margin-bottom: 20px; }
+    .pay-total-label { font-size: 0.68rem; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
+    .pay-total-val { font-size: 2.2rem; font-weight: 800; color: #16a34a; margin-top: 4px; }
+    .pay-methods { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+    .pay-method { border: 2px solid #e5e5e5; border-radius: 14px; padding: 16px 10px; text-align: center; cursor: pointer; background: #fff; font-family: inherit; }
+    .pay-method:hover { border-color: #bbb; }
+    .pay-method.active { border-color: #1a1a1a; background: #fafafa; }
+    .pay-method i { font-size: 1.6rem; display: block; margin-bottom: 6px; }
+    .pay-method span { font-size: 0.78rem; font-weight: 700; display: block; }
+    .pay-method.m-cash i { color: #16a34a; }
+    .pay-method.m-transfer i { color: #2563eb; }
+    .pay-method.m-qris i { color: #7c3aed; }
+    .cash-box { display: none; margin-bottom: 16px; }
+    .cash-box.show { display: block; }
+    .cash-label { font-size: 0.72rem; font-weight: 600; color: #888; text-transform: uppercase; margin-bottom: 6px; }
+    .cash-input { width: 100%; padding: 14px 16px; border: 1.5px solid #e0e0e0; border-radius: 12px; font-size: 1.3rem; font-weight: 700; font-family: inherit; text-align: right; background: #f9f9f9; outline: none; }
+    .cash-input:focus { border-color: #1a1a1a; background: #fff; }
+    .cash-quick { display: flex; gap: 8px; margin-top: 10px; }
+    .cash-quick button { flex: 1; padding: 10px; background: #f0f0f0; border: none; border-radius: 10px; font-size: 0.78rem; font-weight: 700; font-family: inherit; cursor: pointer; color: #555; }
+    .cash-quick button:hover { background: #e5e5e5; }
+    .cash-change { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding: 12px 16px; background: #f0fdf4; border-radius: 12px; }
+    .cash-change-label { font-size: 0.85rem; color: #555; font-weight: 600; }
+    .cash-change-val { font-size: 1.2rem; font-weight: 800; color: #16a34a; }
+    .btn-confirm { width: 100%; padding: 15px; background: #1a1a1a; color: #fff; border: none; border-radius: 14px; font-size: 0.95rem; font-weight: 700; font-family: inherit; cursor: pointer; margin-top: 14px; }
+    .btn-confirm:hover { background: #333; }
+
+    .receipt { background: #fff; border-radius: 20px; width: 380px; max-width: 100%; max-height: 90vh; overflow-y: auto; padding: 32px 28px; text-align: center; animation: fadeIn 0.2s ease; }
+    .receipt-store { font-size: 1.15rem; font-weight: 800; letter-spacing: 1px; }
+    .receipt-addr { font-size: 0.68rem; color: #999; margin-top: 2px; margin-bottom: 12px; }
+    .receipt-hr { border: none; border-top: 1px dashed #ddd; margin: 12px 0; }
+    .receipt-line { display: flex; justify-content: space-between; font-size: 0.82rem; padding: 4px 0; }
+    .receipt-line .l { color: #888; }
+    .receipt-line.bold { font-weight: 700; }
+    .receipt-line.total { font-size: 1.1rem; font-weight: 800; padding: 10px 0 4px; border-top: 2px solid #1a1a1a; margin-top: 8px; }
+    .receipt-badge { display: inline-block; background: #dcfce7; color: #166534; font-size: 0.78rem; font-weight: 700; padding: 6px 18px; border-radius: 20px; margin: 16px 0 6px; }
+    .receipt-trx { font-size: 0.65rem; color: #bbb; margin-bottom: 14px; }
+    .receipt-wa-section { text-align: left; margin-bottom: 14px; }
+    .receipt-wa-label { font-size: 0.68rem; font-weight: 600; color: #888; text-transform: uppercase; margin-bottom: 6px; }
+    .receipt-wa-row { display: flex; gap: 8px; }
+    .receipt-wa-input { flex: 1; padding: 10px 14px; border: 1.5px solid #e0e0e0; border-radius: 10px; font-size: 0.88rem; font-family: inherit; outline: none; background: #f9f9f9; }
+    .receipt-wa-input:focus { border-color: #25d366; background: #fff; }
+    .btn-send-wa { padding: 10px 18px; background: #25d366; color: #fff; border: none; border-radius: 10px; font-size: 0.82rem; font-weight: 700; font-family: inherit; cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+    .btn-send-wa:hover { background: #22c55e; }
+    .receipt-btn-close { width: 100%; padding: 13px; background: #f0f0f0; color: #555; border: none; border-radius: 12px; font-size: 0.88rem; font-weight: 700; font-family: inherit; cursor: pointer; }
+
+    .refund-info { background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 16px; margin-bottom: 18px; }
+    .refund-info-title { font-size: 0.82rem; font-weight: 700; color: #dc2626; margin-bottom: 6px; }
+    .refund-info-line { font-size: 0.78rem; color: #555; padding: 2px 0; }
+    .refund-info-total { font-size: 1.1rem; font-weight: 800; color: #dc2626; margin-top: 6px; }
+    .refund-reason { margin-bottom: 16px; }
+    .refund-reason label { display: block; font-size: 0.72rem; font-weight: 600; color: #888; text-transform: uppercase; margin-bottom: 6px; }
+    .refund-reason select { width: 100%; padding: 10px 14px; border: 1.5px solid #e0e0e0; border-radius: 10px; font-size: 0.88rem; font-family: inherit; background: #f9f9f9; outline: none; }
+    .btn-refund-confirm { width: 100%; padding: 14px; background: #dc2626; color: #fff; border: none; border-radius: 14px; font-size: 0.92rem; font-weight: 700; font-family: inherit; cursor: pointer; }
+
+    /* ========================================================== */
+    /* ==================== RESPONSIVE ========================== */
+    /* ========================================================== */
+    @media (max-width: 768px) {
+      .pos-section { flex-direction: column; height: auto; min-height: calc(100vh - 140px); }
+      .pos-right { display: none; }
+      .pos-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+      .mobile-cart-bar.has-items { display: block; }
+      .pos-scroll { padding-bottom: 130px; }
+    }
+
+    @media (min-width: 769px) {
+      .pos-grid { grid-template-columns: repeat(4, 1fr); }
+      .mobile-cart-bar { display: none !important; }
+      .riwayat-omset { grid-template-columns: repeat(5, 1fr); }
+      .omset-card.total { grid-column: auto; }
+    }
   </style>
 </head>
 <body>
@@ -475,43 +734,118 @@
         <button class="btn-logout-kasir" id="btn-logout-kasir">Logout</button>
       </div>
     </div>
+
+    <div class="k-tabs">
+      <button class="k-tab active" data-tab="booking"><i class="fa-solid fa-calendar-check"></i> Booking</button>
+      <button class="k-tab" data-tab="pos"><i class="fa-solid fa-cash-register"></i> POS</button>
+      <button class="k-tab" data-tab="riwayat"><i class="fa-solid fa-clock-rotate-left"></i> Riwayat</button>
+    </div>
   </header>
 
-  <div class="kasir-cal">
-    <div class="kasir-cal-header">
-      <div class="kasir-cal-nav">
-        <button id="kcal-prev"><i class="fa-solid fa-chevron-left"></i></button>
+  <!-- ==================== TAB: BOOKING ==================== -->
+  <div class="k-content active" id="tab-booking">
+    <div class="kasir-cal">
+      <div class="kasir-cal-header">
+        <div class="kasir-cal-nav">
+          <button id="kcal-prev"><i class="fa-solid fa-chevron-left"></i></button>
+        </div>
+        <div class="kasir-cal-title" id="kcal-title"></div>
+        <div class="kasir-cal-nav">
+          <button id="kcal-next"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
       </div>
-      <div class="kasir-cal-title" id="kcal-title"></div>
-      <div class="kasir-cal-nav">
-        <button id="kcal-next"><i class="fa-solid fa-chevron-right"></i></button>
+      <div class="kasir-cal-grid" id="kcal-grid"></div>
+    </div>
+
+    <div class="kasir-summary">
+      <div class="summary-card">
+        <div class="summary-num" id="sum-total">0</div>
+        <div class="summary-label">Total</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-num pending" id="sum-pending">0</div>
+        <div class="summary-label">Pending</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-num completed" id="sum-completed">0</div>
+        <div class="summary-label">Selesai</div>
       </div>
     </div>
-    <div class="kasir-cal-grid" id="kcal-grid"></div>
-  </div>
 
-  <div class="kasir-summary">
-    <div class="summary-card">
-      <div class="summary-num" id="sum-total">0</div>
-      <div class="summary-label">Total</div>
+    <div class="kasir-omset-bar">
+      <span class="kasir-omset-label">Omset Hari Ini</span>
+      <span class="kasir-omset-value" id="sum-omset">Rp 0</span>
     </div>
-    <div class="summary-card">
-      <div class="summary-num pending" id="sum-pending">0</div>
-      <div class="summary-label">Pending</div>
-    </div>
-    <div class="summary-card">
-      <div class="summary-num completed" id="sum-completed">0</div>
-      <div class="summary-label">Selesai</div>
+
+    <div class="kasir-list" id="booking-list">
+      <div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><p>Memuat...</p></div>
     </div>
   </div>
 
-  <div class="kasir-omset-bar">
-    <span class="kasir-omset-label">Omset Hari Ini</span>
-    <span class="kasir-omset-value" id="sum-omset">Rp 0</span>
+  <!-- ==================== TAB: POS ==================== -->
+  <div class="k-content" id="tab-pos">
+    <div class="pos-section">
+      <div class="pos-left">
+        <div id="pos-page" style="display:flex;flex:1;flex-direction:column;overflow:hidden">
+          <div class="barber-bar">
+            <div class="barber-label"><i class="fa-solid fa-user-tie"></i> Pilih Stylist</div>
+            <div class="barber-list" id="barber-list"></div>
+          </div>
+          <div class="pos-locked" id="pos-locked"><i class="fa-solid fa-hand-pointer"></i><p>Pilih stylist untuk mulai transaksi</p></div>
+          <div id="pos-main" class="pos-main-hidden">
+            <div class="pos-filter">
+              <div class="pos-search"><i class="fa-solid fa-magnifying-glass"></i><input type="text" placeholder="Cari layanan atau produk..." id="search-input"></div>
+              <div class="pos-cats" id="cat-tabs"></div>
+            </div>
+            <div class="pos-scroll"><div class="pos-grid" id="pos-grid"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cart panel (desktop/iPad) -->
+      <div class="pos-right">
+        <div class="cart-header"><span class="cart-title">Pesanan</span><span class="cart-barber-tag" id="cart-barber-tag" style="display:none"></span></div>
+        <div class="cart-empty" id="cart-empty"><i class="fa-solid fa-cart-shopping"></i><p>Belum ada pesanan</p></div>
+        <div class="cart-list" id="cart-list" style="display:none"></div>
+        <div class="cart-footer" id="cart-footer" style="display:none">
+          <div class="cart-total-row"><span class="cart-total-label">Total</span><span class="cart-total-val" id="cart-total-val">Rp 0</span></div>
+          <button class="btn-bayar" id="btn-bayar"><i class="fa-solid fa-wallet"></i> Bayar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile cart bar -->
+    <div class="mobile-cart-bar" id="mobile-cart-bar">
+      <div class="mobile-cart-peek">
+        <div class="mobile-cart-icon">
+          <i class="fa-solid fa-cart-shopping"></i>
+          <span class="mobile-cart-count" id="mobile-cart-count">0</span>
+        </div>
+        <div class="mobile-cart-text">
+          <div class="mobile-cart-items" id="mobile-cart-items">0 item</div>
+          <div class="mobile-cart-total" id="mobile-cart-total">Rp 0</div>
+        </div>
+      </div>
+      <button class="btn-bayar" id="btn-bayar-mobile"><i class="fa-solid fa-wallet"></i> Bayar</button>
+    </div>
   </div>
 
-  <div class="kasir-list" id="booking-list">
-    <div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><p>Memuat...</p></div>
+  <!-- ==================== TAB: RIWAYAT ==================== -->
+  <div class="k-content" id="tab-riwayat">
+    <div class="riwayat-section">
+      <div class="riwayat-omset">
+        <div class="omset-card total"><div class="omset-label">Omset Hari Ini</div><div class="omset-val" id="omset-total">Rp 0</div><div class="omset-count" id="omset-count">0 transaksi</div></div>
+        <div class="omset-card cash"><div class="omset-label">Cash</div><div class="omset-val" id="omset-cash">Rp 0</div><div class="omset-count" id="omset-cash-count">0 trx</div></div>
+        <div class="omset-card transfer"><div class="omset-label">Transfer</div><div class="omset-val" id="omset-transfer">Rp 0</div><div class="omset-count" id="omset-transfer-count">0 trx</div></div>
+        <div class="omset-card qris"><div class="omset-label">QRIS</div><div class="omset-val" id="omset-qris">Rp 0</div><div class="omset-count" id="omset-qris-count">0 trx</div></div>
+        <div class="omset-card refund"><div class="omset-label">Refund</div><div class="omset-val" id="omset-refund">-Rp 0</div><div class="omset-count" id="omset-refund-count">0 trx</div></div>
+      </div>
+      <div class="riwayat-filter">
+        <input type="date" id="riwayat-date">
+        <div class="riwayat-search"><i class="fa-solid fa-magnifying-glass"></i><input type="text" placeholder="Cari nama / no. transaksi..." id="riwayat-search"></div>
+      </div>
+      <div class="riwayat-list" id="riwayat-list"></div>
+    </div>
   </div>
 
   <!-- Status Bottom Sheet -->
@@ -576,6 +910,80 @@
     </div>
   </div>
 
+  <!-- ==================== POS MODAL: PEMBAYARAN ==================== -->
+  <div class="overlay" id="pay-overlay">
+    <div class="modal">
+      <div class="modal-title"><i class="fa-solid fa-wallet"></i> Pembayaran</div>
+      <div class="pay-total-box"><div class="pay-total-label">Total Bayar</div><div class="pay-total-val" id="pay-total">Rp 0</div></div>
+      <div class="pay-methods">
+        <button class="pay-method m-cash active" data-method="cash"><i class="fa-solid fa-money-bill-wave"></i><span>Cash</span></button>
+        <button class="pay-method m-transfer" data-method="transfer"><i class="fa-solid fa-building-columns"></i><span>Transfer</span></button>
+        <button class="pay-method m-qris" data-method="qris"><i class="fa-solid fa-qrcode"></i><span>QRIS</span></button>
+      </div>
+      <div class="cash-box show" id="cash-box">
+        <div class="cash-label">Uang Diterima</div>
+        <input class="cash-input" type="text" id="cash-input" inputmode="numeric">
+        <div class="cash-quick">
+          <button data-cash="pas">Uang Pas</button>
+          <button data-cash="50000">50rb</button>
+          <button data-cash="100000">100rb</button>
+          <button data-cash="200000">200rb</button>
+        </div>
+        <div class="cash-change"><span class="cash-change-label">Kembalian</span><span class="cash-change-val" id="change-val">Rp 0</span></div>
+      </div>
+      <button class="btn-confirm" id="btn-confirm-pay"><i class="fa-solid fa-check"></i> Konfirmasi Pembayaran</button>
+    </div>
+  </div>
+
+  <!-- ==================== POS MODAL: STRUK ==================== -->
+  <div class="overlay" id="receipt-overlay">
+    <div class="receipt">
+      <div class="receipt-store">LUMEN'S STUDIO</div>
+      <div class="receipt-addr">Jl. Contoh Alamat No. 123</div>
+      <hr class="receipt-hr">
+      <div id="receipt-meta"></div>
+      <hr class="receipt-hr">
+      <div id="receipt-items"></div>
+      <div class="receipt-line total" id="receipt-total"><span>TOTAL</span><span>Rp 0</span></div>
+      <hr class="receipt-hr">
+      <div id="receipt-pay-info"></div>
+      <div class="receipt-badge"><i class="fa-solid fa-check"></i> LUNAS</div>
+      <div class="receipt-trx" id="receipt-trx"></div>
+      <div class="receipt-wa-section">
+        <div class="receipt-wa-label">Kirim struk via WhatsApp</div>
+        <div class="receipt-wa-row">
+          <input type="tel" class="receipt-wa-input" id="receipt-wa-phone" placeholder="08xxxxxxxxxx" inputmode="tel">
+          <button class="btn-send-wa" id="btn-send-wa"><i class="fa-brands fa-whatsapp"></i> Kirim</button>
+        </div>
+      </div>
+      <button class="receipt-btn-close" id="btn-close-receipt">Selesai</button>
+    </div>
+  </div>
+
+  <!-- ==================== POS MODAL: REFUND ==================== -->
+  <div class="overlay" id="refund-overlay">
+    <div class="modal">
+      <div class="modal-title"><i class="fa-solid fa-rotate-left" style="color:#dc2626"></i> Refund Transaksi</div>
+      <div class="refund-info">
+        <div class="refund-info-title" id="refund-trx-id">#TRX-0000</div>
+        <div class="refund-info-line" id="refund-items">-</div>
+        <div class="refund-info-total" id="refund-total">Rp 0</div>
+      </div>
+      <div class="refund-reason">
+        <label>Alasan Refund</label>
+        <select id="refund-reason">
+          <option value="">— Pilih Alasan —</option>
+          <option>Pelanggan tidak puas</option>
+          <option>Salah input layanan</option>
+          <option>Pelanggan batal</option>
+          <option>Lainnya</option>
+        </select>
+      </div>
+      <button class="btn-refund-confirm" id="btn-confirm-refund"><i class="fa-solid fa-rotate-left"></i> Proses Refund</button>
+    </div>
+  </div>
+
   <script src="/js/kasir.js"></script>
+  <script src="/js/pos.js"></script>
 </body>
 </html>

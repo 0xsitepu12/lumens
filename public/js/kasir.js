@@ -8,6 +8,40 @@ let weekBookingCounts = {};
 const KDAYS = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
 const KMONTHS = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
 
+// ============================================
+// TAB SWITCHING (Booking | POS | Riwayat)
+// ============================================
+let posInitialized = false;
+
+function switchKTab(tab) {
+  document.querySelectorAll('.k-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.tab === tab);
+  });
+  document.querySelectorAll('.k-content').forEach(c => c.classList.remove('active'));
+  const content = document.getElementById('tab-' + tab);
+  if (content) content.classList.add('active');
+
+  // FABs (walk-in + refresh) only on booking tab
+  const onBooking = tab === 'booking';
+  const walkin = document.getElementById('btn-walkin');
+  const refresh = document.getElementById('btn-refresh');
+  if (walkin) walkin.style.display = onBooking ? '' : 'none';
+  if (refresh) refresh.style.display = onBooking ? '' : 'none';
+
+  if (tab === 'pos') {
+    if (!posInitialized && typeof initPOS === 'function') {
+      posInitialized = true;
+      initPOS();
+    }
+  } else if (tab === 'riwayat') {
+    if (!posInitialized && typeof initPOS === 'function') {
+      posInitialized = true;
+      initPOS();
+    }
+    if (typeof loadRiwayat === 'function') loadRiwayat();
+  }
+}
+
 function fmtDateStr(d) {
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
@@ -404,6 +438,10 @@ document.getElementById('status-overlay')?.addEventListener('click', closeStatus
 document.addEventListener('DOMContentLoaded', async () => {
   await checkAuth();
   updateDateDisplay();
+
+  document.querySelectorAll('.k-tab').forEach(btn => {
+    btn.addEventListener('click', () => switchKTab(btn.dataset.tab));
+  });
 
   kcalWeekStart = getKWeekStart(currentDate);
   renderKCalendar();
