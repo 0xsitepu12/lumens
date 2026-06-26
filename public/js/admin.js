@@ -44,12 +44,16 @@ function switchTab(tabName) {
 // ============================================
 async function loadDashboard() {
   try {
-    const res = await apiGet('/api/admin/dashboard');
+    const [res, posRes] = await Promise.all([
+      apiGet('/api/admin/dashboard'),
+      apiGet('/api/pos/summary')
+    ]);
     if (!res.success) return;
     const d = res.data;
+    const posOmset = posRes.success ? (posRes.data?.omset || 0) : 0;
 
     setText('stat-bookings', d.today.total);
-    setText('stat-revenue', formatRupiah(d.today.revenue));
+    setText('stat-revenue', formatRupiah(d.today.revenue + posOmset));
     setText('stat-pending', d.today.pending);
     setText('stat-completed', d.today.completed);
 

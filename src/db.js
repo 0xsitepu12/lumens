@@ -39,7 +39,9 @@ async function updateUserPassword(username, password_hash) {
 }
 
 async function getNonAdminUsers() {
-  const { data, error } = await supabase.from('users').select('id, username, full_name, role, is_active').neq('role', 'admin');
+  const { data, error } = await supabase.from('users')
+    .select('id, username, full_name, role, is_active')
+    .not('role', 'in', '("admin","superadmin")');
   if (error) throw error;
   return data || [];
 }
