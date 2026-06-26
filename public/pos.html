@@ -39,6 +39,8 @@
     .barber-avatar { width: 34px; height: 34px; border-radius: 50%; background: #1a1a1a; color: #fff; font-size: 0.78rem; font-weight: 800; display: flex; align-items: center; justify-content: center; }
     .barber-cname { font-size: 0.82rem; font-weight: 700; }
 
+    .pos-main-hidden { display: none !important; }
+    .pos-main-show { display: flex; flex: 1; flex-direction: column; overflow: hidden; }
     .pos-locked { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #ccc; }
     .pos-locked i { font-size: 3rem; margin-bottom: 14px; }
     .pos-locked p { font-size: 1rem; }
@@ -227,7 +229,7 @@
           <div class="barber-list" id="barber-list"></div>
         </div>
         <div class="pos-locked" id="pos-locked"><i class="fa-solid fa-hand-pointer"></i><p>Pilih stylist untuk mulai transaksi</p></div>
-        <div id="pos-main" style="display:none;flex:1;flex-direction:column;overflow:hidden">
+        <div id="pos-main" class="pos-main-hidden">
           <div class="pos-filter">
             <div class="pos-search"><i class="fa-solid fa-magnifying-glass"></i><input type="text" placeholder="Cari layanan atau produk..." id="search-input"></div>
             <div class="pos-cats" id="cat-tabs"></div>

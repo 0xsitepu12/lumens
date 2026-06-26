@@ -139,7 +139,9 @@ function pickBarber(el) {
   el.classList.add('active');
   selectedBarber = { id: el.dataset.id, name: el.dataset.name };
   document.getElementById('pos-locked').style.display = 'none';
-  document.getElementById('pos-main').style.display = 'flex';
+  const main = document.getElementById('pos-main');
+  main.classList.remove('pos-main-hidden');
+  main.classList.add('pos-main-show');
   document.getElementById('cart-barber-tag').textContent = selectedBarber.name;
   document.getElementById('cart-barber-tag').style.display = '';
 }
