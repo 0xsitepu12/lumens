@@ -59,10 +59,14 @@ async function loadBarbers() {
 function renderBarbers() {
   const list = document.getElementById('barber-list');
   list.innerHTML = barbers.map(b =>
-    '<button class="barber-chip" data-id="' + b.id + '" data-name="' + esc(b.name) + '" onclick="pickBarber(this)">' +
+    '<button class="barber-chip" data-id="' + b.id + '" data-name="' + esc(b.name) + '">' +
     '<div class="barber-avatar">' + esc(b.name.charAt(0).toUpperCase()) + '</div>' +
     '<div class="barber-cname">' + esc(b.name) + '</div></button>'
   ).join('');
+
+  list.querySelectorAll('.barber-chip').forEach(function(btn) {
+    btn.addEventListener('click', function() { pickBarber(btn); });
+  });
 }
 
 function getCategoryIcon(cat) {
@@ -484,6 +488,25 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderBarbers();
   renderGrid();
 
+  document.getElementById('nav-pos').addEventListener('click', function() { showPage('pos'); });
+  document.getElementById('nav-riwayat').addEventListener('click', function() { showPage('riwayat'); });
+  document.getElementById('btn-bayar').addEventListener('click', openPay);
+  document.getElementById('btn-confirm-pay').addEventListener('click', confirmPay);
+  document.getElementById('btn-send-wa').addEventListener('click', sendWA);
+  document.getElementById('btn-close-receipt').addEventListener('click', closeReceipt);
+  document.getElementById('btn-confirm-refund').addEventListener('click', confirmRefund);
+
+  document.querySelectorAll('.pay-method').forEach(function(btn) {
+    btn.addEventListener('click', function() { pickMethod(btn, btn.dataset.method); });
+  });
+  document.querySelectorAll('.cash-quick button').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var val = btn.dataset.cash;
+      quickCash(val === 'pas' ? 'pas' : parseInt(val));
+    });
+  });
+
+  document.getElementById('cash-input').addEventListener('input', calcChange);
   document.getElementById('search-input').addEventListener('input', filterItems);
   document.getElementById('riwayat-date').addEventListener('change', loadRiwayat);
   document.getElementById('riwayat-search')?.addEventListener('input', renderRiwayat);

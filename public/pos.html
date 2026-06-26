@@ -217,8 +217,8 @@
           <span class="pos-date" id="pos-date"></span>
         </div>
         <div class="pos-header-right">
-          <button class="pos-nav-btn active" id="nav-pos" onclick="showPage('pos')"><i class="fa-solid fa-cash-register"></i> POS</button>
-          <button class="pos-nav-btn" id="nav-riwayat" onclick="showPage('riwayat')"><i class="fa-solid fa-clock-rotate-left"></i> Riwayat</button>
+          <button class="pos-nav-btn active" id="nav-pos"><i class="fa-solid fa-cash-register"></i> POS</button>
+          <button class="pos-nav-btn" id="nav-riwayat"><i class="fa-solid fa-clock-rotate-left"></i> Riwayat</button>
           <a href="/kasir" class="pos-back"><i class="fa-solid fa-arrow-left"></i> Kasir</a>
         </div>
       </div>
@@ -260,7 +260,7 @@
       <div class="cart-list" id="cart-list" style="display:none"></div>
       <div class="cart-footer" id="cart-footer" style="display:none">
         <div class="cart-total-row"><span class="cart-total-label">Total</span><span class="cart-total-val" id="cart-total-val">Rp 0</span></div>
-        <button class="btn-bayar" onclick="openPay()"><i class="fa-solid fa-wallet"></i> Bayar</button>
+        <button class="btn-bayar" id="btn-bayar"><i class="fa-solid fa-wallet"></i> Bayar</button>
       </div>
     </div>
   </div>
@@ -270,22 +270,22 @@
       <div class="modal-title"><i class="fa-solid fa-wallet"></i> Pembayaran</div>
       <div class="pay-total-box"><div class="pay-total-label">Total Bayar</div><div class="pay-total-val" id="pay-total">Rp 0</div></div>
       <div class="pay-methods">
-        <button class="pay-method m-cash active" onclick="pickMethod(this,'cash')"><i class="fa-solid fa-money-bill-wave"></i><span>Cash</span></button>
-        <button class="pay-method m-transfer" onclick="pickMethod(this,'transfer')"><i class="fa-solid fa-building-columns"></i><span>Transfer</span></button>
-        <button class="pay-method m-qris" onclick="pickMethod(this,'qris')"><i class="fa-solid fa-qrcode"></i><span>QRIS</span></button>
+        <button class="pay-method m-cash active" data-method="cash"><i class="fa-solid fa-money-bill-wave"></i><span>Cash</span></button>
+        <button class="pay-method m-transfer" data-method="transfer"><i class="fa-solid fa-building-columns"></i><span>Transfer</span></button>
+        <button class="pay-method m-qris" data-method="qris"><i class="fa-solid fa-qrcode"></i><span>QRIS</span></button>
       </div>
       <div class="cash-box show" id="cash-box">
         <div class="cash-label">Uang Diterima</div>
-        <input class="cash-input" type="text" id="cash-input" inputmode="numeric" oninput="calcChange()">
+        <input class="cash-input" type="text" id="cash-input" inputmode="numeric">
         <div class="cash-quick">
-          <button onclick="quickCash('pas')">Uang Pas</button>
-          <button onclick="quickCash(50000)">50rb</button>
-          <button onclick="quickCash(100000)">100rb</button>
-          <button onclick="quickCash(200000)">200rb</button>
+          <button data-cash="pas">Uang Pas</button>
+          <button data-cash="50000">50rb</button>
+          <button data-cash="100000">100rb</button>
+          <button data-cash="200000">200rb</button>
         </div>
         <div class="cash-change"><span class="cash-change-label">Kembalian</span><span class="cash-change-val" id="change-val">Rp 0</span></div>
       </div>
-      <button class="btn-confirm" onclick="confirmPay()"><i class="fa-solid fa-check"></i> Konfirmasi Pembayaran</button>
+      <button class="btn-confirm" id="btn-confirm-pay"><i class="fa-solid fa-check"></i> Konfirmasi Pembayaran</button>
     </div>
   </div>
 
@@ -306,10 +306,10 @@
         <div class="receipt-wa-label">Kirim struk via WhatsApp</div>
         <div class="receipt-wa-row">
           <input type="tel" class="receipt-wa-input" id="receipt-wa-phone" placeholder="08xxxxxxxxxx" inputmode="tel">
-          <button class="btn-send-wa" onclick="sendWA()"><i class="fa-brands fa-whatsapp"></i> Kirim</button>
+          <button class="btn-send-wa" id="btn-send-wa"><i class="fa-brands fa-whatsapp"></i> Kirim</button>
         </div>
       </div>
-      <button class="receipt-btn-close" onclick="closeReceipt()">Selesai</button>
+      <button class="receipt-btn-close" id="btn-close-receipt">Selesai</button>
     </div>
   </div>
 
@@ -331,7 +331,7 @@
           <option>Lainnya</option>
         </select>
       </div>
-      <button class="btn-refund-confirm" onclick="confirmRefund()"><i class="fa-solid fa-rotate-left"></i> Proses Refund</button>
+      <button class="btn-refund-confirm" id="btn-confirm-refund"><i class="fa-solid fa-rotate-left"></i> Proses Refund</button>
     </div>
   </div>
 
