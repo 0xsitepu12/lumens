@@ -18,6 +18,29 @@
   function fmt(n) { return 'Rp ' + (n || 0).toLocaleString('id-ID'); }
   function esc(str) { const d = document.createElement('div'); d.textContent = str ?? ''; return d.innerHTML; }
 
+  function playPaymentSound() {
+    try {
+      var ctx = new (window.AudioContext || window.webkitAudioContext)();
+      if (ctx.state === 'suspended') ctx.resume();
+      function tone(freq, start, dur, vol) {
+        var o = ctx.createOscillator();
+        var g = ctx.createGain();
+        o.type = 'sine';
+        o.frequency.value = freq;
+        g.gain.setValueAtTime(vol || 0.5, ctx.currentTime + start);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur);
+        o.connect(g); g.connect(ctx.destination);
+        o.start(ctx.currentTime + start);
+        o.stop(ctx.currentTime + start + dur);
+      }
+      // Ascending chord: C5 → E5 → G5 → C6
+      tone(523, 0,    0.12, 0.4);
+      tone(659, 0.12, 0.12, 0.4);
+      tone(784, 0.24, 0.12, 0.4);
+      tone(1047, 0.36, 0.55, 0.5);
+    } catch {}
+  }
+
   function showPosAlert(msg, type) {
     var ov = document.getElementById('pos-alert-overlay');
     var icon = document.getElementById('pos-alert-icon');
@@ -337,6 +360,7 @@
       const data = await res.json();
       if (data.success) {
         document.getElementById('pay-overlay').classList.remove('show');
+        playPaymentSound();
         showReceipt(data.data);
       } else {
         showPosAlert(data.message || 'Gagal menyimpan transaksi.', 'error');
