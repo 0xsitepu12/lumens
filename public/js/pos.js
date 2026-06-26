@@ -84,7 +84,7 @@ function renderGrid() {
   let html = '';
 
   services.forEach(s => {
-    html += '<div class="pos-item" data-cat="' + esc(s.category) + '" data-name="' + esc(s.name) + '" data-price="' + s.price + '" data-type="service" data-sid="' + s.id + '" onclick="addToCart(this)">' +
+    html += '<div class="pos-item" data-cat="' + esc(s.category) + '" data-name="' + esc(s.name) + '" data-price="' + s.price + '" data-type="service" data-sid="' + s.id + '">' +
       '<span class="pos-item-icon">' + getCategoryIcon(s.category) + '</span>' +
       '<div class="pos-item-name">' + esc(s.name) + '</div>' +
       '<div class="pos-item-price">' + fmt(s.price) + '</div></div>';
@@ -94,7 +94,7 @@ function renderGrid() {
     const disabled = p.stock <= 0 ? ' disabled' : '';
     const stockClass = p.stock <= 0 ? ' out' : p.stock <= 3 ? ' low' : '';
     const stockLabel = p.stock <= 0 ? 'Habis' : 'Stok: ' + p.stock;
-    html += '<div class="pos-item' + disabled + '" data-cat="minuman" data-name="' + esc(p.name) + '" data-price="' + p.price + '" data-type="product" data-pid="' + p.id + '" data-stock="' + p.stock + '" onclick="addToCart(this)">' +
+    html += '<div class="pos-item' + disabled + '" data-cat="minuman" data-name="' + esc(p.name) + '" data-price="' + p.price + '" data-type="product" data-pid="' + p.id + '" data-stock="' + p.stock + '">' +
       '<span class="pos-item-icon">' + (p.icon || '🥤') + '</span>' +
       '<div class="pos-item-name">' + esc(p.name) + '</div>' +
       '<div class="pos-item-price">' + fmt(p.price) + '</div>' +
@@ -102,6 +102,11 @@ function renderGrid() {
   });
 
   grid.innerHTML = html;
+
+  grid.querySelectorAll('.pos-item:not(.disabled)').forEach(function(el) {
+    el.addEventListener('click', function() { addToCart(el); });
+  });
+
   renderCategories();
 }
 
