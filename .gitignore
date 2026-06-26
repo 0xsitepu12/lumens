@@ -8,3 +8,4 @@ playwright-report/
 scratch/
 test2/
 *.bak
+src/config/reset-config.json

@@ -7,8 +7,13 @@ const { nowWIB, todayWIB } = require('../config');
 const router = express.Router();
 router.use(requireAuth);
 
-// Match logged-in user to barber profile by full_name
+// Match logged-in user to barber profile by ID (preferred) or full_name (fallback)
 async function getMyBarber(req) {
+  if (req.user.barberId) {
+    const barber = await db.getBarberById(req.user.barberId);
+    if (barber) return barber;
+  }
+  // Fallback to name match for tokens issued before barberId was added
   const fullName = req.user.fullName || req.user.username;
   return await db.getBarberByName(fullName);
 }
@@ -86,6 +91,7 @@ router.put('/change-password', async (req, res) => {
     const valid = await bcrypt.compare(oldPassword, user.password_hash);
     if (!valid) return res.json({ success: false, message: 'Password lama salah' });
 
+    // TODO: implement token versioning for session revocation
     await db.updateUserPassword(req.user.username, await bcrypt.hash(newPassword, 10));
     res.json({ success: true, message: 'Password berhasil diubah' });
   } catch (err) {

@@ -495,6 +495,7 @@ router.put('/barbers/:id/password', async (req, res) => {
     const hash = await bcrypt.hash(newPassword, 10);
 
     if (user) {
+      // TODO: implement token versioning for session revocation
       await db.updateUserPassword(user.username, hash);
       // Pastikan role-nya barber
       if (user.role !== 'barber') {
@@ -603,6 +604,7 @@ router.put('/kasir/:username/password', async (req, res) => {
     if (!user || user.role === 'admin')
       return res.json({ success: false, message: 'User tidak ditemukan' });
 
+    // TODO: implement token versioning for session revocation
     await db.updateUserPassword(req.params.username, await bcrypt.hash(newPassword, 10));
     res.json({ success: true, message: `Password kasir "${req.params.username}" berhasil diubah` });
   } catch (err) {

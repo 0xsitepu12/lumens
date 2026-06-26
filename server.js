@@ -68,7 +68,8 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-app.get('/api/config', (req, res) => {
+const { requireAuth: requireAuthConfig } = require('./src/middleware/auth');
+app.get('/api/config', requireAuthConfig, (req, res) => {
   res.json({
     supabaseUrl: process.env.SUPABASE_URL,
     supabaseAnonKey: process.env.SUPABASE_ANON_KEY
