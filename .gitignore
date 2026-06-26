@@ -8,5 +8,8 @@ playwright-report/
 scratch/
 test2/
 *.bak
+*.png
+*.jpg
+*.jpeg
 src/config/reset-config.json
 src/config/app-config.json
