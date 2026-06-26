@@ -44,18 +44,17 @@ function switchTab(tabName) {
 // ============================================
 async function loadDashboard() {
   try {
-    const [res, posRes] = await Promise.all([
-      apiGet('/api/admin/dashboard'),
-      apiGet('/api/pos/summary')
-    ]);
+    const period = document.getElementById('filter-period')?.value || 'month';
+    const { start, end } = getDateRange(period);
+
+    const res = await apiGet(`/api/admin/dashboard?start=${start}&end=${end}`);
     if (!res.success) return;
     const d = res.data;
-    const posOmset = posRes.success ? (posRes.data?.omset || 0) : 0;
 
-    setText('stat-bookings', d.today.total);
-    setText('stat-revenue', formatRupiah(d.today.revenue + posOmset));
-    setText('stat-pending', d.today.pending);
-    setText('stat-completed', d.today.completed);
+    setText('stat-bookings', d.total);
+    setText('stat-revenue', formatRupiah(d.revenue));
+    setText('stat-pending', d.pending);
+    setText('stat-completed', d.completed);
 
     loadCharts();
   } catch {
@@ -882,12 +881,16 @@ async function loadAdminProducts() {
         (modal ? '<div class="product-card-profit"><i class="fa-solid fa-arrow-trend-up"></i> Profit ' + formatRupiah(profit) + '</div>' : '') +
         '<div class="product-card-bottom">' +
         '<span class="badge product-card-stock ' + stockClass + '">' + stockLabel + '</span>' +
-        '<button class="btn btn--outline btn--sm product-card-edit" data-edit-product="' + p.id + '"><i class="fa-solid fa-pen"></i> Edit</button>' +
+        '<button class="btn btn--outline btn--sm product-card-edit" data-edit-product="' + p.id + '"><i class="fa-solid fa-pen"></i></button>' +
+        '<button class="btn btn--outline btn--sm product-card-edit" style="color:var(--danger);border-color:var(--danger)" data-delete-product="' + p.id + '" data-delete-name="' + esc(p.name) + '"><i class="fa-solid fa-trash-can"></i></button>' +
         '</div></div>';
     }).join('');
 
     container.querySelectorAll('[data-edit-product]').forEach(function(btn) {
       btn.addEventListener('click', function() { editProduct(btn.dataset.editProduct); });
+    });
+    container.querySelectorAll('[data-delete-product]').forEach(function(btn) {
+      btn.addEventListener('click', function() { deleteProduct(btn.dataset.deleteProduct, btn.dataset.deleteName); });
     });
   } catch { showToast('Gagal memuat produk', 'error'); }
 }
@@ -930,6 +933,30 @@ async function editProduct(id) {
   } catch {}
 }
 
+let deleteProductId = null;
+
+function deleteProduct(id, name) {
+  deleteProductId = id;
+  document.getElementById('delete-product-name').textContent = name;
+  openModal('modal-delete-product');
+}
+
+async function confirmDeleteProduct() {
+  if (!deleteProductId) return;
+  var btn = document.getElementById('btn-confirm-delete-product');
+  btn.disabled = true; btn.textContent = 'Menghapus...';
+  try {
+    var res = await apiDelete('/api/pos/products/' + deleteProductId);
+    if (res.success) { showToast('Produk dihapus'); closeModal('modal-delete-product'); loadAdminProducts(); }
+    else showToast(res.message || 'Gagal', 'error');
+  } catch { showToast('Gagal menghapus', 'error'); }
+  finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-trash-can"></i> Hapus';
+    deleteProductId = null;
+  }
+}
+
 async function saveProduct() {
   var data = {
     name: document.getElementById('product-name').value.trim(),
@@ -968,7 +995,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('filter-period')?.addEventListener('change', (e) => {
     const custom = document.getElementById('custom-date-range');
     if (custom) custom.classList.toggle('show', e.target.value === 'custom');
-    loadCharts();
+    loadDashboard();
   });
 
   document.getElementById('booking-filter-status')?.addEventListener('change', () => { bookingsPage = 1; loadBookings(); });
@@ -978,6 +1005,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('btn-save-service')?.addEventListener('click', saveService);
   document.getElementById('btn-add-product')?.addEventListener('click', () => showProductModal());
   document.getElementById('btn-save-product')?.addEventListener('click', saveProduct);
+  document.getElementById('btn-confirm-delete-product')?.addEventListener('click', confirmDeleteProduct);
   document.querySelectorAll('.icon-pick').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.icon-pick').forEach(b => b.classList.remove('active'));

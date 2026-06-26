@@ -52,6 +52,18 @@ router.put('/products/:id', async (req, res) => {
   }
 });
 
+router.delete('/products/:id', async (req, res) => {
+  try {
+    const { error } = await db.supabase.from('products')
+      .delete().eq('id', req.params.id);
+    if (error) throw error;
+    res.json({ success: true, message: 'Produk dihapus' });
+  } catch (err) {
+    console.error('[pos/products/delete]', err.message);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 // ============================================
 // TRANSACTIONS
 // ============================================

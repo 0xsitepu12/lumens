@@ -27,38 +27,28 @@ router.use(requireAdmin);
 router.get('/dashboard', async (req, res) => {
   try {
     const today = todayWIB();
-    const startOfMonth = today.slice(0, 7) + '-01';
+    const { start, end } = req.query;
+    const startDate = start || today;
+    const endDate = end || today;
 
-    const todayBookings = await db.getBookingsByDate(today);
-    const monthBookings = await db.getBookingsForAnalytics(startOfMonth, today);
+    const bookings = await db.getBookingsForAnalytics(startDate, endDate);
 
-    const todayRevenue = todayBookings
+    const revenue = bookings
       .filter(b => b.status === 'completed')
       .reduce((sum, b) => sum + (b.total_price || 0), 0);
 
-    const monthRevenue = monthBookings
-      .filter(b => b.status === 'completed')
-      .reduce((sum, b) => sum + (b.total_price || 0), 0);
-
-    const pendingCount = todayBookings.filter(b => b.status === 'pending').length;
-    const confirmedCount = todayBookings.filter(b => b.status === 'confirmed').length;
+    const pendingCount = bookings.filter(b => b.status === 'pending').length;
+    const confirmedCount = bookings.filter(b => b.status === 'confirmed').length;
+    const completedCount = bookings.filter(b => b.status === 'completed').length;
 
     res.json({
       success: true,
       data: {
-        today: {
-          total: todayBookings.length,
-          pending: pendingCount,
-          confirmed: confirmedCount,
-          completed: todayBookings.filter(b => b.status === 'completed').length,
-          revenue: todayRevenue
-        },
-        month: {
-          total: monthBookings.length,
-          completed: monthBookings.filter(b => b.status === 'completed').length,
-          cancelled: monthBookings.filter(b => b.status === 'cancelled').length,
-          revenue: monthRevenue
-        }
+        total: bookings.length,
+        pending: pendingCount,
+        confirmed: confirmedCount,
+        completed: completedCount,
+        revenue
       }
     });
   } catch (err) {

@@ -1975,6 +1975,27 @@
         </div>
     </div>
 
+    <!-- ==================== MODAL: HAPUS PRODUK ==================== -->
+    <div class="modal-overlay" id="modal-delete-product">
+        <div class="modal" style="max-width:400px;text-align:center;">
+            <div class="modal__body" style="padding:28px 24px;">
+                <div style="width:56px;height:56px;border-radius:50%;background:rgba(239,68,68,0.1);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+                    <i class="fa-solid fa-trash-can" style="font-size:1.4rem;color:var(--danger)"></i>
+                </div>
+                <h3 style="font-size:1.05rem;font-weight:700;margin-bottom:6px;">Hapus Produk?</h3>
+                <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:20px;">
+                    <strong id="delete-product-name">—</strong> akan dihapus permanen.
+                </p>
+                <div style="display:flex;gap:10px;">
+                    <button class="btn btn--outline" style="flex:1" data-close-modal="modal-delete-product">Batal</button>
+                    <button class="btn btn--danger" style="flex:1" id="btn-confirm-delete-product">
+                        <i class="fa-solid fa-trash-can"></i> Hapus
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- ========== SCRIPTS ========== -->
     <script src="/js/core.js"></script>
     <script src="/js/admin.js"></script>

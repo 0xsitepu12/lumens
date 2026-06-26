@@ -34,6 +34,14 @@ async function apiPut(endpoint, body) {
   return res.json();
 }
 
+async function apiDelete(endpoint) {
+  const res = await fetch(endpoint, {
+    method: 'DELETE',
+    credentials: 'include'
+  });
+  return res.json();
+}
+
 function formatRupiah(num) {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
 }
