@@ -144,9 +144,17 @@ function filterItems() {
 // BARBER
 // ============================================
 function pickBarber(el) {
+  var newId = el.dataset.id;
+  if (selectedBarber && selectedBarber.id === newId) return;
+
+  if (cart.length > 0) {
+    cart = [];
+    updateCartUI();
+  }
+
   document.querySelectorAll('.barber-chip').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
-  selectedBarber = { id: el.dataset.id, name: el.dataset.name };
+  selectedBarber = { id: newId, name: el.dataset.name };
   document.getElementById('pos-locked').style.display = 'none';
   const main = document.getElementById('pos-main');
   main.classList.remove('pos-main-hidden');
