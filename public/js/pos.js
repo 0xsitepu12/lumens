@@ -191,7 +191,8 @@
     var newId = el.dataset.id;
     if (selectedBarber && selectedBarber.id === newId) return;
 
-    if (cart.length > 0) {
+    // Hanya bersihkan cart saat GANTI barber, bukan saat pilih pertama kali
+    if (selectedBarber && cart.length > 0) {
       cart = [];
       updateCartUI();
     }
