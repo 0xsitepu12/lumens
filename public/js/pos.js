@@ -216,6 +216,10 @@
   function updateCartUI() {
     const qty = cart.reduce((s, c) => s + c.qty, 0);
     const total = getTotal();
+
+    // Show/hide barber bar based on whether cart has services
+    var barberBar = document.getElementById('barber-bar');
+    if (barberBar) barberBar.style.display = cartHasService() ? '' : 'none';
     document.getElementById('cart-empty').style.display = qty ? 'none' : '';
     document.getElementById('cart-list').style.display = qty ? '' : 'none';
     document.getElementById('cart-footer').style.display = qty ? '' : 'none';
