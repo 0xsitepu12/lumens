@@ -300,12 +300,105 @@
 
         .date-filter__custom {
             display: none;
-            align-items: center;
-            gap: 8px;
+            position: relative;
         }
 
         .date-filter__custom.show {
+            display: block;
+        }
+
+        .daterange-trigger {
             display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg-input);
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            user-select: none;
+        }
+        .daterange-trigger:hover { border-color: var(--primary-light); }
+
+        .daterange-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            padding: 14px;
+            z-index: 50;
+            width: 300px;
+        }
+        .daterange-dropdown.open { display: block; }
+
+        .daterange-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .daterange-nav button {
+            width: 30px; height: 30px; border: 1px solid var(--border);
+            border-radius: 6px; background: #fff; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.7rem; color: var(--text-secondary);
+        }
+        .daterange-nav button:hover { background: var(--bg-card); }
+        .daterange-month { font-size: 0.88rem; font-weight: 700; }
+
+        .daterange-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            text-align: center;
+        }
+        .daterange-grid .dr-header {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            padding: 6px 0;
+            text-transform: uppercase;
+        }
+        .daterange-grid .dr-day {
+            padding: 7px 0;
+            font-size: 0.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--text-primary);
+            transition: all 0.1s;
+        }
+        .daterange-grid .dr-day:hover { background: var(--bg-card); }
+        .daterange-grid .dr-day.empty { cursor: default; }
+        .daterange-grid .dr-day.today { font-weight: 800; color: var(--primary); }
+        .daterange-grid .dr-day.start {
+            background: var(--primary); color: #fff;
+            border-radius: 6px 0 0 6px;
+        }
+        .daterange-grid .dr-day.end {
+            background: var(--primary); color: #fff;
+            border-radius: 0 6px 6px 0;
+        }
+        .daterange-grid .dr-day.start.end { border-radius: 6px; }
+        .daterange-grid .dr-day.in-range {
+            background: rgba(42,42,42,0.1);
+            border-radius: 0;
+        }
+
+        .daterange-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border);
         }
 
         /* ========== STAT CARDS ========== */
@@ -1265,9 +1358,25 @@
                     <option value="custom">Custom</option>
                 </select>
                 <div class="date-filter__custom" id="custom-date-range">
-                    <input type="date" id="filter-date-start" aria-label="Tanggal mulai">
-                    <span style="color: var(--text-muted);">-</span>
-                    <input type="date" id="filter-date-end" aria-label="Tanggal selesai">
+                    <div class="daterange-trigger" id="daterange-trigger">
+                        <i class="fa-regular fa-calendar"></i>
+                        <span id="daterange-label">Pilih tanggal...</span>
+                        <i class="fa-solid fa-chevron-down" style="font-size:0.6rem;color:var(--text-muted)"></i>
+                    </div>
+                    <div class="daterange-dropdown" id="daterange-dropdown">
+                        <div class="daterange-nav">
+                            <button type="button" id="daterange-prev"><i class="fa-solid fa-chevron-left"></i></button>
+                            <span class="daterange-month" id="daterange-month"></span>
+                            <button type="button" id="daterange-next"><i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+                        <div class="daterange-grid" id="daterange-grid"></div>
+                        <div class="daterange-footer">
+                            <button type="button" class="btn btn--outline btn--sm" id="daterange-clear">Reset</button>
+                            <button type="button" class="btn btn--primary btn--sm" id="daterange-apply">Terapkan</button>
+                        </div>
+                    </div>
+                    <input type="hidden" id="filter-date-start">
+                    <input type="hidden" id="filter-date-end">
                 </div>
             </div>
 

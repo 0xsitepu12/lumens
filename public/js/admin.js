@@ -1089,9 +1089,110 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   });
 
-  // Tambah endpoint untuk get semua schedules
-  // (route /api/admin/barbers/schedules belum ada, fallback dari getAllBarberSchedules)
+  // ============================================
+  // DATE RANGE PICKER
+  // ============================================
+  (function() {
+    var drMonth = new Date();
+    var drStart = null;
+    var drEnd = null;
+    var drClickCount = 0;
+    var MONTHS_ID = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    var DAYS_HDR = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
 
+    var trigger = document.getElementById('daterange-trigger');
+    var dropdown = document.getElementById('daterange-dropdown');
+    var label = document.getElementById('daterange-label');
+
+    function fmtD(d) { return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+    function fmtShort(d) { return d.getDate()+' '+MONTHS_ID[d.getMonth()].slice(0,3); }
+
+    function renderDR() {
+      var grid = document.getElementById('daterange-grid');
+      var monthEl = document.getElementById('daterange-month');
+      monthEl.textContent = MONTHS_ID[drMonth.getMonth()] + ' ' + drMonth.getFullYear();
+
+      var html = DAYS_HDR.map(function(d) { return '<div class="dr-header">'+d+'</div>'; }).join('');
+      var first = new Date(drMonth.getFullYear(), drMonth.getMonth(), 1);
+      var startDay = first.getDay() === 0 ? 6 : first.getDay() - 1;
+      var daysInMonth = new Date(drMonth.getFullYear(), drMonth.getMonth()+1, 0).getDate();
+      var todayStr = fmtD(new Date());
+
+      for (var i = 0; i < startDay; i++) html += '<div class="dr-day empty"></div>';
+      for (var d = 1; d <= daysInMonth; d++) {
+        var date = new Date(drMonth.getFullYear(), drMonth.getMonth(), d);
+        var ds = fmtD(date);
+        var cls = 'dr-day';
+        if (ds === todayStr) cls += ' today';
+        if (drStart && ds === fmtD(drStart)) cls += ' start';
+        if (drEnd && ds === fmtD(drEnd)) cls += ' end';
+        if (drStart && drEnd && date > drStart && date < drEnd) cls += ' in-range';
+        html += '<div class="'+cls+'" data-date="'+ds+'">'+d+'</div>';
+      }
+      grid.innerHTML = html;
+
+      grid.querySelectorAll('.dr-day:not(.empty)').forEach(function(el) {
+        el.addEventListener('click', function() {
+          var picked = new Date(el.dataset.date + 'T12:00:00');
+          if (drClickCount === 0) {
+            drStart = picked;
+            drEnd = null;
+            drClickCount = 1;
+          } else {
+            if (picked < drStart) { drEnd = drStart; drStart = picked; }
+            else { drEnd = picked; }
+            drClickCount = 0;
+          }
+          renderDR();
+          updateDRLabel();
+        });
+      });
+    }
+
+    function updateDRLabel() {
+      if (drStart && drEnd) {
+        label.textContent = fmtShort(drStart) + '  →  ' + fmtShort(drEnd);
+        label.style.color = 'var(--text-primary)';
+      } else if (drStart) {
+        label.textContent = fmtShort(drStart) + '  →  ...';
+        label.style.color = 'var(--text-secondary)';
+      } else {
+        label.textContent = 'Pilih tanggal...';
+        label.style.color = 'var(--text-muted)';
+      }
+    }
+
+    if (trigger) {
+      trigger.addEventListener('click', function() {
+        dropdown.classList.toggle('open');
+      });
+    }
+    document.getElementById('daterange-prev')?.addEventListener('click', function() {
+      drMonth.setMonth(drMonth.getMonth() - 1); renderDR();
+    });
+    document.getElementById('daterange-next')?.addEventListener('click', function() {
+      drMonth.setMonth(drMonth.getMonth() + 1); renderDR();
+    });
+    document.getElementById('daterange-clear')?.addEventListener('click', function() {
+      drStart = null; drEnd = null; drClickCount = 0;
+      updateDRLabel(); renderDR();
+    });
+    document.getElementById('daterange-apply')?.addEventListener('click', function() {
+      if (!drStart || !drEnd) { showToast('Pilih tanggal awal dan akhir', 'error'); return; }
+      document.getElementById('filter-date-start').value = fmtD(drStart);
+      document.getElementById('filter-date-end').value = fmtD(drEnd);
+      dropdown.classList.remove('open');
+      loadDashboard();
+    });
+
+    document.addEventListener('click', function(e) {
+      if (dropdown && !dropdown.contains(e.target) && e.target !== trigger && !trigger.contains(e.target)) {
+        dropdown.classList.remove('open');
+      }
+    });
+
+    renderDR();
+  })();
 
   switchTab('dashboard');
 });
