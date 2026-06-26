@@ -1,6 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
+const { randomInt } = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const db = require('../db');
@@ -705,12 +706,14 @@ router.put('/app-config', (req, res) => {
 // ADMIN PASSWORD CHANGE (with email OTP)
 // ============================================
 function generateOTP() {
-  return String(Math.floor(100000 + Math.random() * 900000));
+  return String(randomInt(100000, 1000000));
 }
 
 async function sendOTPEmail(otp) {
   const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false,
     auth: {
       user: process.env.SMTP_USER || ADMIN_EMAIL,
       pass: process.env.SMTP_PASS
@@ -734,14 +737,23 @@ async function sendOTPEmail(otp) {
 
 router.post('/change-password/request-otp', async (req, res) => {
   try {
-    if (!process.env.SMTP_PASS) {
+    if (!process.env.SMTP_PASS && !process.env.DEV_SMTP_BYPASS) {
       return res.json({ success: false, message: 'SMTP belum dikonfigurasi. Tambahkan SMTP_USER dan SMTP_PASS di environment.' });
+    }
+
+    const existing = otpStore[req.user.username];
+    if (existing && Date.now() < existing.expires - (4 * 60 * 1000)) {
+      return res.json({ success: false, message: 'Kode sudah dikirim. Tunggu 1 menit sebelum minta ulang.' });
     }
 
     const otp = generateOTP();
     otpStore[req.user.username] = { otp, expires: Date.now() + 5 * 60 * 1000 };
 
-    await sendOTPEmail(otp);
+    if (process.env.DEV_SMTP_BYPASS === 'true' && process.env.NODE_ENV !== 'production') {
+      console.log(`[DEV] OTP untuk ${req.user.username}: ${otp}`);
+    } else {
+      await sendOTPEmail(otp);
+    }
     res.json({ success: true, message: 'Kode verifikasi dikirim ke ' + ADMIN_EMAIL.replace(/(.{2}).*(@.*)/, '$1***$2') });
   } catch (err) {
     console.error('[admin/change-password/request-otp]', err.message);
@@ -762,7 +774,11 @@ router.post('/change-password/verify', async (req, res) => {
       delete otpStore[req.user.username];
       return res.json({ success: false, message: 'Kode verifikasi sudah kedaluwarsa' });
     }
-    if (stored.otp !== otp) return res.json({ success: false, message: 'Kode verifikasi salah' });
+    if (stored.otp !== otp) {
+      stored.attempts = (stored.attempts || 0) + 1;
+      if (stored.attempts >= 5) delete otpStore[req.user.username];
+      return res.json({ success: false, message: 'Kode verifikasi salah' });
+    }
 
     const hash = await bcrypt.hash(newPassword, 10);
     await db.updateUserPassword(req.user.username, hash);

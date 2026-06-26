@@ -1236,6 +1236,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('admin-pw-step2').style.display = 'none';
     document.getElementById('admin-pw-step1').style.display = '';
     document.getElementById('admin-otp-input').value = '';
+    document.getElementById('admin-otp-error').style.display = 'none';
   });
 
   document.getElementById('toggle-pos')?.addEventListener('change', async (e) => {
