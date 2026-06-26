@@ -1185,8 +1185,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       loadDashboard();
     });
 
+    if (dropdown) {
+      dropdown.addEventListener('click', function(e) { e.stopPropagation(); });
+    }
     document.addEventListener('click', function(e) {
-      if (dropdown && !dropdown.contains(e.target) && e.target !== trigger && !trigger.contains(e.target)) {
+      if (dropdown && e.target !== trigger && !trigger.contains(e.target)) {
         dropdown.classList.remove('open');
       }
     });
