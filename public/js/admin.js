@@ -32,6 +32,7 @@ function switchTab(tabName) {
   document.querySelectorAll(`[data-tab="${tabName}"]`).forEach(b => b.classList.add('active'));
 
   if (tabName === 'dashboard') loadDashboard();
+  if (tabName === 'calendar') renderPnlCalendar();
   if (tabName === 'bookings') loadBookings();
   if (tabName === 'services') loadAdminServices();
   if (tabName === 'barbers') loadAdminBarbers();
@@ -57,7 +58,6 @@ async function loadDashboard() {
     setText('stat-completed', d.completed || 0);
 
     loadCharts();
-    renderPnlCalendar();
   } catch {
     showToast('Gagal memuat dashboard', 'error');
   }
@@ -1219,6 +1219,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   document.querySelectorAll('.modal-overlay').forEach(m => {
     m.addEventListener('click', (e) => { if (e.target === m) m.classList.remove('active'); });
+  });
+
+  // Settings sub-tab switching
+  document.querySelectorAll('.settings-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.settings-tab').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.settings-content').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('stab-' + btn.dataset.stab)?.classList.add('active');
+    });
   });
 
   document.querySelectorAll('.toggle-switch input[type="checkbox"]').forEach(toggle => {

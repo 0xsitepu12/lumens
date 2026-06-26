@@ -1100,6 +1100,33 @@
             justify-content: flex-end;
         }
 
+        /* ========== SETTINGS SUB-TABS ========== */
+        .settings-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+        .settings-tab {
+            padding: 10px 20px;
+            border: none;
+            background: none;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-family: inherit;
+            border-bottom: 2px solid transparent;
+            transition: all 0.15s;
+        }
+        .settings-tab:hover { color: var(--text-secondary); }
+        .settings-tab.active {
+            color: var(--text-primary);
+            border-bottom-color: var(--primary);
+        }
+        .settings-content { display: none; }
+        .settings-content.active { display: block; }
+
         /* ========== MODALS ========== */
         .modal-overlay {
             position: fixed;
@@ -1354,6 +1381,10 @@
                 <i class="fa-solid fa-calendar-check"></i>
                 <span>Booking</span>
             </li>
+            <li class="admin-sidebar__item" data-tab="calendar">
+                <i class="fa-solid fa-calendar-days"></i>
+                <span>Kalender</span>
+            </li>
             <li class="admin-sidebar__item" data-tab="services">
                 <i class="fa-solid fa-scissors"></i>
                 <span>Layanan</span>
@@ -1382,6 +1413,10 @@
         <button class="admin-tabs__item" data-tab="bookings">
             <i class="fa-solid fa-calendar-check"></i>
             <span>Booking</span>
+        </button>
+        <button class="admin-tabs__item" data-tab="calendar">
+            <i class="fa-solid fa-calendar-days"></i>
+            <span>Kalender</span>
         </button>
         <button class="admin-tabs__item" data-tab="services">
             <i class="fa-solid fa-scissors"></i>
@@ -1549,8 +1584,12 @@
                 </div>
             </div>
 
-            <!-- PnL Calendar -->
-            <div class="chart-card" style="margin-top:16px">
+        </section>
+
+        <!-- ==================== TAB: KALENDER ==================== -->
+        <section class="admin-tab-content" id="tab-calendar">
+            <h2 class="section-title">Kalender Pendapatan</h2>
+            <div class="chart-card">
                 <div class="chart-card__title" style="display:flex;align-items:center;justify-content:space-between;">
                     <span><i class="fa-solid fa-calendar-days"></i> Kalender Pendapatan</span>
                     <div style="display:flex;align-items:center;gap:6px;">
@@ -1710,239 +1749,253 @@
         <!-- ==================== TAB: PENGATURAN ==================== -->
         <section class="admin-tab-content" id="tab-settings">
             <h2 class="section-title">Pengaturan</h2>
-
-            <!-- POS Toggle -->
-            <div class="chart-card" style="margin-bottom:16px">
-                <div class="chart-card__title">
-                    <i class="fa-solid fa-cash-register"></i>
-                    POS (Point of Sale) <span style="font-size:0.6rem;background:#f59e0b;color:#fff;padding:2px 6px;border-radius:4px;margin-left:6px;font-weight:700;vertical-align:middle">BETA</span>
-                </div>
-                <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0;">
-                    <div>
-                        <div style="font-size:0.88rem;font-weight:600;">Aktifkan POS di Kasir</div>
-                        <div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">Tab POS akan tampil di halaman kasir. Nonaktifkan jika belum siap digunakan.</div>
-                    </div>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="toggle-pos" checked>
-                        <span class="toggle-switch__slider"></span>
-                    </label>
-                </div>
+            <div class="settings-tabs">
+                <button class="settings-tab active" data-stab="umum">Umum</button>
+                <button class="settings-tab" data-stab="akun">Akun</button>
+                <button class="settings-tab" data-stab="keamanan">Keamanan</button>
             </div>
 
-            <div class="chart-card">
-                <div class="chart-card__title">
-                    <i class="fa-solid fa-clock"></i>
-                    Jam Operasional
+            <!-- Sub-tab: Umum -->
+            <div class="settings-content active" id="stab-umum">
+                <!-- POS Toggle -->
+                <div class="chart-card" style="margin-bottom:16px">
+                    <div class="chart-card__title">
+                        <i class="fa-solid fa-cash-register"></i>
+                        POS (Point of Sale) <span style="font-size:0.6rem;background:#f59e0b;color:#fff;padding:2px 6px;border-radius:4px;margin-left:6px;font-weight:700;vertical-align:middle">BETA</span>
+                    </div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0;">
+                        <div>
+                            <div style="font-size:0.88rem;font-weight:600;">Aktifkan POS di Kasir</div>
+                            <div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">Tab POS akan tampil di halaman kasir. Nonaktifkan jika belum siap digunakan.</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-pos" checked>
+                            <span class="toggle-switch__slider"></span>
+                        </label>
+                    </div>
                 </div>
-                <div class="table-responsive">
-                    <table class="hours-table" id="operating-hours-table">
-                        <thead>
-                            <tr>
-                                <th>Hari</th>
-                                <th>Buka</th>
-                                <th>Tutup</th>
-                                <th>Libur</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr data-day="monday">
-                                <td>Senin</td>
-                                <td><input type="time" name="open-monday" value="09:00"></td>
-                                <td><input type="time" name="close-monday" value="21:00"></td>
-                                <td>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" name="closed-monday">
-                                        <span class="toggle-switch__slider"></span>
-                                    </label>
-                                </td>
-                            </tr>
-                            <tr data-day="tuesday">
-                                <td>Selasa</td>
-                                <td><input type="time" name="open-tuesday" value="09:00"></td>
-                                <td><input type="time" name="close-tuesday" value="21:00"></td>
-                                <td>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" name="closed-tuesday">
-                                        <span class="toggle-switch__slider"></span>
-                                    </label>
-                                </td>
-                            </tr>
-                            <tr data-day="wednesday">
-                                <td>Rabu</td>
-                                <td><input type="time" name="open-wednesday" value="09:00"></td>
-                                <td><input type="time" name="close-wednesday" value="21:00"></td>
-                                <td>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" name="closed-wednesday">
-                                        <span class="toggle-switch__slider"></span>
-                                    </label>
-                                </td>
-                            </tr>
-                            <tr data-day="thursday">
-                                <td>Kamis</td>
-                                <td><input type="time" name="open-thursday" value="09:00"></td>
-                                <td><input type="time" name="close-thursday" value="21:00"></td>
-                                <td>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" name="closed-thursday">
-                                        <span class="toggle-switch__slider"></span>
-                                    </label>
-                                </td>
-                            </tr>
-                            <tr data-day="friday">
-                                <td>Jumat</td>
-                                <td><input type="time" name="open-friday" value="09:00"></td>
-                                <td><input type="time" name="close-friday" value="21:00"></td>
-                                <td>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" name="closed-friday">
-                                        <span class="toggle-switch__slider"></span>
-                                    </label>
-                                </td>
-                            </tr>
-                            <tr data-day="saturday">
-                                <td>Sabtu</td>
-                                <td><input type="time" name="open-saturday" value="08:00"></td>
-                                <td><input type="time" name="close-saturday" value="22:00"></td>
-                                <td>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" name="closed-saturday">
-                                        <span class="toggle-switch__slider"></span>
-                                    </label>
-                                </td>
-                            </tr>
-                            <tr data-day="sunday">
-                                <td>Minggu</td>
-                                <td><input type="time" name="open-sunday" value="10:00"></td>
-                                <td><input type="time" name="close-sunday" value="20:00"></td>
-                                <td>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" name="closed-sunday">
-                                        <span class="toggle-switch__slider"></span>
-                                    </label>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="settings-actions">
-                    <button class="btn btn--primary" id="btn-save-hours">
-                        <i class="fa-solid fa-save"></i> Simpan Pengaturan
-                    </button>
-                </div>
-            </div>
 
-            <!-- Kelola Akun Staff -->
-            <div class="chart-card" style="margin-top:24px;">
-                <div class="chart-card__title">
-                    <i class="fa-solid fa-users-gear"></i>
-                    Kelola Akun Staff
-                </div>
-                <p style="color:var(--text-secondary);font-size:.875rem;margin-bottom:16px;">
-                    Lihat dan ubah role semua akun non-admin.
-                </p>
-                <div id="staff-list" style="display:flex;flex-direction:column;gap:10px;">
-                    <p style="color:var(--text-muted);font-size:.85rem;">Memuat...</p>
-                </div>
-            </div>
-
-            <!-- Kasir Password -->
-            <div class="chart-card" style="margin-top:24px;">
-                <div class="chart-card__title">
-                    <i class="fa-solid fa-user-lock"></i>
-                    Ubah Password Staff
-                </div>
-                <p style="color:var(--text-secondary);font-size:.875rem;margin-bottom:16px;">
-                    Ganti password akun staff tanpa perlu tahu password lama.
-                </p>
-                <div id="kasir-change-pw-section">
-                    <div class="form-group">
-                        <label>Pilih Akun Staff</label>
-                        <select id="select-kasir-user">
-                            <option value="">— Memuat daftar kasir... —</option>
-                        </select>
+                <div class="chart-card">
+                    <div class="chart-card__title">
+                        <i class="fa-solid fa-clock"></i>
+                        Jam Operasional
                     </div>
-                    <div id="kasir-no-account" style="display:none;margin-bottom:12px;">
-                        <p style="color:var(--text-muted);font-size:.85rem;margin-bottom:10px;">Belum ada akun staff. Buat akun baru di bawah.</p>
-                    </div>
-                    <div class="form-group">
-                        <label>Password Baru</label>
-                        <input type="password" id="input-kasir-new-pw" placeholder="Minimal 6 karakter">
-                    </div>
-                    <div class="form-group">
-                        <label>Konfirmasi Password Baru</label>
-                        <input type="password" id="input-kasir-confirm-pw" placeholder="Ulangi password baru">
+                    <div class="table-responsive">
+                        <table class="hours-table" id="operating-hours-table">
+                            <thead>
+                                <tr>
+                                    <th>Hari</th>
+                                    <th>Buka</th>
+                                    <th>Tutup</th>
+                                    <th>Libur</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr data-day="monday">
+                                    <td>Senin</td>
+                                    <td><input type="time" name="open-monday" value="09:00"></td>
+                                    <td><input type="time" name="close-monday" value="21:00"></td>
+                                    <td>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" name="closed-monday">
+                                            <span class="toggle-switch__slider"></span>
+                                        </label>
+                                    </td>
+                                </tr>
+                                <tr data-day="tuesday">
+                                    <td>Selasa</td>
+                                    <td><input type="time" name="open-tuesday" value="09:00"></td>
+                                    <td><input type="time" name="close-tuesday" value="21:00"></td>
+                                    <td>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" name="closed-tuesday">
+                                            <span class="toggle-switch__slider"></span>
+                                        </label>
+                                    </td>
+                                </tr>
+                                <tr data-day="wednesday">
+                                    <td>Rabu</td>
+                                    <td><input type="time" name="open-wednesday" value="09:00"></td>
+                                    <td><input type="time" name="close-wednesday" value="21:00"></td>
+                                    <td>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" name="closed-wednesday">
+                                            <span class="toggle-switch__slider"></span>
+                                        </label>
+                                    </td>
+                                </tr>
+                                <tr data-day="thursday">
+                                    <td>Kamis</td>
+                                    <td><input type="time" name="open-thursday" value="09:00"></td>
+                                    <td><input type="time" name="close-thursday" value="21:00"></td>
+                                    <td>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" name="closed-thursday">
+                                            <span class="toggle-switch__slider"></span>
+                                        </label>
+                                    </td>
+                                </tr>
+                                <tr data-day="friday">
+                                    <td>Jumat</td>
+                                    <td><input type="time" name="open-friday" value="09:00"></td>
+                                    <td><input type="time" name="close-friday" value="21:00"></td>
+                                    <td>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" name="closed-friday">
+                                            <span class="toggle-switch__slider"></span>
+                                        </label>
+                                    </td>
+                                </tr>
+                                <tr data-day="saturday">
+                                    <td>Sabtu</td>
+                                    <td><input type="time" name="open-saturday" value="08:00"></td>
+                                    <td><input type="time" name="close-saturday" value="22:00"></td>
+                                    <td>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" name="closed-saturday">
+                                            <span class="toggle-switch__slider"></span>
+                                        </label>
+                                    </td>
+                                </tr>
+                                <tr data-day="sunday">
+                                    <td>Minggu</td>
+                                    <td><input type="time" name="open-sunday" value="10:00"></td>
+                                    <td><input type="time" name="close-sunday" value="20:00"></td>
+                                    <td>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" name="closed-sunday">
+                                            <span class="toggle-switch__slider"></span>
+                                        </label>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                     <div class="settings-actions">
-                        <button class="btn btn--primary" id="btn-save-kasir-password">
-                            <i class="fa-solid fa-key"></i> Ubah Password Staff
+                        <button class="btn btn--primary" id="btn-save-hours">
+                            <i class="fa-solid fa-save"></i> Simpan Pengaturan
                         </button>
                     </div>
                 </div>
+            </div>
 
-                <hr style="border:none;border-top:1px solid var(--border);margin:20px 0;">
-
-                <div>
-                    <p style="font-weight:600;font-size:.9rem;margin-bottom:12px;color:var(--text-primary);">
-                        <i class="fa-solid fa-user-plus"></i> Buat Akun Kasir Baru
+            <!-- Sub-tab: Akun -->
+            <div class="settings-content" id="stab-akun">
+                <!-- Kelola Akun Staff -->
+                <div class="chart-card" style="margin-bottom:24px;">
+                    <div class="chart-card__title">
+                        <i class="fa-solid fa-users-gear"></i>
+                        Kelola Akun Staff
+                    </div>
+                    <p style="color:var(--text-secondary);font-size:.875rem;margin-bottom:16px;">
+                        Lihat dan ubah role semua akun non-admin.
                     </p>
-                    <div class="form-group">
-                        <label>Username</label>
-                        <input type="text" id="input-kasir-username" placeholder="Contoh: kasir1">
+                    <div id="staff-list" style="display:flex;flex-direction:column;gap:10px;">
+                        <p style="color:var(--text-muted);font-size:.85rem;">Memuat...</p>
+                    </div>
+                </div>
+
+                <!-- Kasir Password -->
+                <div class="chart-card">
+                    <div class="chart-card__title">
+                        <i class="fa-solid fa-user-lock"></i>
+                        Ubah Password Staff
+                    </div>
+                    <p style="color:var(--text-secondary);font-size:.875rem;margin-bottom:16px;">
+                        Ganti password akun staff tanpa perlu tahu password lama.
+                    </p>
+                    <div id="kasir-change-pw-section">
+                        <div class="form-group">
+                            <label>Pilih Akun Staff</label>
+                            <select id="select-kasir-user">
+                                <option value="">— Memuat daftar kasir... —</option>
+                            </select>
+                        </div>
+                        <div id="kasir-no-account" style="display:none;margin-bottom:12px;">
+                            <p style="color:var(--text-muted);font-size:.85rem;margin-bottom:10px;">Belum ada akun staff. Buat akun baru di bawah.</p>
+                        </div>
+                        <div class="form-group">
+                            <label>Password Baru</label>
+                            <input type="password" id="input-kasir-new-pw" placeholder="Minimal 6 karakter">
+                        </div>
+                        <div class="form-group">
+                            <label>Konfirmasi Password Baru</label>
+                            <input type="password" id="input-kasir-confirm-pw" placeholder="Ulangi password baru">
+                        </div>
+                        <div class="settings-actions">
+                            <button class="btn btn--primary" id="btn-save-kasir-password">
+                                <i class="fa-solid fa-key"></i> Ubah Password Staff
+                            </button>
+                        </div>
+                    </div>
+
+                    <hr style="border:none;border-top:1px solid var(--border);margin:20px 0;">
+
+                    <div>
+                        <p style="font-weight:600;font-size:.9rem;margin-bottom:12px;color:var(--text-primary);">
+                            <i class="fa-solid fa-user-plus"></i> Buat Akun Kasir Baru
+                        </p>
+                        <div class="form-group">
+                            <label>Username</label>
+                            <input type="text" id="input-kasir-username" placeholder="Contoh: kasir1">
+                        </div>
+                        <div class="form-group">
+                            <label>Nama Lengkap</label>
+                            <input type="text" id="input-kasir-fullname" placeholder="Nama lengkap kasir">
+                        </div>
+                        <div class="form-group">
+                            <label>Password</label>
+                            <input type="password" id="input-kasir-create-pw" placeholder="Minimal 6 karakter">
+                        </div>
+                        <div class="settings-actions">
+                            <button class="btn btn--primary" id="btn-create-kasir">
+                                <i class="fa-solid fa-user-plus"></i> Buat Akun Kasir
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sub-tab: Keamanan -->
+            <div class="settings-content" id="stab-keamanan">
+                <!-- Reset Password Setting -->
+                <div class="chart-card" style="margin-bottom:24px;">
+                    <div class="chart-card__title">
+                        <i class="fa-solid fa-key"></i>
+                        Password Reset Dashboard
+                    </div>
+                    <p style="color:var(--text-secondary);font-size:.875rem;margin-bottom:16px;">
+                        Atur password khusus yang diperlukan untuk mereset semua data booking.
+                    </p>
+                    <div id="reset-password-set-status" style="margin-bottom:12px;font-size:.85rem;color:var(--text-muted);"></div>
+                    <div class="form-group" id="wrap-current-reset-pw" style="display:none;">
+                        <label>Password Reset Saat Ini</label>
+                        <input type="password" id="input-current-reset-pw" placeholder="Password reset yang sudah diatur">
                     </div>
                     <div class="form-group">
-                        <label>Nama Lengkap</label>
-                        <input type="text" id="input-kasir-fullname" placeholder="Nama lengkap kasir">
-                    </div>
-                    <div class="form-group">
-                        <label>Password</label>
-                        <input type="password" id="input-kasir-create-pw" placeholder="Minimal 6 karakter">
+                        <label>Password Reset Baru</label>
+                        <input type="password" id="input-new-reset-pw" placeholder="Minimal 6 karakter">
                     </div>
                     <div class="settings-actions">
-                        <button class="btn btn--primary" id="btn-create-kasir">
-                            <i class="fa-solid fa-user-plus"></i> Buat Akun Kasir
+                        <button class="btn btn--primary" id="btn-save-reset-password">
+                            <i class="fa-solid fa-key"></i> Simpan Password Reset
                         </button>
                     </div>
                 </div>
-            </div>
 
-            <!-- Reset Password Setting -->
-            <div class="chart-card" style="margin-top:24px;">
-                <div class="chart-card__title">
-                    <i class="fa-solid fa-key"></i>
-                    Password Reset Dashboard
-                </div>
-                <p style="color:var(--text-secondary);font-size:.875rem;margin-bottom:16px;">
-                    Atur password khusus yang diperlukan untuk mereset semua data booking.
-                </p>
-                <div id="reset-password-set-status" style="margin-bottom:12px;font-size:.85rem;color:var(--text-muted);"></div>
-                <div class="form-group" id="wrap-current-reset-pw" style="display:none;">
-                    <label>Password Reset Saat Ini</label>
-                    <input type="password" id="input-current-reset-pw" placeholder="Password reset yang sudah diatur">
-                </div>
-                <div class="form-group">
-                    <label>Password Reset Baru</label>
-                    <input type="password" id="input-new-reset-pw" placeholder="Minimal 6 karakter">
-                </div>
-                <div class="settings-actions">
-                    <button class="btn btn--primary" id="btn-save-reset-password">
-                        <i class="fa-solid fa-key"></i> Simpan Password Reset
+                <!-- Danger Zone: Reset Dashboard -->
+                <div class="chart-card" style="border:1.5px solid var(--danger);">
+                    <div class="chart-card__title" style="color:var(--danger);">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        Danger Zone
+                    </div>
+                    <p style="color:var(--text-secondary);font-size:.875rem;margin-bottom:16px;">
+                        Reset dashboard akan <strong>menghapus semua data booking</strong> secara permanen. Tindakan ini tidak dapat dibatalkan.
+                    </p>
+                    <button class="btn btn--danger" id="btn-open-reset-modal">
+                        <i class="fa-solid fa-rotate-left"></i> Reset Dashboard
                     </button>
                 </div>
-            </div>
-
-            <!-- Danger Zone: Reset Dashboard -->
-            <div class="chart-card" style="margin-top:24px;border:1.5px solid var(--danger);">
-                <div class="chart-card__title" style="color:var(--danger);">
-                    <i class="fa-solid fa-triangle-exclamation"></i>
-                    Danger Zone
-                </div>
-                <p style="color:var(--text-secondary);font-size:.875rem;margin-bottom:16px;">
-                    Reset dashboard akan <strong>menghapus semua data booking</strong> secara permanen. Tindakan ini tidak dapat dibatalkan.
-                </p>
-                <button class="btn btn--danger" id="btn-open-reset-modal">
-                    <i class="fa-solid fa-rotate-left"></i> Reset Dashboard
-                </button>
             </div>
         </section>
 
