@@ -4,6 +4,8 @@ let refreshTimer = null;
 let lastBookingCount = -1;
 let kcalWeekStart = null;
 let weekBookingCounts = {};
+let activeBarberFilter = null;
+let searchQuery = '';
 
 const KDAYS = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
 const KMONTHS = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
@@ -56,18 +58,9 @@ function getKWeekStart(dateStr) {
 
 function renderKCalendar() {
   const grid = document.getElementById('kcal-grid');
-  const title = document.getElementById('kcal-title');
   if (!grid) return;
 
   const today = fmtDateStr(new Date());
-  const weekEnd = new Date(kcalWeekStart);
-  weekEnd.setDate(weekEnd.getDate() + 6);
-
-  const sm = KMONTHS[kcalWeekStart.getMonth()];
-  const em = KMONTHS[weekEnd.getMonth()];
-  title.textContent = sm === em
-    ? kcalWeekStart.getDate() + ' - ' + weekEnd.getDate() + ' ' + em + ' ' + weekEnd.getFullYear()
-    : kcalWeekStart.getDate() + ' ' + sm + ' - ' + weekEnd.getDate() + ' ' + em;
 
   let html = '';
   for (let i = 0; i < 7; i++) {
@@ -101,17 +94,18 @@ function playNotifSound() {
   function beep(freq, start, dur) {
     var o = ctx.createOscillator();
     var g = ctx.createGain();
+    o.type = 'sine';
     o.frequency.value = freq;
-    g.gain.value = 1;
+    g.gain.setValueAtTime(0.6, ctx.currentTime + start);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur);
     o.connect(g);
     g.connect(ctx.destination);
     o.start(ctx.currentTime + start);
     o.stop(ctx.currentTime + start + dur);
   }
 
-  beep(800, 0, 0.15);
-  beep(1000, 0.2, 0.15);
-  beep(1200, 0.4, 0.2);
+  beep(880, 0, 0.18);
+  beep(1320, 0.2, 0.45);
 }
 
 const STATUS_MAP = {
@@ -149,56 +143,149 @@ async function loadBookings() {
 
 function render() {
   renderSummary();
+  renderBarberChips();
   renderList();
 }
 
 function renderSummary() {
-  const total = bookings.length;
-  const pending = bookings.filter(b => b.status === 'pending').length;
-  const completed = bookings.filter(b => b.status === 'completed').length;
+  const active = bookings.filter(b => b.status !== 'cancelled');
+  const total = active.length;
+  const pending = active.filter(b => b.status === 'pending').length;
+  const confirmed = active.filter(b => b.status === 'confirmed').length;
+  const completed = active.filter(b => b.status === 'completed').length;
 
   document.getElementById('sum-total').textContent = total;
   document.getElementById('sum-pending').textContent = pending;
+  var confEl = document.getElementById('sum-confirmed');
+  if (confEl) confEl.textContent = confirmed;
   document.getElementById('sum-completed').textContent = completed;
 }
 
-function renderList() {
-  const container = document.getElementById('booking-list');
+function getAvatarColor(name) {
+  var colors = [
+    { bg: '#dbeafe', fg: '#1e40af' },
+    { bg: '#fef3c7', fg: '#92400e' },
+    { bg: '#dcfce7', fg: '#166534' },
+    { bg: '#f3e8ff', fg: '#6b21a8' },
+    { bg: '#fce7f3', fg: '#9d174d' },
+    { bg: '#e0e7ff', fg: '#3730a3' }
+  ];
+  var hash = 0;
+  for (var i = 0; i < (name || '').length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  return colors[Math.abs(hash) % colors.length];
+}
 
-  const active = bookings.filter(b => b.status !== 'cancelled');
+function getInitials(name) {
+  return (name || '?').split(' ').map(function(w) { return w[0]; }).join('').slice(0, 2).toUpperCase();
+}
+
+function renderBarberChips() {
+  var container = document.getElementById('barber-chips');
+  if (!container) return;
+  var barberNames = [];
+  bookings.forEach(function(b) {
+    var n = b.barbers?.name;
+    if (n && barberNames.indexOf(n) === -1) barberNames.push(n);
+  });
+
+  var html = '<button class="b-chip' + (activeBarberFilter === null ? ' active' : '') + '" data-barber="">Semua</button>';
+  barberNames.forEach(function(n) {
+    html += '<button class="b-chip' + (activeBarberFilter === n ? ' active' : '') + '" data-barber="' + esc(n) + '">' + esc(n) + '</button>';
+  });
+  container.innerHTML = html;
+
+  container.querySelectorAll('.b-chip').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      activeBarberFilter = btn.dataset.barber || null;
+      renderBarberChips();
+      renderList();
+    });
+  });
+}
+
+function renderList() {
+  var container = document.getElementById('booking-list');
+  var active = bookings.filter(function(b) { return b.status !== 'cancelled'; });
+
+  if (activeBarberFilter) {
+    active = active.filter(function(b) { return b.barbers?.name === activeBarberFilter; });
+  }
+  if (searchQuery) {
+    var q = searchQuery.toLowerCase();
+    active = active.filter(function(b) { return (b.customer_name || '').toLowerCase().indexOf(q) !== -1; });
+  }
+
   if (active.length === 0) {
     container.innerHTML = '<div class="empty-state"><i class="fa-regular fa-calendar-check"></i><p>Tidak ada booking</p></div>';
     return;
   }
 
-  container.innerHTML = active.map(b => {
-    const s = STATUS_MAP[b.status] || STATUS_MAP.pending;
-    const time = b.booking_time?.slice(0, 5) || '';
-    const name = esc(b.customer_name);
-    const service = esc(b.services?.name || '-');
-    const stylist = esc(b.barbers?.name || '-');
-    const phone = esc(b.customer_phone || '');
-    let orderedAt = '';
-    if (b.created_at) {
-      const ca = new Date(b.created_at);
-      orderedAt = String(ca.getDate()).padStart(2,'0') + '/' + String(ca.getMonth()+1).padStart(2,'0') + '/' + String(ca.getFullYear()).slice(-2) + ' ' + ca.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false });
+  var groups = {};
+  active.forEach(function(b) {
+    var t = b.booking_time?.slice(0, 5) || '00:00';
+    if (!groups[t]) groups[t] = [];
+    groups[t].push(b);
+  });
+
+  var sortedTimes = Object.keys(groups).sort();
+
+  var nowStr = '';
+  var today = fmtDateStr(new Date());
+  if (currentDate === today) {
+    var now = new Date();
+    nowStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+  }
+
+  var html = '';
+  var nowInserted = false;
+
+  sortedTimes.forEach(function(time) {
+    if (nowStr && !nowInserted && time > nowStr) {
+      html += '<div class="now-indicator"><span class="now-dot"></span><span class="now-line"></span><span class="now-text">Sekarang ' + nowStr + '</span></div>';
+      nowInserted = true;
     }
 
-    return `
-      <div class="booking-card" data-booking-id="${b.id}">
-        <span class="booking-time-badge">${time}</span>
-        <div class="booking-info">
-          <div class="booking-name">${name}</div>
-          <div class="booking-detail">${service} &middot; ${stylist}</div>
-          ${orderedAt ? '<div class="booking-phone">Dipesan ' + orderedAt + '</div>' : ''}
-        </div>
-        <button class="status-btn ${s.cls}" data-open-sheet="${b.id}">${s.label}</button>
-      </div>
-    `;
-  }).join('');
+    var items = groups[time];
+    html += '<div class="time-group">';
+    html += '<div class="time-header"><span class="time-line"></span><span class="time-label">' + time + '</span><span class="time-count">' + items.length + ' booking</span><span class="time-line"></span></div>';
+    html += '<div class="time-cards">';
 
-  container.querySelectorAll('[data-open-sheet]').forEach(btn => {
-    btn.addEventListener('click', () => openStatusSheet(btn.dataset.openSheet));
+    items.forEach(function(b) {
+      var s = STATUS_MAP[b.status] || STATUS_MAP.pending;
+      var name = esc(b.customer_name);
+      var service = esc(b.services?.name || '-');
+      var stylist = esc(b.barbers?.name || '-');
+      var avatar = getAvatarColor(stylist);
+      var initials = getInitials(stylist);
+
+      var orderedAt = '';
+      if (b.created_at) {
+        var ca = new Date(b.created_at);
+        orderedAt = 'Dipesan ' + String(ca.getDate()).padStart(2,'0') + '/' + String(ca.getMonth()+1).padStart(2,'0') + '/' + String(ca.getFullYear()).slice(-2) + ' ' + ca.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false });
+      }
+
+      html += '<div class="booking-card status-' + b.status + '">';
+      html += '<div class="bk-avatar" style="background:' + avatar.bg + ';color:' + avatar.fg + '">' + initials + '</div>';
+      html += '<div class="booking-info">';
+      html += '<div class="booking-name">' + name + '</div>';
+      html += '<div class="booking-detail">' + service + ' &middot; ' + stylist + '</div>';
+      if (orderedAt) html += '<div class="booking-phone">' + orderedAt + '</div>';
+      html += '</div>';
+      html += '<button class="status-btn ' + s.cls + '" data-open-sheet="' + b.id + '">' + s.label + '</button>';
+      html += '</div>';
+    });
+
+    html += '</div></div>';
+  });
+
+  if (nowStr && !nowInserted) {
+    html += '<div class="now-indicator"><span class="now-dot"></span><span class="now-line"></span><span class="now-text">Sekarang ' + nowStr + '</span></div>';
+  }
+
+  container.innerHTML = html;
+
+  container.querySelectorAll('[data-open-sheet]').forEach(function(btn) {
+    btn.addEventListener('click', function() { openStatusSheet(btn.dataset.openSheet); });
   });
 }
 
@@ -454,6 +541,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   loadWeekCounts();
   document.getElementById('kcal-prev')?.addEventListener('click', kcalPrev);
   document.getElementById('kcal-next')?.addEventListener('click', kcalNext);
+
+  var searchInput = document.getElementById('kasir-search-input');
+  if (searchInput) {
+    searchInput.addEventListener('input', function() {
+      searchQuery = this.value.trim();
+      renderList();
+    });
+  }
 
   document.getElementById('btn-refresh')?.addEventListener('click', () => { loadBookings(); loadWeekCounts(); });
   document.getElementById('btn-walkin')?.addEventListener('click', openWalkInModal);
