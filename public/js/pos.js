@@ -128,7 +128,7 @@
 
     services.forEach(s => {
       html += '<div class="pos-item" data-cat="' + esc(s.category) + '" data-name="' + esc(s.name) + '" data-price="' + s.price + '" data-type="service" data-sid="' + s.id + '">' +
-        '<span class="pos-item-icon">' + getCategoryIcon(s.category) + '</span>' +
+        '<div class="pos-item-icon-wrap"><span class="pos-item-icon">' + getCategoryIcon(s.category) + '</span></div>' +
         '<div class="pos-item-name">' + esc(s.name) + '</div>' +
         '<div class="pos-item-price">' + fmt(s.price) + '</div></div>';
     });
@@ -138,7 +138,7 @@
       const stockClass = p.stock <= 0 ? ' out' : p.stock <= 3 ? ' low' : '';
       const stockLabel = p.stock <= 0 ? 'Habis' : 'Stok: ' + p.stock;
       html += '<div class="pos-item' + disabled + '" data-cat="minuman" data-name="' + esc(p.name) + '" data-price="' + p.price + '" data-type="product" data-pid="' + p.id + '" data-stock="' + p.stock + '">' +
-        '<span class="pos-item-icon">' + esc(p.icon || '🥤') + '</span>' +
+        '<div class="pos-item-icon-wrap"><span class="pos-item-icon">' + esc(p.icon || '🥤') + '</span></div>' +
         '<div class="pos-item-name">' + esc(p.name) + '</div>' +
         '<div class="pos-item-price">' + fmt(p.price) + '</div>' +
         '<div class="pos-item-stock' + stockClass + '">' + stockLabel + '</div></div>';
@@ -273,8 +273,10 @@
 
     var cartListEl = document.getElementById('cart-list');
     cartListEl.innerHTML = cart.map((c, i) =>
-      '<div class="cart-row"><div class="cart-row-info"><div class="cart-row-name">' + esc(c.name) + '</div>' +
-      '<div class="cart-row-price">' + fmt(c.price) + '</div></div>' +
+      '<div class="cart-row">' +
+      '<div class="cart-row-dot ' + (c.type === 'service' ? 'service' : 'product') + '"></div>' +
+      '<div class="cart-row-info"><div class="cart-row-name">' + esc(c.name) + '</div>' +
+      '<div class="cart-row-price">' + fmt(c.price) + ' / item</div></div>' +
       '<div class="cart-qty-ctrl"><button class="cart-qty-btn minus" data-idx="' + i + '" data-delta="-1">' +
       (c.qty === 1 ? '<i class="fa-solid fa-trash-can" style="font-size:0.65rem"></i>' : '−') +
       '</button><span class="cart-qty-val">' + c.qty + '</span>' +
@@ -495,7 +497,7 @@
       const items = (t.items || []).map(i => i.name).join(', ');
       const shortId = '#' + t.id.slice(0, 8).toUpperCase();
 
-      return '<div class="trx-card' + (isRefunded ? ' refunded' : '') + '">' +
+      return '<div class="trx-card' + (isRefunded ? ' refunded' : ' paid-card') + '">' +
         '<div class="trx-top"><div><span class="trx-id">' + shortId + '</span> <span class="trx-time">' + time + '</span></div>' +
         '<span class="trx-badge ' + (isRefunded ? 'refunded' : 'paid') + '">' +
         (isRefunded ? '<i class="fa-solid fa-rotate-left"></i> Refund' : '<i class="fa-solid fa-check"></i> Lunas') + '</span></div>' +
