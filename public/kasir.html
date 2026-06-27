@@ -447,6 +447,123 @@
       gap: 8px;
     }
 
+    /* Multi-service chips */
+    .wi-svc-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 240px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+    }
+    .wi-svc-chip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border: 1.5px solid #e5e5e5;
+      border-radius: 10px;
+      background: #fafafa;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    .wi-svc-chip:active { transform: scale(0.98); }
+    .wi-svc-chip.selected {
+      border-color: #1a1a1a;
+      background: #f0fdf4;
+    }
+    .wi-svc-check {
+      width: 20px; height: 20px;
+      border-radius: 6px;
+      border: 1.5px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 0.65rem;
+      color: transparent;
+      transition: all 0.15s;
+    }
+    .wi-svc-chip.selected .wi-svc-check {
+      background: #1a1a1a;
+      border-color: #1a1a1a;
+      color: #fff;
+    }
+    .wi-svc-info { flex: 1; min-width: 0; }
+    .wi-svc-name {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #1a1a1a;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .wi-svc-meta {
+      font-size: 0.65rem;
+      color: #999;
+      margin-top: 1px;
+    }
+    .wi-svc-price {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #16a34a;
+      flex-shrink: 0;
+    }
+    .wi-svc-cat {
+      font-size: 0.6rem;
+      font-weight: 700;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 8px 2px 4px;
+      border-bottom: 1px solid #eee;
+      margin-bottom: 2px;
+    }
+    .wi-svc-cat:first-child {
+      padding-top: 0;
+    }
+    .wi-svc-empty {
+      text-align: center;
+      padding: 20px;
+      color: #ccc;
+      font-size: 0.82rem;
+    }
+
+    /* Summary bar */
+    .wi-summary {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+    .wi-summary.show { display: flex; }
+    .wi-summary-left {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+    .wi-summary-count {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #166534;
+    }
+    .wi-summary-dur {
+      font-size: 0.6rem;
+      color: #16a34a;
+    }
+    .wi-summary-total {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #166534;
+    }
+
     .walkin-submit {
       width: 100%;
       padding: 12px;
@@ -1158,16 +1275,24 @@
           <input type="text" id="wi-name" placeholder="Kosong = Tamu Umum">
         </div>
         <div class="walkin-field">
-          <label>No. HP</label>
-          <input type="tel" id="wi-phone" placeholder="Opsional" inputmode="tel">
+          <label>No. HP <span style="color:#dc2626">*</span></label>
+          <input type="tel" id="wi-phone" placeholder="08xxxxxxxxxx" inputmode="tel">
         </div>
       </div>
 
       <div class="walkin-field">
-        <label>Layanan <span style="color:#dc2626">*</span></label>
-        <select id="wi-service">
-          <option value="">— Pilih Layanan —</option>
-        </select>
+        <label>Layanan <span style="color:#dc2626">*</span> <span style="font-weight:400;color:#bbb;text-transform:none;letter-spacing:0">— bisa pilih beberapa</span></label>
+        <div class="wi-svc-list" id="wi-svc-list">
+          <div class="wi-svc-empty">Memuat layanan...</div>
+        </div>
+      </div>
+
+      <div class="wi-summary" id="wi-summary">
+        <div class="wi-summary-left">
+          <span class="wi-summary-count" id="wi-summary-count">0 layanan</span>
+          <span class="wi-summary-dur" id="wi-summary-dur">0 menit</span>
+        </div>
+        <span class="wi-summary-total" id="wi-summary-total">Rp 0</span>
       </div>
 
       <div class="walkin-row">

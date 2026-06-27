@@ -416,11 +416,8 @@ async function startRealtime() {
 // ============================================
 // WALK-IN BOOKING
 // ============================================
-function nowRoundedUp() {
-  const d = new Date();
-  d.setMinutes(d.getMinutes() < 30 ? 30 : 60, 0, 0);
-  return d.toTimeString().slice(0, 5);
-}
+let wiSelectedServices = [];
+let wiAllServices = [];
 
 function setDefaultWalkInTime() {
   const now = new Date();
@@ -429,10 +426,91 @@ function setDefaultWalkInTime() {
   document.getElementById('wi-time').value = h + ':' + m;
 }
 
+function formatRupiahShort(n) {
+  return 'Rp ' + Number(n).toLocaleString('id-ID');
+}
+
+function toggleWiService(id) {
+  const idx = wiSelectedServices.indexOf(id);
+  if (idx === -1) wiSelectedServices.push(id);
+  else wiSelectedServices.splice(idx, 1);
+  renderWiServiceChips();
+  updateWiSummary();
+}
+
+const WI_CAT_ORDER = ['potong', 'perawatan', 'warna', 'lainnya'];
+const WI_CAT_LABELS = {
+  potong:    'Haircut',
+  perawatan: 'Texturing & Conditioning',
+  warna:     'Colouring',
+  lainnya:   'Other Service'
+};
+
+function renderWiServiceChips() {
+  const container = document.getElementById('wi-svc-list');
+  if (!wiAllServices.length) {
+    container.innerHTML = '<div class="wi-svc-empty"><i class="fa-solid fa-scissors" style="margin-right:4px"></i> Tidak ada layanan</div>';
+    return;
+  }
+
+  var groups = {};
+  wiAllServices.forEach(function(s) {
+    var cat = (s.category || 'lainnya').toLowerCase();
+    if (!groups[cat]) groups[cat] = [];
+    groups[cat].push(s);
+  });
+
+  var html = '';
+  WI_CAT_ORDER.forEach(function(cat) {
+    if (!groups[cat] || !groups[cat].length) return;
+    html += '<div class="wi-svc-cat">' + esc(WI_CAT_LABELS[cat] || cat) + '</div>';
+    groups[cat].forEach(function(s) {
+      var sel = wiSelectedServices.includes(s.id) ? ' selected' : '';
+      html += '<div class="wi-svc-chip' + sel + '" data-id="' + s.id + '">' +
+        '<span class="wi-svc-check"><i class="fa-solid fa-check"></i></span>' +
+        '<div class="wi-svc-info"><div class="wi-svc-name">' + esc(s.name) + '</div>' +
+        '<div class="wi-svc-meta">' + s.duration_minutes + ' menit</div></div>' +
+        '<span class="wi-svc-price">' + formatRupiahShort(s.price) + '</span></div>';
+    });
+    delete groups[cat];
+  });
+
+  Object.keys(groups).forEach(function(cat) {
+    if (!groups[cat].length) return;
+    html += '<div class="wi-svc-cat">' + esc(cat.charAt(0).toUpperCase() + cat.slice(1)) + '</div>';
+    groups[cat].forEach(function(s) {
+      var sel = wiSelectedServices.includes(s.id) ? ' selected' : '';
+      html += '<div class="wi-svc-chip' + sel + '" data-id="' + s.id + '">' +
+        '<span class="wi-svc-check"><i class="fa-solid fa-check"></i></span>' +
+        '<div class="wi-svc-info"><div class="wi-svc-name">' + esc(s.name) + '</div>' +
+        '<div class="wi-svc-meta">' + s.duration_minutes + ' menit</div></div>' +
+        '<span class="wi-svc-price">' + formatRupiahShort(s.price) + '</span></div>';
+    });
+  });
+
+  container.innerHTML = html;
+}
+
+function updateWiSummary() {
+  const summaryEl = document.getElementById('wi-summary');
+  const selected = wiAllServices.filter(s => wiSelectedServices.includes(s.id));
+  if (!selected.length) {
+    summaryEl.classList.remove('show');
+    return;
+  }
+  const totalPrice = selected.reduce((sum, s) => sum + s.price, 0);
+  const totalDur = selected.reduce((sum, s) => sum + s.duration_minutes, 0);
+  document.getElementById('wi-summary-count').textContent = selected.length + ' layanan';
+  document.getElementById('wi-summary-dur').textContent = totalDur + ' menit total';
+  document.getElementById('wi-summary-total').textContent = formatRupiahShort(totalPrice);
+  summaryEl.classList.add('show');
+}
+
 async function openWalkInModal() {
   const overlay = document.getElementById('walkin-overlay');
   const errEl  = document.getElementById('wi-error');
   errEl.style.display = 'none';
+  wiSelectedServices = [];
 
   document.getElementById('wi-date').value = currentDate;
   document.getElementById('wi-name').value = '';
@@ -440,17 +518,19 @@ async function openWalkInModal() {
   setDefaultWalkInTime();
 
   // Load layanan
-  const svcSel = document.getElementById('wi-service');
-  svcSel.innerHTML = '<option value="">— Memuat... —</option>';
+  const svcList = document.getElementById('wi-svc-list');
+  svcList.innerHTML = '<div class="wi-svc-empty">Memuat layanan...</div>';
   try {
     const res = await fetch('/api/booking/services', { credentials: 'include' });
     const data = await res.json();
-    const services = data.data || [];
-    svcSel.innerHTML = '<option value="">— Pilih Layanan —</option>' +
-      services.map(s => `<option value="${s.id}" data-price="${s.price}" data-duration="${s.duration_minutes}">${esc(s.name)} — Rp ${s.price.toLocaleString('id-ID')}</option>`).join('');
+    wiAllServices = (data.data || []).map(s => ({
+      id: s.id, name: s.name, price: s.price, duration_minutes: s.duration_minutes, category: s.category || 'lainnya'
+    }));
+    renderWiServiceChips();
   } catch {
-    svcSel.innerHTML = '<option value="">— Gagal memuat —</option>';
+    svcList.innerHTML = '<div class="wi-svc-empty">Gagal memuat layanan</div>';
   }
+  updateWiSummary();
 
   // Load barbers
   const barberSel = document.getElementById('wi-barber');
@@ -472,10 +552,15 @@ function closeWalkInModal() {
   document.getElementById('walkin-overlay').classList.remove('show');
 }
 
+function addMinutesToTime(timeStr, minutes) {
+  const [h, m] = timeStr.split(':').map(Number);
+  const total = h * 60 + m + minutes;
+  return String(Math.floor(total / 60)).padStart(2, '0') + ':' + String(total % 60).padStart(2, '0');
+}
+
 async function submitWalkIn() {
   const name    = document.getElementById('wi-name').value.trim() || 'Tamu Umum';
-  const phone   = document.getElementById('wi-phone').value.trim() || '-';
-  const service = document.getElementById('wi-service').value;
+  const phone   = document.getElementById('wi-phone').value.trim();
   const barber  = document.getElementById('wi-barber').value;
   const date    = document.getElementById('wi-date').value;
   const time    = document.getElementById('wi-time').value;
@@ -483,8 +568,16 @@ async function submitWalkIn() {
   const btn     = document.getElementById('wi-submit');
 
   errEl.style.display = 'none';
-  if (!service || !barber || !date || !time) {
-    errEl.textContent = 'Layanan, stylist, tanggal, dan jam wajib diisi.';
+
+  if (!phone) {
+    errEl.textContent = 'Nomor HP wajib diisi.';
+    errEl.style.display = '';
+    return;
+  }
+
+  const selected = wiAllServices.filter(s => wiSelectedServices.includes(s.id));
+  if (!selected.length || !barber || !date || !time) {
+    errEl.textContent = 'Pilih minimal 1 layanan, stylist, dan jam.';
     errEl.style.display = '';
     return;
   }
@@ -498,33 +591,52 @@ async function submitWalkIn() {
   }
 
   btn.disabled = true;
-  btn.textContent = 'Menyimpan...';
+  const totalCount = selected.length;
+  let currentTime = time;
+  let successCount = 0;
+
   try {
-    const res = await fetch('/api/booking/create', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({
-        customer_name: name,
-        customer_phone: phone,
-        service_id: service,
-        barber_id: barber,
-        booking_date: date,
-        booking_time: time.length === 5 ? time + ':00' : time,
-        notes: 'Walk-in'
-      })
-    });
-    const data = await res.json();
-    if (data.success) {
+    for (let i = 0; i < selected.length; i++) {
+      const svc = selected[i];
+      btn.textContent = totalCount > 1
+        ? 'Menyimpan ' + (i + 1) + '/' + totalCount + '...'
+        : 'Menyimpan...';
+
+      const bookingTime = currentTime.length === 5 ? currentTime + ':00' : currentTime;
+      const res = await fetch('/api/booking/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          customer_name: name,
+          customer_phone: phone,
+          service_id: svc.id,
+          barber_id: barber,
+          booking_date: date,
+          booking_time: bookingTime,
+          notes: 'Walk-in'
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        successCount++;
+        currentTime = addMinutesToTime(currentTime, svc.duration_minutes);
+      } else {
+        errEl.textContent = (successCount > 0
+          ? successCount + ' booking berhasil, tapi gagal di "' + svc.name + '": '
+          : '') + (data.message || 'Gagal membuat booking.');
+        errEl.style.display = '';
+        break;
+      }
+    }
+
+    if (successCount === totalCount) {
       closeWalkInModal();
       await loadBookings();
       loadWeekCounts();
-    } else {
-      errEl.textContent = data.message || 'Gagal membuat booking.';
-      errEl.style.display = '';
     }
   } catch {
-    errEl.textContent = 'Terjadi kesalahan. Coba lagi.';
+    errEl.textContent = 'Terjadi kesalahan. ' + (successCount > 0 ? successCount + ' booking sudah tersimpan.' : 'Coba lagi.');
     errEl.style.display = '';
   } finally {
     btn.disabled = false;
@@ -570,6 +682,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('wi-submit')?.addEventListener('click', submitWalkIn);
   document.getElementById('walkin-overlay')?.addEventListener('click', e => {
     if (e.target === document.getElementById('walkin-overlay')) closeWalkInModal();
+  });
+  document.getElementById('wi-svc-list')?.addEventListener('click', e => {
+    const chip = e.target.closest('.wi-svc-chip');
+    if (chip) toggleWiService(chip.dataset.id);
   });
   document.getElementById('btn-test-sound')?.addEventListener('click', playNotifSound);
   document.getElementById('btn-logout-kasir')?.addEventListener('click', async () => {
