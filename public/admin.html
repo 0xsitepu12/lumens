@@ -195,31 +195,42 @@
             bottom: 0;
             left: 0;
             right: 0;
-            height: 64px;
+            height: 60px;
             background: var(--bg-sidebar);
             border-top: 1px solid var(--border);
             display: flex;
             align-items: center;
-            justify-content: space-around;
+            overflow-x: auto;
+            overflow-y: hidden;
             z-index: 100;
-            padding: 0 4px;
+            padding: 0 2px;
+            scrollbar-width: none;
         }
+        .admin-tabs::-webkit-scrollbar { display: none; }
 
         .admin-tabs__item {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 4px;
-            padding: 8px 6px;
+            gap: 3px;
+            padding: 6px 4px;
             color: var(--text-muted);
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             font-weight: 500;
             cursor: pointer;
             transition: var(--transition);
             border: none;
             background: none;
             font-family: inherit;
-            min-width: 56px;
+            min-width: 52px;
+            flex-shrink: 0;
+        }
+
+        .admin-tabs__item span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 100%;
         }
 
         .admin-tabs__item i {
@@ -405,62 +416,71 @@
         .stat-cards {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 28px;
+            gap: 8px;
+            margin-bottom: 16px;
         }
 
         .stat-card {
             background: var(--bg-card);
             border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 16px;
+            border-radius: var(--radius-sm);
+            padding: 10px 12px;
             position: relative;
             overflow: hidden;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        .stat-card::after {
+        .stat-card::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
-            right: 0;
-            height: 3px;
+            bottom: 0;
+            width: 3px;
         }
 
-        .stat-card--booking::after { background: var(--info); }
-        .stat-card--revenue::after { background: var(--success); }
-        .stat-card--pending::after { background: var(--warning); }
-        .stat-card--completed::after { background: var(--primary); }
+        .stat-card--booking::before  { background: var(--info); }
+        .stat-card--revenue::before  { background: var(--success); }
+        .stat-card--pending::before  { background: var(--warning); }
+        .stat-card--completed::before{ background: var(--primary); }
 
         .stat-card__icon {
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
             border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.9rem;
-            margin-bottom: 10px;
+            font-size: 0.82rem;
+            flex-shrink: 0;
         }
 
-        .stat-card--booking .stat-card__icon { background: rgba(59,130,246,0.15); color: var(--info); }
-        .stat-card--revenue .stat-card__icon { background: rgba(34,197,94,0.15); color: var(--success); }
-        .stat-card--pending .stat-card__icon { background: rgba(245,158,11,0.15); color: var(--warning); }
-        .stat-card--completed .stat-card__icon { background: rgba(192,192,192,0.15); color: var(--primary); }
+        .stat-card--booking .stat-card__icon  { background: rgba(59,130,246,0.15); color: var(--info); }
+        .stat-card--revenue .stat-card__icon  { background: rgba(34,197,94,0.15); color: var(--success); }
+        .stat-card--pending .stat-card__icon  { background: rgba(245,158,11,0.15); color: var(--warning); }
+        .stat-card--completed .stat-card__icon{ background: rgba(192,192,192,0.15); color: var(--primary); }
+
+        .stat-card__body { flex: 1; min-width: 0; }
 
         .stat-card__label {
-            font-size: 0.75rem;
+            font-size: 0.65rem;
             color: var(--text-muted);
             font-weight: 500;
-            margin-bottom: 4px;
+            margin-bottom: 1px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .stat-card__value {
-            font-size: 1.5rem;
+            font-size: 1.1rem;
             font-weight: 700;
             color: var(--text-primary);
+            line-height: 1.2;
         }
 
         /* ========== CHARTS ========== */
@@ -886,10 +906,12 @@
             color: var(--text-muted);
             margin-top: 2px;
         }
-        @media (max-width: 768px) {
-            .pnl-cell { min-height: 50px; padding: 4px 2px; }
-            .pnl-revenue { font-size: 0.5rem; }
-            .pnl-count { font-size: 0.48rem; }
+        /* PnL calendar mobile handled in main mobile block below */
+
+        /* ========== DASHBOARD ACTIONS ========== */
+        .dash-actions {
+            display: flex;
+            gap: 6px;
         }
 
         .icon-picker {
@@ -1106,9 +1128,13 @@
             gap: 4px;
             margin-bottom: 20px;
             border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
         }
+        .settings-tabs::-webkit-scrollbar { display: none; }
         .settings-tab {
-            padding: 10px 20px;
+            padding: 10px 14px;
             border: none;
             background: none;
             font-size: 0.82rem;
@@ -1118,6 +1144,8 @@
             font-family: inherit;
             border-bottom: 2px solid transparent;
             transition: all 0.15s;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
         .settings-tab:hover { color: var(--text-secondary); }
         .settings-tab.active {
@@ -1337,6 +1365,188 @@
             }
         }
 
+        /* ========== MOBILE (<640px) ========== */
+        @media (max-width: 640px) {
+            /* Padding utama lebih ringkas */
+            .admin-main {
+                padding: 12px;
+            }
+
+            /* Header dashboard + export buttons */
+            .dash-actions {
+                display: flex;
+                gap: 6px;
+                flex-wrap: wrap;
+            }
+
+            /* Section titles */
+            .section-title {
+                font-size: 1.05rem;
+                margin-bottom: 14px;
+            }
+
+            /* Stat cards: lebih compact */
+            .stat-cards {
+                gap: 8px;
+                margin-bottom: 16px;
+            }
+            .stat-cards { gap: 6px; margin-bottom: 12px; }
+            .stat-card { padding: 8px 10px; gap: 8px; }
+            .stat-card__icon { width: 28px; height: 28px; font-size: 0.75rem; }
+            .stat-card__label { font-size: 0.58rem; }
+            .stat-card__value { font-size: clamp(0.8rem, 4.5vw, 1rem); }
+
+            /* Charts grid */
+            .charts-grid {
+                gap: 10px;
+                margin-bottom: 14px;
+            }
+
+            /* Chart card padding */
+            .chart-card {
+                padding: 14px;
+            }
+            .chart-card__title {
+                font-size: 0.82rem;
+                margin-bottom: 12px;
+            }
+
+            /* Chart height lebih pendek di mobile */
+            .chart-container {
+                max-height: 200px;
+            }
+            .chart-container canvas {
+                max-height: 200px;
+            }
+
+            /* PnL Calendar */
+            .pnl-cell {
+                min-height: 42px;
+                padding: 3px 2px;
+                border-radius: 4px;
+            }
+            .pnl-day {
+                font-size: 0.62rem;
+                margin-bottom: 2px;
+            }
+            .pnl-cell.today .pnl-day {
+                width: 18px;
+                height: 18px;
+                font-size: 0.58rem;
+            }
+            .pnl-revenue {
+                display: none; /* terlalu kecil untuk dibaca, ganti dengan dot */
+            }
+            .pnl-count {
+                display: none;
+            }
+            /* dot indikator warna untuk mobile */
+            .pnl-cell.has-revenue::after {
+                content: '';
+                display: block;
+                width: 5px;
+                height: 5px;
+                border-radius: 50%;
+                background: #16a34a;
+                margin: 2px auto 0;
+            }
+            .pnl-header {
+                font-size: 0.55rem;
+                padding: 4px 0;
+            }
+            .pnl-legend {
+                flex-wrap: wrap;
+                gap: 8px;
+                font-size: 0.62rem !important;
+            }
+
+            /* Date filter */
+            .date-filter {
+                gap: 8px;
+                margin-bottom: 14px;
+            }
+            .date-filter select,
+            .date-filter input[type="date"] {
+                font-size: 0.8rem;
+                padding: 7px 10px;
+            }
+
+            /* Filter row booking */
+            .filter-row {
+                gap: 8px;
+                margin-bottom: 14px;
+            }
+            .filter-group {
+                min-width: 120px;
+            }
+
+            /* Item cards lebih compact */
+            .item-cards {
+                gap: 8px;
+            }
+            .item-card {
+                padding: 12px;
+            }
+            .item-card__actions {
+                flex-direction: row !important;
+                flex-wrap: wrap;
+                align-self: flex-start;
+                gap: 4px;
+            }
+            .cards-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            /* Modal lebih pas di layar kecil */
+            .modal-overlay {
+                padding: 10px;
+            }
+            .modal {
+                max-height: 90vh;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .modal__header {
+                padding: 14px 16px;
+            }
+            .modal__body {
+                padding: 14px 16px;
+            }
+            .modal__footer {
+                padding: 12px 16px;
+            }
+
+            /* Settings tabs */
+            .settings-tabs {
+                gap: 2px;
+            }
+            .settings-tab {
+                padding: 8px 12px;
+                font-size: 0.78rem;
+            }
+
+            /* Barber performance table di dashboard */
+            .data-table thead th,
+            .data-table tbody td {
+                padding: 10px 10px;
+                font-size: 0.78rem;
+            }
+
+            /* Pagination */
+            .pagination {
+                gap: 4px;
+                padding: 12px 0;
+            }
+            .pagination__btn {
+                width: 32px;
+                height: 32px;
+                font-size: 0.75rem;
+            }
+        }
+
         /* ========== LOADING SKELETON ========== */
         .skeleton {
             background: linear-gradient(90deg, var(--bg-input) 25%, var(--border) 50%, var(--bg-input) 75%);
@@ -1397,6 +1607,10 @@
                 <i class="fa-solid fa-mug-hot"></i>
                 <span>Produk</span>
             </li>
+            <li class="admin-sidebar__item" data-tab="pengeluaran">
+                <i class="fa-solid fa-receipt"></i>
+                <span>Pengeluaran</span>
+            </li>
             <li class="admin-sidebar__item" data-tab="settings">
                 <i class="fa-solid fa-cog"></i>
                 <span>Pengaturan</span>
@@ -1430,6 +1644,10 @@
             <i class="fa-solid fa-mug-hot"></i>
             <span>Produk</span>
         </button>
+        <button class="admin-tabs__item" data-tab="pengeluaran">
+            <i class="fa-solid fa-receipt"></i>
+            <span>Pengeluaran</span>
+        </button>
         <button class="admin-tabs__item" data-tab="settings">
             <i class="fa-solid fa-cog"></i>
             <span>Pengaturan</span>
@@ -1443,7 +1661,7 @@
         <section class="admin-tab-content active" id="tab-dashboard">
             <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px">
               <h2 class="section-title" style="margin-bottom:0">Dashboard</h2>
-              <div style="display:flex;gap:6px">
+              <div class="dash-actions">
                 <button class="btn btn--outline btn--sm" id="btn-export-bookings"><i class="fa-solid fa-file-excel"></i> Booking</button>
                 <button class="btn btn--outline btn--sm" id="btn-export-revenue"><i class="fa-solid fa-file-excel"></i> Revenue</button>
                 <button class="btn btn--outline btn--sm" id="btn-export-services"><i class="fa-solid fa-file-excel"></i> Layanan</button>
@@ -1457,6 +1675,7 @@
                     <option value="today">Hari Ini</option>
                     <option value="week">Minggu Ini</option>
                     <option value="month" selected>Bulan Ini</option>
+                    <option value="year">Tahun Ini</option>
                     <option value="custom">Custom</option>
                 </select>
                 <div class="date-filter__custom" id="custom-date-range">
@@ -1485,32 +1704,32 @@
             <!-- Stat Cards -->
             <div class="stat-cards">
                 <div class="stat-card stat-card--booking">
-                    <div class="stat-card__icon">
-                        <i class="fa-solid fa-calendar-check"></i>
+                    <div class="stat-card__icon"><i class="fa-solid fa-calendar-check"></i></div>
+                    <div class="stat-card__body">
+                        <div class="stat-card__label">Total Booking</div>
+                        <div class="stat-card__value" id="stat-bookings">0</div>
                     </div>
-                    <div class="stat-card__label">Total Booking</div>
-                    <div class="stat-card__value" id="stat-bookings">0</div>
                 </div>
                 <div class="stat-card stat-card--revenue">
-                    <div class="stat-card__icon">
-                        <i class="fa-solid fa-money-bill"></i>
+                    <div class="stat-card__icon"><i class="fa-solid fa-money-bill"></i></div>
+                    <div class="stat-card__body">
+                        <div class="stat-card__label">Pendapatan</div>
+                        <div class="stat-card__value" id="stat-revenue">Rp 0</div>
                     </div>
-                    <div class="stat-card__label">Pendapatan</div>
-                    <div class="stat-card__value" id="stat-revenue">Rp 0</div>
                 </div>
                 <div class="stat-card stat-card--pending">
-                    <div class="stat-card__icon">
-                        <i class="fa-solid fa-clock"></i>
+                    <div class="stat-card__icon"><i class="fa-solid fa-clock"></i></div>
+                    <div class="stat-card__body">
+                        <div class="stat-card__label">Pending</div>
+                        <div class="stat-card__value" id="stat-pending">0</div>
                     </div>
-                    <div class="stat-card__label">Booking Pending</div>
-                    <div class="stat-card__value" id="stat-pending">0</div>
                 </div>
                 <div class="stat-card stat-card--completed">
-                    <div class="stat-card__icon">
-                        <i class="fa-solid fa-check-circle"></i>
+                    <div class="stat-card__icon"><i class="fa-solid fa-check-circle"></i></div>
+                    <div class="stat-card__body">
+                        <div class="stat-card__label">Selesai</div>
+                        <div class="stat-card__value" id="stat-completed">0</div>
                     </div>
-                    <div class="stat-card__label">Selesai</div>
-                    <div class="stat-card__value" id="stat-completed">0</div>
                 </div>
             </div>
 
@@ -1567,12 +1786,13 @@
                                 <th>Barber</th>
                                 <th>Total Booking</th>
                                 <th>Selesai</th>
-                                <th>Pendapatan</th>
+                                <th>Omset</th>
+                                <th>Pendapatan Bersih</th>
                             </tr>
                         </thead>
                         <tbody id="barber-performance-body">
                             <tr>
-                                <td colspan="4">
+                                <td colspan="5">
                                     <div class="empty-state">
                                         <i class="fa-solid fa-spinner fa-spin"></i>
                                         <p>Memuat data...</p>
@@ -1745,6 +1965,114 @@
                 </div>
             </div>
         </section>
+
+        <!-- ==================== TAB: PENGELUARAN ==================== -->
+        <section class="admin-tab-content" id="tab-pengeluaran">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px">
+                <h2 class="section-title" style="margin-bottom:0">Pengeluaran</h2>
+                <button class="btn btn--primary btn--sm" id="btn-add-expense">
+                    <i class="fa-solid fa-plus"></i> Tambah
+                </button>
+            </div>
+
+            <!-- Filter periode -->
+            <div class="date-filter" style="margin-bottom:16px">
+                <label>Periode:</label>
+                <select id="expense-period">
+                    <option value="today">Hari Ini</option>
+                    <option value="week">Minggu Ini</option>
+                    <option value="month" selected>Bulan Ini</option>
+                    <option value="custom">Custom</option>
+                </select>
+                <div id="expense-custom-range" style="display:none;gap:6px;display:none">
+                    <input type="date" id="expense-start">
+                    <input type="date" id="expense-end">
+                    <button class="btn btn--outline btn--sm" id="btn-expense-apply">Terapkan</button>
+                </div>
+            </div>
+
+            <!-- Summary cards -->
+            <div class="stat-cards" style="margin-bottom:16px" id="expense-summary">
+                <div class="stat-card stat-card--pending">
+                    <div class="stat-card__icon"><i class="fa-solid fa-arrow-trend-down"></i></div>
+                    <div class="stat-card__body">
+                        <div class="stat-card__label">Total Pengeluaran</div>
+                        <div class="stat-card__value" id="exp-total">Rp 0</div>
+                    </div>
+                </div>
+                <div class="stat-card stat-card--revenue">
+                    <div class="stat-card__icon"><i class="fa-solid fa-scale-balanced"></i></div>
+                    <div class="stat-card__body">
+                        <div class="stat-card__label">Laba Bersih</div>
+                        <div class="stat-card__value" id="exp-profit">Rp 0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabel pengeluaran -->
+            <div class="chart-card" style="padding:0;overflow:hidden">
+                <div style="overflow-x:auto">
+                    <table class="data-table" id="expense-table">
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Kategori</th>
+                                <th>Keterangan</th>
+                                <th>Jumlah</th>
+                                <th style="width:44px"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="expense-tbody">
+                            <tr><td colspan="5" style="text-align:center;padding:32px;color:var(--text-muted)">Belum ada pengeluaran</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Modal Tambah Pengeluaran -->
+        <div class="modal-overlay" id="expense-modal" style="display:none">
+            <div class="modal" style="max-width:420px">
+                <div class="modal__header">
+                    <h3 class="modal__title" id="expense-modal-title">Tambah Pengeluaran</h3>
+                    <button class="modal__close" id="btn-close-expense-modal"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="modal__body">
+                    <form id="expense-form">
+                        <input type="hidden" id="expense-id">
+                        <div class="form-group">
+                            <label class="form-label">Tanggal *</label>
+                            <input type="date" class="form-control" id="expense-tanggal" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Kategori *</label>
+                            <select class="form-control" id="expense-kategori" required>
+                                <option value="">-- Pilih Kategori --</option>
+                                <option value="gaji">Gaji / Komisi</option>
+                                <option value="bahan">Bahan & Produk</option>
+                                <option value="sewa">Sewa Tempat</option>
+                                <option value="listrik">Listrik & Air</option>
+                                <option value="peralatan">Peralatan</option>
+                                <option value="promosi">Promosi & Marketing</option>
+                                <option value="lainnya">Lainnya</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Keterangan</label>
+                            <input type="text" class="form-control" id="expense-keterangan" placeholder="Contoh: Gaji Budi bulan Juni">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Jumlah (Rp) *</label>
+                            <input type="number" class="form-control" id="expense-jumlah" min="0" step="1000" required placeholder="0">
+                        </div>
+                        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+                            <button type="button" class="btn btn--outline" id="btn-cancel-expense">Batal</button>
+                            <button type="submit" class="btn btn--primary" id="btn-save-expense">Simpan</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
 
         <!-- ==================== TAB: PENGATURAN ==================== -->
         <section class="admin-tab-content" id="tab-settings">

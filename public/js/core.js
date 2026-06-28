@@ -42,8 +42,37 @@ async function apiDelete(endpoint) {
   return res.json();
 }
 
+function normalizePhone(raw) {
+  let p = String(raw || '').replace(/\D/g, '');
+  if (p.startsWith('62')) p = '0' + p.slice(2);
+  else if (p.startsWith('8')) p = '0' + p;
+  return p;
+}
+
+// pasang ke input HP: otomatis format saat blur
+function attachPhoneNormalizer(input) {
+  if (!input) return;
+  input.addEventListener('blur', () => { input.value = normalizePhone(input.value); });
+}
+
 function formatRupiah(num) {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
+}
+
+function formatRupiahShort(num) {
+  if (!num || num === 0) return '0';
+  const abs = Math.abs(num);
+  if (abs >= 1_000_000) {
+    const v = num / 1_000_000;
+    const s = v % 1 === 0 ? v.toString() : v.toFixed(v < 10 ? 2 : 1).replace(/\.?0+$/, '');
+    return s.replace('.', ',') + 'jt';
+  }
+  if (abs >= 1_000) {
+    const v = num / 1_000;
+    const s = v % 1 === 0 ? v.toString() : v.toFixed(1).replace(/\.?0+$/, '');
+    return s.replace('.', ',') + 'rb';
+  }
+  return num.toString();
 }
 
 function formatDate(dateStr) {

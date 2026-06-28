@@ -286,20 +286,28 @@ async function getPopularServices(startDate, endDate) {
 }
 
 async function getBarberPerformance(startDate, endDate) {
-  const { data } = await supabase.from('bookings')
-    .select('barber_id, total_price, status, barbers(name)')
-    .gte('booking_date', startDate)
-    .lte('booking_date', endDate)
-    .neq('status', 'cancelled');
+  const [bookingsRes, servicesRes] = await Promise.all([
+    supabase.from('bookings')
+      .select('service_id, total_price, status, barbers(name)')
+      .gte('booking_date', startDate)
+      .lte('booking_date', endDate)
+      .neq('status', 'cancelled'),
+    supabase.from('services').select('id, modal_price')
+  ]);
+
+  const modalMap = Object.fromEntries(
+    (servicesRes.data || []).map(s => [s.id, s.modal_price || 0])
+  );
 
   const stats = {};
-  (data || []).forEach(b => {
+  (bookingsRes.data || []).forEach(b => {
     const name = b.barbers?.name || 'Unknown';
-    if (!stats[name]) stats[name] = { name, bookings: 0, revenue: 0, completed: 0 };
+    if (!stats[name]) stats[name] = { name, bookings: 0, revenue: 0, net_revenue: 0, completed: 0 };
     stats[name].bookings++;
     if (b.status === 'completed') {
       stats[name].completed++;
       stats[name].revenue += b.total_price || 0;
+      stats[name].net_revenue += (b.total_price || 0) - (modalMap[b.service_id] || 0);
     }
   });
   return Object.values(stats).sort((a, b) => b.revenue - a.revenue);

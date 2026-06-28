@@ -45,6 +45,8 @@ router.get('/dashboard', async (req, res) => {
   try {
     const today = todayWIB();
     const { start, end } = req.query;
+    const err = validateDateRange(start, end);
+    if (err) return res.status(400).json({ success: false, message: err });
     const startDate = start || today;
     const endDate = end || today;
 
@@ -71,6 +73,21 @@ router.get('/dashboard', async (req, res) => {
   } catch (err) {
     console.error('[admin/dashboard]', err.message);
     res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// summary alias untuk pengeluaran tab (revenue saja)
+router.get('/analytics/summary', async (req, res) => {
+  try {
+    const { start, end } = req.query;
+    const today = todayWIB();
+    const startDate = start || today;
+    const endDate = end || today;
+    const bookings = await db.getBookingsForAnalytics(startDate, endDate);
+    const revenue = bookings.filter(b => b.status === 'completed').reduce((s, b) => s + (b.total_price || 0), 0);
+    res.json({ success: true, revenue });
+  } catch (err) {
+    res.json({ success: true, revenue: 0 });
   }
 });
 
@@ -249,8 +266,12 @@ router.get('/services', async (req, res) => {
 
 router.post('/services', async (req, res) => {
   try {
-    const service = await db.createService(req.body);
-    db.logActivity({ action: 'service_create', category: 'admin', actor: req.user.username, detail: req.body.name, ip: req.ip });
+    const { name, price, modal_price, duration_minutes, category, description, sort_order, is_active } = req.body;
+    if (!name || !price) return res.json({ success: false, message: 'Nama dan harga wajib' });
+    if (String(name).length > 100) return res.json({ success: false, message: 'Nama terlalu panjang' });
+    const payload = { name: String(name).trim(), price: Number(price), modal_price: Number(modal_price) || 0, duration_minutes: Number(duration_minutes) || 30, category: category || 'potong', description: description || '', sort_order: Number(sort_order) || 0, is_active: is_active !== false };
+    const service = await db.createService(payload);
+    db.logActivity({ action: 'service_create', category: 'admin', actor: req.user.username, detail: payload.name, ip: req.ip });
     res.json({ success: true, data: service });
   } catch (err) {
     console.error('[admin/services/create]', err.message);
@@ -260,7 +281,17 @@ router.post('/services', async (req, res) => {
 
 router.put('/services/:id', async (req, res) => {
   try {
-    const service = await db.updateService(req.params.id, req.body);
+    const { name, price, modal_price, duration_minutes, category, description, sort_order, is_active } = req.body;
+    const payload = {};
+    if (name !== undefined) payload.name = String(name).trim();
+    if (price !== undefined) payload.price = Number(price);
+    if (modal_price !== undefined) payload.modal_price = Number(modal_price);
+    if (duration_minutes !== undefined) payload.duration_minutes = Number(duration_minutes);
+    if (category !== undefined) payload.category = category;
+    if (description !== undefined) payload.description = description;
+    if (sort_order !== undefined) payload.sort_order = Number(sort_order);
+    if (is_active !== undefined) payload.is_active = Boolean(is_active);
+    const service = await db.updateService(req.params.id, payload);
     db.logActivity({ action: 'service_update', category: 'admin', actor: req.user.username, detail: service.name, ip: req.ip });
     res.json({ success: true, data: service });
   } catch (err) {
@@ -284,8 +315,12 @@ router.get('/barbers', async (req, res) => {
 
 router.post('/barbers', async (req, res) => {
   try {
-    const barber = await db.createBarber(req.body);
-    db.logActivity({ action: 'barber_create', category: 'admin', actor: req.user.username, detail: req.body.name, ip: req.ip });
+    const { name, speciality, photo_url, sort_order, is_active } = req.body;
+    if (!name) return res.json({ success: false, message: 'Nama wajib diisi' });
+    if (String(name).length > 50) return res.json({ success: false, message: 'Nama terlalu panjang' });
+    const payload = { name: String(name).trim(), speciality: speciality || '', photo_url: photo_url || null, sort_order: Number(sort_order) || 0, is_active: is_active !== false };
+    const barber = await db.createBarber(payload);
+    db.logActivity({ action: 'barber_create', category: 'admin', actor: req.user.username, detail: payload.name, ip: req.ip });
     res.json({ success: true, data: barber });
   } catch (err) {
     console.error('[admin/barbers/create]', err.message);
@@ -317,7 +352,14 @@ router.get('/barbers/:id', async (req, res) => {
 
 router.put('/barbers/:id', async (req, res) => {
   try {
-    const barber = await db.updateBarber(req.params.id, req.body);
+    const { name, speciality, photo_url, sort_order, is_active } = req.body;
+    const payload = {};
+    if (name !== undefined) payload.name = String(name).trim();
+    if (speciality !== undefined) payload.speciality = speciality;
+    if (photo_url !== undefined) payload.photo_url = photo_url;
+    if (sort_order !== undefined) payload.sort_order = Number(sort_order);
+    if (is_active !== undefined) payload.is_active = Boolean(is_active);
+    const barber = await db.updateBarber(req.params.id, payload);
     res.json({ success: true, data: barber });
   } catch (err) {
     console.error('[admin/barbers/update]', err.message);
@@ -854,6 +896,82 @@ router.post('/backup/send-email', requireAdmin, async (req, res) => {
     console.error('[backup/send-email]', err.message);
     res.status(500).json({ success: false, message: err.message || 'Gagal kirim backup' });
   }
+});
+
+// ============================================================
+// PENGELUARAN (EXPENSES) — file-based storage
+// ============================================================
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const VALID_KATEGORI = ['gaji','bahan','sewa','listrik','peralatan','promosi','lainnya'];
+const EXPENSE_PATH = path.join(__dirname, '../config/pengeluaran.json');
+
+function validateDateRange(start, end) {
+  if (start && !DATE_RE.test(start)) return 'Format tanggal start tidak valid';
+  if (end   && !DATE_RE.test(end))   return 'Format tanggal end tidak valid';
+  return null;
+}
+
+function loadExpenses() {
+  try { return JSON.parse(fs.readFileSync(EXPENSE_PATH, 'utf8')); }
+  catch { return []; }
+}
+function saveExpenses(list) {
+  fs.mkdirSync(path.dirname(EXPENSE_PATH), { recursive: true });
+  fs.writeFileSync(EXPENSE_PATH, JSON.stringify(list, null, 2));
+}
+
+// GET /api/admin/pengeluaran?start=YYYY-MM-DD&end=YYYY-MM-DD
+router.get('/pengeluaran', requireAdmin, (req, res) => {
+  const { start, end } = req.query;
+  if (start && !DATE_RE.test(start)) return res.status(400).json({ success: false, message: 'Format tanggal tidak valid' });
+  if (end   && !DATE_RE.test(end))   return res.status(400).json({ success: false, message: 'Format tanggal tidak valid' });
+  let list = loadExpenses();
+  if (start) list = list.filter(e => e.tanggal >= start);
+  if (end)   list = list.filter(e => e.tanggal <= end);
+  list.sort((a, b) => b.tanggal.localeCompare(a.tanggal));
+  res.json({ success: true, data: list });
+});
+
+// POST /api/admin/pengeluaran
+router.post('/pengeluaran', requireAdmin, (req, res) => {
+  const { tanggal, kategori, keterangan, jumlah } = req.body;
+  if (!tanggal || !kategori || !jumlah) return res.json({ success: false, message: 'tanggal, kategori, jumlah wajib diisi' });
+  if (!DATE_RE.test(tanggal)) return res.json({ success: false, message: 'Format tanggal tidak valid' });
+  if (!VALID_KATEGORI.includes(kategori)) return res.json({ success: false, message: 'Kategori tidak valid' });
+  if (keterangan && String(keterangan).length > 200) return res.json({ success: false, message: 'Keterangan maks 200 karakter' });
+  const jml = Number(jumlah);
+  if (!jml || jml < 0 || jml > 1_000_000_000) return res.json({ success: false, message: 'Jumlah tidak valid' });
+  const list = loadExpenses();
+  const item = { id: Date.now().toString(), tanggal, kategori, keterangan: String(keterangan || '').trim(), jumlah: jml, created_at: new Date().toISOString() };
+  list.push(item);
+  saveExpenses(list);
+  res.json({ success: true, data: item });
+});
+
+// PUT /api/admin/pengeluaran/:id
+router.put('/pengeluaran/:id', requireAdmin, (req, res) => {
+  const list = loadExpenses();
+  const idx = list.findIndex(e => e.id === req.params.id);
+  if (idx === -1) return res.json({ success: false, message: 'Tidak ditemukan' });
+  const { tanggal, kategori, keterangan, jumlah } = req.body;
+  if (!DATE_RE.test(tanggal)) return res.json({ success: false, message: 'Format tanggal tidak valid' });
+  if (!VALID_KATEGORI.includes(kategori)) return res.json({ success: false, message: 'Kategori tidak valid' });
+  if (keterangan && String(keterangan).length > 200) return res.json({ success: false, message: 'Keterangan maks 200 karakter' });
+  const jml = Number(jumlah);
+  if (!jml || jml < 0 || jml > 1_000_000_000) return res.json({ success: false, message: 'Jumlah tidak valid' });
+  list[idx] = { ...list[idx], tanggal, kategori, keterangan: String(keterangan || '').trim(), jumlah: jml };
+  saveExpenses(list);
+  res.json({ success: true, data: list[idx] });
+});
+
+// DELETE /api/admin/pengeluaran/:id
+router.delete('/pengeluaran/:id', requireAdmin, (req, res) => {
+  const list = loadExpenses();
+  const idx = list.findIndex(e => e.id === req.params.id);
+  if (idx === -1) return res.json({ success: false, message: 'Tidak ditemukan' });
+  list.splice(idx, 1);
+  saveExpenses(list);
+  res.json({ success: true });
 });
 
 module.exports = router;

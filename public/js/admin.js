@@ -37,6 +37,7 @@ function switchTab(tabName) {
   if (tabName === 'services') loadAdminServices();
   if (tabName === 'barbers') loadAdminBarbers();
   if (tabName === 'products') loadAdminProducts();
+  if (tabName === 'pengeluaran') loadExpenses();
   if (tabName === 'settings') loadSettings();
 }
 
@@ -106,6 +107,8 @@ function getDateRange(period) {
     start = d.toISOString().split('T')[0];
   } else if (period === 'month') {
     start = end.slice(0, 7) + '-01';
+  } else if (period === 'year') {
+    start = end.slice(0, 4) + '-01-01';
   } else if (period === 'custom') {
     start = document.getElementById('filter-date-start')?.value || end.slice(0, 7) + '-01';
     const customEnd = document.getElementById('filter-date-end')?.value;
@@ -206,7 +209,7 @@ function renderRevenueChart(data, mode) {
         },
         scales: {
           x: { ticks: { color: '#555555', font: { size: 10 } }, grid: { display: false } },
-          y: { ticks: { color: '#555555', callback: v => formatRupiah(v) }, grid: { color: '#e0e0e0' }, beginAtZero: true }
+          y: { ticks: { color: '#555555', callback: v => formatRupiahShort(v) }, grid: { color: '#e0e0e0' }, beginAtZero: true }
         }
       }
     });
@@ -246,7 +249,7 @@ function renderRevenueChart(data, mode) {
       },
       scales: {
         x: { ticks: { color: '#555555' }, grid: { color: '#e0e0e0' } },
-        y: { ticks: { color: '#555555', callback: v => formatRupiah(v) }, grid: { color: '#e0e0e0' }, beginAtZero: true }
+        y: { ticks: { color: '#555555', callback: v => formatRupiahShort(v) }, grid: { color: '#e0e0e0' }, beginAtZero: true }
       }
     }
   });
@@ -276,7 +279,7 @@ function renderBarberTable(data) {
   if (!tbody) return;
 
   if (data.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="4"><div class="empty-state"><i class="fa-solid fa-user-tie"></i><p>Belum ada data performa</p></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><i class="fa-solid fa-user-tie"></i><p>Belum ada data performa</p></div></td></tr>';
     return;
   }
 
@@ -286,6 +289,7 @@ function renderBarberTable(data) {
       <td>${b.bookings}</td>
       <td>${b.completed}</td>
       <td>${formatRupiah(b.revenue)}</td>
+      <td style="color:var(--success);font-weight:600">${formatRupiah(b.net_revenue ?? 0)}</td>
     </tr>
   `).join('');
 }
@@ -1152,6 +1156,109 @@ async function saveProduct() {
 }
 
 // ============================================
+// ============================================
+// PENGELUARAN
+// ============================================
+const KATEGORI_LABEL = { gaji:'Gaji/Komisi', bahan:'Bahan & Produk', sewa:'Sewa Tempat', listrik:'Listrik & Air', peralatan:'Peralatan', promosi:'Promosi', lainnya:'Lainnya' };
+
+function getExpenseDateRange() {
+  const period = document.getElementById('expense-period')?.value || 'month';
+  if (period === 'custom') {
+    return { start: document.getElementById('expense-start')?.value, end: document.getElementById('expense-end')?.value };
+  }
+  return getDateRange(period);
+}
+
+async function loadExpenses() {
+  const { start, end } = getExpenseDateRange();
+  if (!start || !end) return;
+  try {
+    const res = await apiGet(`/api/admin/pengeluaran?start=${start}&end=${end}`);
+    if (!res.success) return;
+    const tbody = document.getElementById('expense-tbody');
+    if (!tbody) return;
+
+    const total = res.data.reduce((s, e) => s + e.jumlah, 0);
+
+    // ambil pendapatan periode yang sama untuk Laba Bersih
+    let revenue = 0;
+    try {
+      const rev = await apiGet(`/api/admin/analytics/summary?start=${start}&end=${end}`);
+      if (rev.success) revenue = rev.revenue || 0;
+    } catch {}
+
+    document.getElementById('exp-total').textContent = formatRupiah(total);
+    const profit = revenue - total;
+    const profitEl = document.getElementById('exp-profit');
+    if (profitEl) {
+      profitEl.textContent = formatRupiah(profit);
+      profitEl.style.color = profit >= 0 ? 'var(--success)' : 'var(--danger)';
+    }
+
+    if (!res.data.length) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--text-muted)">Belum ada pengeluaran</td></tr>';
+      return;
+    }
+    tbody.innerHTML = res.data.map(e => `
+      <tr>
+        <td>${e.tanggal}</td>
+        <td><span class="badge badge-pending" style="font-size:0.68rem">${esc(KATEGORI_LABEL[e.kategori] || e.kategori)}</span></td>
+        <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(e.keterangan || '-')}</td>
+        <td style="font-weight:600;color:var(--danger)">${formatRupiah(e.jumlah)}</td>
+        <td>
+          <button class="btn btn--outline btn--sm" style="padding:4px 8px;min-width:0" onclick="editExpense('${e.id}')"><i class="fa-solid fa-pen"></i></button>
+          <button class="btn btn--outline btn--sm" style="padding:4px 8px;min-width:0;color:var(--danger)" onclick="deleteExpense('${e.id}')"><i class="fa-solid fa-trash"></i></button>
+        </td>
+      </tr>
+    `).join('');
+  } catch(err) {
+    console.error(err);
+  }
+}
+
+function openExpenseModal(data = null) {
+  document.getElementById('expense-modal-title').textContent = data ? 'Edit Pengeluaran' : 'Tambah Pengeluaran';
+  document.getElementById('expense-id').value = data?.id || '';
+  document.getElementById('expense-tanggal').value = data?.tanggal || new Date().toISOString().slice(0,10);
+  document.getElementById('expense-kategori').value = data?.kategori || '';
+  document.getElementById('expense-keterangan').value = data?.keterangan || '';
+  document.getElementById('expense-jumlah').value = data?.jumlah || '';
+  document.getElementById('expense-modal').style.display = 'flex';
+}
+
+function closeExpenseModal() {
+  document.getElementById('expense-modal').style.display = 'none';
+}
+
+async function editExpense(id) {
+  const { start, end } = getExpenseDateRange();
+  const res = await apiGet(`/api/admin/pengeluaran?start=2000-01-01&end=2099-12-31`);
+  const item = res.data?.find(e => e.id === id);
+  if (item) openExpenseModal(item);
+}
+
+async function deleteExpense(id) {
+  if (!confirm('Hapus pengeluaran ini?')) return;
+  const res = await apiDelete(`/api/admin/pengeluaran/${id}`);
+  if (res.success) { showToast('Dihapus'); loadExpenses(); }
+  else showToast(res.message || 'Gagal hapus', 'error');
+}
+
+async function saveExpense(e) {
+  e.preventDefault();
+  const id = document.getElementById('expense-id').value;
+  const body = {
+    tanggal: document.getElementById('expense-tanggal').value,
+    kategori: document.getElementById('expense-kategori').value,
+    keterangan: document.getElementById('expense-keterangan').value,
+    jumlah: document.getElementById('expense-jumlah').value
+  };
+  const res = id ? await apiPut(`/api/admin/pengeluaran/${id}`, body) : await apiPost('/api/admin/pengeluaran', body);
+  if (res.success) { showToast(id ? 'Diperbarui' : 'Disimpan'); closeExpenseModal(); loadExpenses(); }
+  else showToast(res.message || 'Gagal simpan', 'error');
+}
+
+// ============================================
 // INIT
 // ============================================
 document.addEventListener('DOMContentLoaded', async () => {
@@ -1487,6 +1594,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     renderBkDR();
   })();
+
+  // ---- Pengeluaran events ----
+  document.getElementById('expense-period')?.addEventListener('change', function() {
+    const custom = document.getElementById('expense-custom-range');
+    if (custom) custom.style.display = this.value === 'custom' ? 'flex' : 'none';
+    if (this.value !== 'custom') loadExpenses();
+  });
+  document.getElementById('btn-expense-apply')?.addEventListener('click', loadExpenses);
+  document.getElementById('btn-add-expense')?.addEventListener('click', openExpenseModal);
+  document.getElementById('btn-close-expense-modal')?.addEventListener('click', closeExpenseModal);
+  document.getElementById('btn-cancel-expense')?.addEventListener('click', closeExpenseModal);
+  document.getElementById('expense-form')?.addEventListener('submit', saveExpense);
+  document.getElementById('expense-modal')?.addEventListener('click', function(e) {
+    if (e.target === this) closeExpenseModal();
+  });
 
   switchTab('dashboard');
 });

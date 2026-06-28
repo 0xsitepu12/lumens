@@ -7,6 +7,13 @@ const { requireKasir } = require('../middleware/auth');
 
 const router = express.Router();
 
+function normalizePhone(raw) {
+  let p = String(raw || '').replace(/\D/g, '');
+  if (p.startsWith('62') && p[2] === '8') p = '0' + p.slice(2);
+  else if (p.startsWith('8')) p = '0' + p;
+  return p;
+}
+
 const bookingLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
@@ -163,7 +170,7 @@ router.post('/create', bookingLimiter, async (req, res) => {
 
     const booking = await db.createBooking({
       customer_name: customer_name.trim(),
-      customer_phone: customer_phone.trim(),
+      customer_phone: normalizePhone(customer_phone),
       customer_email: customer_email?.trim() || null,
       service_id,
       barber_id,

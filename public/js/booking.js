@@ -410,6 +410,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const nameInput = document.getElementById('customer-name');
   const phoneInput = document.getElementById('customer-phone');
+  attachPhoneNormalizer(phoneInput);
   if (nameInput && phoneInput) {
     const checkForm = () => {
       const btn = document.getElementById('btn-confirm');

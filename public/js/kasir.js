@@ -650,6 +650,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await checkAuth();
   updateDateDisplay();
   startClock();
+  attachPhoneNormalizer(document.getElementById('wi-phone'));
 
   // Check POS enabled
   try {
